@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CharacterStats : MonoBehaviour {
+public class CharacterStats : StatusEffects {
 
 	/* Public/inspector elements */
 //	public bool bogResist = false;
@@ -37,7 +37,7 @@ public class CharacterStats : MonoBehaviour {
 //	public int currentMDef = baseMDef;
 
 
-	private StatusEffects characterStatus = new StatusEffects();
+//	private StatusEffects characterStatus = new StatusEffects();
 	private int[] statusTurnCounter;
 	private int[] statChangeTurnCounter;
 	private bool canAct = true;
@@ -65,8 +65,8 @@ public class CharacterStats : MonoBehaviour {
 		this.currentAtk = this.baseAtk;
 		this.currentDef = this.baseDef;
 		this.currentSpd = this.baseSpd;
-		this.statusTurnCounter = new int[this.characterStatus.getStatusAfflictions().Length];
-		this.statChangeTurnCounter = new int[this.characterStatus.getStatChangeAfflictions().Length];
+		this.statusTurnCounter = new int[getStatusAfflictions().Length];
+		this.statChangeTurnCounter = new int[getStatChangeAfflictions().Length];
 	}
 
 	/******
@@ -80,6 +80,7 @@ public class CharacterStats : MonoBehaviour {
 
 	// Modify current HP w/ new value
 	public void modifyHP(int hp) { this.currentHP += hp; }
+
 	// A % modifier for HP
 	public void modifyHP(float hpPercentage) { this.currentHP += (int) Mathf.Round(this.maxHP * hpPercentage); }
 
@@ -123,9 +124,9 @@ public class CharacterStats : MonoBehaviour {
 	 * Status effects
 	 */
 	public bool tryStatusAffliction(StatusEffects.Status status, int turnsToAfflict) {
-		if(!doesResistStatus(status) && !this.characterStatus.afflictedByStatus(status)) {
+		if(!doesResistStatus(status) && !afflictedByStatus(status)) {
 			// TODO: afflict the state
-			this.characterStatus.afflictStatus(status);
+			afflictStatus(status);
 			this.statusTurnCounter[(int) status] = turnsToAfflict;
 			return true;
 		}
@@ -133,9 +134,9 @@ public class CharacterStats : MonoBehaviour {
 	}
 
 	public bool tryStatChange(StatusEffects.StatChange statChange, int turnsToAfflict) {
-		if(!doesResistStatChange(statChange) && !this.characterStatus.afflictedByStatChange(statChange)) {
+		if(!doesResistStatChange(statChange) && !afflictedByStatChange(statChange)) {
 			// TODO: afflict the stat change
-			this.characterStatus.afflictStatChange(statChange);
+			afflictStatChange(statChange);
 			this.statChangeTurnCounter [(int) statChange] = turnsToAfflict;
 			return true;
 		}
@@ -143,9 +144,9 @@ public class CharacterStats : MonoBehaviour {
 	}
 
 	public bool tryRemoveStatChange(StatusEffects.StatChange statChange) {
-		if(!doesResistStatChangeRemoval(statChange) && !this.characterStatus.afflictedByStatChange(statChange)) {
+		if(!doesResistStatChangeRemoval(statChange) && !afflictedByStatChange(statChange)) {
 			// TODO: afflict the stat change
-			this.characterStatus.removeStatChange((int) statChange);
+			removeStatChange((int) statChange);
 			this.statChangeTurnCounter [(int) statChange] = 0;
 			return true;
 		}
@@ -153,15 +154,15 @@ public class CharacterStats : MonoBehaviour {
 	}
 
 	public bool doesResistStatus(StatusEffects.Status status) {
-		return this.characterStatus.resistsStatusEffect(status);
+		return resistsStatusEffect(status);
 	}
 
 	public bool doesResistStatChange(StatusEffects.StatChange statChange) {
-		return this.characterStatus.resistsStatChange(statChange);
+		return resistsStatChange(statChange);
 	}
 
 	public bool doesResistStatChangeRemoval(StatusEffects.StatChange statChange) {
-		return this.characterStatus.resistsStatChangeRemoval(statChange);
+		return resistsStatChangeRemoval(statChange);
 	}
 
 	/**
@@ -174,21 +175,21 @@ public class CharacterStats : MonoBehaviour {
 			switch ((int) status) {
 			case BOG:
 				if(tryStatChange(StatusEffects.StatChange.SpeedDown, turns)) {
-					modifySpd (false); // Only need to happen once, not every turn
+					modifySpd (false);
 				} else {
 					Debug.Log("Already afflicted by speed down...");
 				}
 				break;
 			case BURN:
 				if(tryStatChange(StatusEffects.StatChange.ATKDown, turns)) {
-					modifyAtk (false); // Only need to happen once, not every turn
+					modifyAtk (false);
 				} else {
 					Debug.Log("Already afflicted by physical attack down...");
 				}
 				break;
 			case POISON:
 				if(tryStatChange(StatusEffects.StatChange.ATKDown, turns)) {
-					modifyAtk (false); // Only need to happen once, not every turn
+					modifyAtk (false);
 				} else {
 					Debug.Log("Already afflicted by magical attack down...");
 				}
@@ -212,28 +213,28 @@ public class CharacterStats : MonoBehaviour {
 		switch ((int) status) {
 		case BOG:
 			modifySpd (true);
-			this.characterStatus.removeStatus(BOG);
+			removeStatus(BOG);
 			break;
 		case BURN:
 			modifyAtk (true); // Only need to happen once, not every turn
-			this.characterStatus.removeStatus(BURN);
+			removeStatus(BURN);
 			// Tries to remove atk down if not afflicted with a stat change removal resist
 			if (tryRemoveStatChange (StatusEffects.StatChange.ATKDown)) {
 				modifyAtk (true);// Only need to happen once, not every turn
 			}
 			break;
 		case POISON:
-			this.characterStatus.removeStatus (POISON);
+			removeStatus (POISON);
 			if (tryRemoveStatChange (StatusEffects.StatChange.ATKDown)) {
 				modifyAtk (true);
 			}
 			break;
 		case STUN:
-			this.characterStatus.removeStatus(STUN);
+			removeStatus(STUN);
 			this.canAct = true;
 			break;
 		case SILENCE:
-			this.characterStatus.removeStatus(SILENCE);
+			removeStatus(SILENCE);
 			this.canCastSpells = true;
 			break;
 		}
@@ -244,13 +245,13 @@ public class CharacterStats : MonoBehaviour {
 	 * this character's turns.
 	 */ 
 	public void checkStatusAfflictions() {
-		bool[] afflictions = this.characterStatus.getStatusAfflictions();
+		bool[] afflictions = getStatusAfflictions();
 		for(int i = 0; i < afflictions.Length; i++) {
 			// Check status afflictions and do action depending on the affliction
 			switch (i) {
-			case BOG:
-				// Nothing planned atm for this status effect. Only SPDDown atm.
-				break;
+//			case BOG:
+//				//Nothing planned atm for this status effect. Only SPDDown atm.
+//				break;
 			case BURN:
 				// 8% DoT & p atk down
 				if (this.statusTurnCounter [BURN] > 0) {

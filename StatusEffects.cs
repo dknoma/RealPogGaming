@@ -9,7 +9,7 @@ using UnityEngine;
 public class StatusEffects : MonoBehaviour {
 
 	public enum Status { Bog, Burn, Poison, Stun, Silence };
-	public enum StatChange { ATKUp, DEFUp,SpeedUp, HPUp, ATKDown, DEFDown, SpeedDown, HPDestruct}
+	public enum StatChange { ATKUp, DEFUp, SpeedUp, HPUp, ATKDown, DEFDown, SpeedDown, HPDestruct}
 	//	public enum StatUps { PATKUp, MATKUp, /*SpeedUp,*/ PDEFUp, MDEFUp, HPUp }; 
 	//	public enum StatDowns { PATKDown, MATKDown, /*SpeedDown,*/ PDEFDown, MDEFDown, HPDestruct };
 //	public enum StatChange { PATKUp, MATKUp, /*SpeedUp,*/ PDEFUp, MDEFUp, HPUp, 
@@ -29,35 +29,35 @@ public class StatusEffects : MonoBehaviour {
 	/* 
 	 * Afflictions 
 	 */
-	public bool[] getStatusAfflictions() {
+	protected bool[] getStatusAfflictions() {
 		return this.afflictedStatuses;
 	}
 
-	public bool[] getStatChangeAfflictions() {
+	protected bool[] getStatChangeAfflictions() {
 		return this.afflictedStatChange;
 	}
 
-	public bool afflictedByStatus(Status status) {
+	protected bool afflictedByStatus(Status status) {
 		return this.afflictedStatuses[(int) status];
 	}
 
-	public bool afflictedByStatChange(StatChange statChange) {
+	protected bool afflictedByStatChange(StatChange statChange) {
 		return this.afflictedStatChange[(int) statChange];
 	}
 
-	public void afflictStatus(Status status) {
+	protected void afflictStatus(Status status) {
 		this.afflictedStatuses[(int) status] = true;
 	}
 
-	public void removeStatus(int status) {
+	protected void removeStatus(int status) {
 		this.afflictedStatuses[status] = false;
 	}
 
-	public void afflictStatChange(StatChange statChange) {
+	protected void afflictStatChange(StatChange statChange) {
 		this.afflictedStatChange[(int) statChange] = true;
 	}
 
-	public void removeStatChange(int statChange) {
+	protected void removeStatChange(int statChange) {
 		this.afflictedStatChange[statChange] = false;
 	}
 
@@ -72,15 +72,15 @@ public class StatusEffects : MonoBehaviour {
 	/* 
 	 * Resists 
 	 */
-	public bool resistsStatusEffect(Status status) {
+	protected bool resistsStatusEffect(Status status) {
 		return this.statusResists[(int) status];
 	}
 
-	public bool resistsStatChange(StatChange statChange) {
+	protected bool resistsStatChange(StatChange statChange) {
 		return this.statChangeResists[(int) statChange];
 	}
 
-	public bool resistsStatChangeRemoval(StatChange statChange) {
+	protected bool resistsStatChangeRemoval(StatChange statChange) {
 		return this.statChangeRemovalResists[(int) statChange];
 	}
 }
