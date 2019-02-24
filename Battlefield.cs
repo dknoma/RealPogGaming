@@ -23,11 +23,13 @@ public class Battlefield : MonoBehaviour {
 		this.unitHeap = new MaxHeap(this.units.ToArray(), 0, this.numUnits);
 	}
 
+
 	public void calculateDamage(Character source, Character target) {
 		int damage = Mathf.RoundToInt(
-			Mathf.Pow (source.currentAtk, 2) / target.getCurrentDef 	 // Standard atk-def calc
-			* (1 + ((source.currentLevel*2 - target.currentLevel) / 50)) // Level compensation
-			/* TODO: applying elemental multipliers * eleMultiplier*/);  // elemental multiplier
+			Mathf.Pow (source.currentAtk, 2) / target.getCurrentDef() 	// Standard atk-def calc
+			* (1 + (source.currentLevel*2 - target.currentLevel) / 50)	// Level compensation
+			* ElementalAffinity.calcElementalDamage(source.getCurrentAction().getElement(), 
+				target.getCurrentAction().getElement()));  				// elemental multiplier
 	}
 
 	/**

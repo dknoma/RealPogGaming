@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class Character : CharacterStats, IComparable {
 
+	private Action currentAction;
+
 	// Use this for initialization
 	void Start () {
 		
@@ -13,6 +15,10 @@ public class Character : CharacterStats, IComparable {
 	// Update is called once per frame
 	void Update () {
 		
+	}
+
+	public Action getCurrentAction() {
+		return this.currentAction;
 	}
 
 	/**
@@ -35,6 +41,6 @@ public class Character : CharacterStats, IComparable {
 	 * afflictions or stat changes.
 	 */ 
 	public void statusPhase() {
-		
+		checkStatusAfflictions ();
 	}
 }

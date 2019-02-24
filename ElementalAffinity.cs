@@ -7,7 +7,7 @@ public class ElementalAffinity : MonoBehaviour {
 	// water-electric = 0-3, light-dark = 4,5, none = 6
 	public enum Element { Water, Fire, Earth, Electric, Light, Dark, None };
 
-	public float calcElementalDamage(Element source, Element target) {
+	public static float calcElementalDamage(Element source, Element target) {
 		switch(source) {
 		case Element.None:
 			return 1.0f;
@@ -25,7 +25,7 @@ public class ElementalAffinity : MonoBehaviour {
 	}
 
 	// Normal elemental damage calculations
-	private float calcNormal(Element source, Element target) {
+	private static float calcNormal(Element source, Element target) {
 		if((int) target == ((int) source+1) % 4) {
 			return 1.5f;
 		} else if((int) target == ((int) source+3) % 4) {
@@ -35,7 +35,7 @@ public class ElementalAffinity : MonoBehaviour {
 	}
 
 	// Light-dark elemental damage calculations
-	private float calcLD(Element source, Element target) {
+	private static float calcLD(Element source, Element target) {
 		if((int) target > 3 && ((int) target == ((int) source+1) % 6 || (int) target == ((int) source+5) % 6)) {
 			return 1.5f;
 		}
