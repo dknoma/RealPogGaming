@@ -11,19 +11,19 @@ public class CharacterStats : StatusEffects {
 	public bool stunResist = false;
 	public bool silenceResist = false;
 
-	private int maxLevel = 100;
+	protected int maxLevel = 100;
 	public int currentLevel = 1;
 
 	public int expUntilLevelUp;
 	public int currentExp = 0;
 
-	private int maxHP = 30;
+	protected int maxHP = 2;
 	public int currentHP;
-	private int baseAtk = 5;
+	protected int baseAtk = 5;
 	public int currentAtk;
-	private int baseDef = 5;
+	protected int baseDef = 5;
 	public int currentDef;
-	private int baseSpd = 5;
+	protected int baseSpd = 5;
 	public int currentSpd;
 
 //	private int basePAtk = 5;
@@ -40,24 +40,24 @@ public class CharacterStats : StatusEffects {
 //	private StatusEffects characterStatus = new StatusEffects();
 	private int[] statusTurnCounter;
 	private int[] statChangeTurnCounter;
-	private bool canAct = true;
-	private bool canCastSpells = true;
+	protected bool canAct = true;
+	protected bool canCastSpells = true;
 
 	// Status effect constants
-	private const int BOG = (int) StatusEffects.Status.Bog;
-	private const int BURN = (int) StatusEffects.Status.Burn;
-	private const int POISON = (int) StatusEffects.Status.Poison;
-	private const int STUN = (int) StatusEffects.Status.Stun;
-	private const int SILENCE = (int) StatusEffects.Status.Silence;
+	protected const int BOG = (int) StatusEffects.Status.Bog;
+	protected const int BURN = (int) StatusEffects.Status.Burn;
+	protected const int POISON = (int) StatusEffects.Status.Poison;
+	protected const int STUN = (int) StatusEffects.Status.Stun;
+	protected const int SILENCE = (int) StatusEffects.Status.Silence;
 
-	private const int ATKUP = (int) StatusEffects.StatChange.ATKUp;
-	private const int DEFUP = (int) StatusEffects.StatChange.DEFUp;
-	private const int SPDUP = (int) StatusEffects.StatChange.SpeedUp;
-	private const int HPUP = (int) StatusEffects.StatChange.HPUp;
-	private const int ATKDOWN = (int) StatusEffects.StatChange.ATKDown;
-	private const int DEFDOWN = (int) StatusEffects.StatChange.DEFDown;
-	private const int SPDDOWN = (int) StatusEffects.StatChange.SpeedDown;
-	private const int HPDESTRUCTION = (int) StatusEffects.StatChange.HPDestruct;
+	protected const int ATKUP = (int) StatusEffects.StatChange.ATKUp;
+	protected const int DEFUP = (int) StatusEffects.StatChange.DEFUp;
+	protected const int SPDUP = (int) StatusEffects.StatChange.SpeedUp;
+	protected const int HPUP = (int) StatusEffects.StatChange.HPUp;
+	protected const int ATKDOWN = (int) StatusEffects.StatChange.ATKDown;
+	protected const int DEFDOWN = (int) StatusEffects.StatChange.DEFDown;
+	protected const int SPDDOWN = (int) StatusEffects.StatChange.SpeedDown;
+	protected const int HPDESTRUCTION = (int) StatusEffects.StatChange.HPDestruct;
 
 	public CharacterStats() {
 		this.expUntilLevelUp = calcNextLevel (currentLevel);
@@ -212,7 +212,9 @@ public class CharacterStats : StatusEffects {
 	public void removeAffliction(StatusEffects.Status status) {
 		switch ((int) status) {
 		case BOG:
-			modifySpd (true);
+			if (tryRemoveStatChange (StatusEffects.StatChange.SpeedDown)) {
+				modifySpd (true);// Only need to happen once, not every turn
+			}
 			removeStatus(BOG);
 			break;
 		case BURN:
@@ -249,9 +251,9 @@ public class CharacterStats : StatusEffects {
 		for(int i = 0; i < afflictions.Length; i++) {
 			// Check status afflictions and do action depending on the affliction
 			switch (i) {
-//			case BOG:
-//				//Nothing planned atm for this status effect. Only SPDDown atm.
-//				break;
+			case BOG:
+				//Nothing planned atm for this status effect. Only SPDDown atm.
+				break;
 			case BURN:
 				// 8% DoT & p atk down
 				if (this.statusTurnCounter [BURN] > 0) {

@@ -16,15 +16,15 @@ public class StatusEffects : MonoBehaviour {
 //		PATKDown, MATKDown, /*SpeedDown,*/ PDEFDown, MDEFDown, HPDestruct}
 
 	// Decides whether a character has a status affliction or not
-	private bool[] afflictedStatuses = new bool[(int) Status.Silence+1];
+	protected bool[] afflictedStatuses = new bool[(int) Status.Silence+1];
 	//	private bool[] afflictedStatUpStatus = new bool[StatUps.HPUp+1];
 	//	private bool[] afflictedStatDownStatus = new bool[StatDowns.HPDestruct+1];
-	private bool[] afflictedStatChange = new bool[(int) StatChange.HPDestruct+1];
+	protected bool[] afflictedStatChange = new bool[(int) StatChange.HPDestruct+1];
 
 	// Decides whether a character is immune to a state or not
-	private bool[] statusResists = new bool[(int) Status.Silence+1];
-	private bool[] statChangeResists = new bool[(int) StatChange.HPDestruct+1];
-	private bool[] statChangeRemovalResists = new bool[(int) StatChange.HPDestruct+1];	
+	protected bool[] statusResists = new bool[(int) Status.Silence+1];
+	protected bool[] statChangeResists = new bool[(int) StatChange.HPDestruct+1];
+	protected bool[] statChangeRemovalResists = new bool[(int) StatChange.HPDestruct+1];	
 
 	/* 
 	 * Afflictions 

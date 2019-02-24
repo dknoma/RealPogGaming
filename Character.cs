@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(BattleActions))]
 public class Character : CharacterStats, IComparable {
 
-	private Action currentAction;
+	private BattleActions currentBattleActions;
 
 	// Use this for initialization
 	void Start () {
-		
+		this.currentBattleActions = GetComponent<BattleActions>();
 	}
 	
 	// Update is called once per frame
@@ -17,8 +18,8 @@ public class Character : CharacterStats, IComparable {
 		
 	}
 
-	public Action getCurrentAction() {
-		return this.currentAction;
+	public BattleActions getCurrentBattleActions() {
+		return this.currentBattleActions;
 	}
 
 	/**
@@ -36,11 +37,7 @@ public class Character : CharacterStats, IComparable {
 		}
 	}
 
-	/**
-	 * This is the phase that occurs before the character is allowed to act. Checks any outstanding status
-	 * afflictions or stat changes.
-	 */ 
-	public void statusPhase() {
-		checkStatusAfflictions ();
+	public bool canCharacterAct() {
+		return this.canAct;
 	}
 }

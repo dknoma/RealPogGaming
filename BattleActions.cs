@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Action : MonoBehaviour {
+public class BattleActions : MonoBehaviour {
 
+	public enum Action { Attack, Defend, UseItem };
+
+	private Action currentAction;
 	private int atk;
 	private ElementalAffinity.Element element = ElementalAffinity.Element.None;
 
-	public Action() {
+	public BattleActions() {
 	}
 
 	public int getAtk() {
@@ -18,7 +21,7 @@ public class Action : MonoBehaviour {
 		return this.element;
 	}
 
-	public void getElement(ElementalAffinity.Element element) {
+	public void setElement(ElementalAffinity.Element element) {
 		this.element = element;
 	}
 }
