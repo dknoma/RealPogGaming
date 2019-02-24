@@ -17,7 +17,7 @@ public class CharacterStats : StatusEffects {
 	public int expUntilLevelUp;
 	public int currentExp = 0;
 
-	private int maxHP = 10;
+	private int maxHP = 30;
 	public int currentHP;
 	private int baseAtk = 5;
 	public int currentAtk;

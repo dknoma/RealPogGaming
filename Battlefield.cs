@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,15 +13,21 @@ public class Battlefield : MonoBehaviour {
 	private MaxHeap unitHeap;
 	private int numUnits;
 
+	private float mitigationRate = 0.85f;
+	private int maxDef = 100;
+	private int maxAtk = 100;
+
 	// Use this for initialization
 	void Start () {
 		this.numUnits = this.units.Capacity;
 		this.unitHeap = new MaxHeap(this.units.ToArray(), 0, this.numUnits);
 	}
-	
-	// Update is called once per frame
-	void Update () {
-		
+
+	public void calculateDamage(Character source, Character target) {
+		int damage = Mathf.RoundToInt(
+			Mathf.Pow (source.currentAtk, 2) / target.getCurrentDef 	 // Standard atk-def calc
+			* (1 + ((source.currentLevel*2 - target.currentLevel) / 50)) // Level compensation
+			/* TODO: applying elemental multipliers * eleMultiplier*/);  // elemental multiplier
 	}
 
 	/**
