@@ -16,7 +16,7 @@ public class CharacterEquipement : MonoBehaviour {
 	// Armor encompasses chest, bottom, shoes
 	public enum ArmorSlots { Head, Armor, Gloves };
 	public enum WeaponSlots { MainHand, OffHand };
-	public enum AccessorySlots { Pendant, Ring, Earring };
+	public enum AccessorySlots { Slot1, Slot2 };
 	/**************************************************************************************/
 
 	public GameObject headgear;
@@ -27,13 +27,8 @@ public class CharacterEquipement : MonoBehaviour {
 	public GameObject ring;
 	public GameObject earring;
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+	private int totalHP = 0;
+	private int totalAtk = 0;
+	private int totalDef = 0;
+	private int totalSpd = 0;
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CharacterStats : Character {
+public class CharacterStats : MonoBehaviour {
 
 	/* Public/inspector elements */
 //	public bool bogResist = false;
@@ -23,6 +23,8 @@ public class CharacterStats : Character {
 	public int currentAtk;
 	private int baseDef = 5;
 	public int currentDef;
+	private int baseSpd = 5;
+	public int currentSpd;
 
 //	private int basePAtk = 5;
 //	public int currentPAtk = basePAtk;
@@ -34,8 +36,6 @@ public class CharacterStats : Character {
 //	public int baseMDef = 5;
 //	public int currentMDef = baseMDef;
 
-//	private int baseSpd;
-//	public int currentSpd;
 
 	private StatusEffects characterStatus = new StatusEffects();
 	private int[] statusTurnCounter;
@@ -44,6 +44,7 @@ public class CharacterStats : Character {
 	private bool canCastSpells = true;
 
 	// Status effect constants
+	private const int BOG = (int) StatusEffects.Status.Bog;
 	private const int BURN = (int) StatusEffects.Status.Burn;
 	private const int POISON = (int) StatusEffects.Status.Poison;
 	private const int STUN = (int) StatusEffects.Status.Stun;
@@ -51,9 +52,11 @@ public class CharacterStats : Character {
 
 	private const int ATKUP = (int) StatusEffects.StatChange.ATKUp;
 	private const int DEFUP = (int) StatusEffects.StatChange.DEFUp;
+	private const int SPDUP = (int) StatusEffects.StatChange.SpeedUp;
 	private const int HPUP = (int) StatusEffects.StatChange.HPUp;
 	private const int ATKDOWN = (int) StatusEffects.StatChange.ATKDown;
 	private const int DEFDOWN = (int) StatusEffects.StatChange.DEFDown;
+	private const int SPDDOWN = (int) StatusEffects.StatChange.SpeedDown;
 	private const int HPDESTRUCTION = (int) StatusEffects.StatChange.HPDestruct;
 
 	public CharacterStats() {
@@ -61,6 +64,7 @@ public class CharacterStats : Character {
 		this.currentHP = this.maxHP;
 		this.currentAtk = this.baseAtk;
 		this.currentDef = this.baseDef;
+		this.currentSpd = this.baseSpd;
 		this.statusTurnCounter = new int[this.characterStatus.getStatusAfflictions().Length];
 		this.statChangeTurnCounter = new int[this.characterStatus.getStatChangeAfflictions().Length];
 	}
@@ -91,23 +95,6 @@ public class CharacterStats : Character {
 	// Modify current attack w/ new value
 	public void modifyAtk(bool up) { this.currentAtk += atkMod(this.baseAtk, up); }
 
-//	public int getBasePAtk() { return 0 + this.basePAtk; }
-//
-//	// Return a copy of this characters current attack
-//	public int getCurrentPAtk() { return 0 + this.currentPAtk; }
-//
-//	// Modify current attack w/ new value
-//	public void modifyPAtk(bool up) { this.currentPAtk += atkMod(this.basePAtk, up); }
-//
-//	// Return a copy of this characters base attack
-//	public int getBaseMAtk() { return 0 + this.baseMAtk; }
-//
-//	// Return a copy of this characters current attack
-//	public int getCurrentMAtk() { return 0 + this.currentMAtk; }
-//
-//	// Modify current attack w/ new value
-//	public void modifyMAtk(bool up) { this.currentMAtk += atkMod(this.baseMAtk, up); }
-
 	/*******
 	 * DEF *
 	 *******/
@@ -119,24 +106,22 @@ public class CharacterStats : Character {
 
 	// Modify current defense w/ new value
 	public void modifyDef(bool up) { this.currentDef += defMod(this.baseDef, up); }
-//	public int getBasePDef() { return 0 + this.basePDef; }
-//
-//	// Return a copy of this characters current defense
-//	public int getCurrentPDef() { return 0 + this.currentPDef; }
-//
-//	// Modify current defense w/ new value
-//	public void modifyPDef(bool up) { this.currentPDef += defMod(this.basePDef, up); }
-//
-//	// Return a copy of this characters base defense
-//	public int getBaseMDef() { return 0 + this.baseMDef; }
-//
-//	// Return a copy of this characters current defense
-//	public int getCurrentMDef() { return 0 + this.currentMDef; }
-//
-//	// Modify current defense w/ new value
-//	public void modifyMDef(bool up) { this.currentMDef += defMod(this.baseMDef, up); }
 
-	// Status effects
+	/*******
+	 * SPD *
+	 *******/
+	// Return a copy of this characters base defense
+	public int getBaseSpd() { return 0 + this.baseSpd; }
+
+	// Return a copy of this characters current defense
+	public int getCurrentSpd() { return 0 + this.currentSpd; }
+
+	// Modify current defense w/ new value
+	public void modifySpd(bool up) { this.currentSpd += defMod(this.baseSpd, up); }
+
+	/* 
+	 * Status effects
+	 */
 	public bool tryStatusAffliction(StatusEffects.Status status, int turnsToAfflict) {
 		if(!doesResistStatus(status) && !this.characterStatus.afflictedByStatus(status)) {
 			// TODO: afflict the state
@@ -187,6 +172,13 @@ public class CharacterStats : Character {
 		// Check status afflictions and do action depending on the affliction
 		if (tryStatusAffliction (status, turns)) {
 			switch ((int) status) {
+			case BOG:
+				if(tryStatChange(StatusEffects.StatChange.SpeedDown, turns)) {
+					modifySpd (false); // Only need to happen once, not every turn
+				} else {
+					Debug.Log("Already afflicted by speed down...");
+				}
+				break;
 			case BURN:
 				if(tryStatChange(StatusEffects.StatChange.ATKDown, turns)) {
 					modifyAtk (false); // Only need to happen once, not every turn
@@ -218,6 +210,10 @@ public class CharacterStats : Character {
 	 */ 
 	public void removeAffliction(StatusEffects.Status status) {
 		switch ((int) status) {
+		case BOG:
+			modifySpd (true);
+			this.characterStatus.removeStatus(BOG);
+			break;
 		case BURN:
 			modifyAtk (true); // Only need to happen once, not every turn
 			this.characterStatus.removeStatus(BURN);
@@ -252,6 +248,9 @@ public class CharacterStats : Character {
 		for(int i = 0; i < afflictions.Length; i++) {
 			// Check status afflictions and do action depending on the affliction
 			switch (i) {
+			case BOG:
+				// Nothing planned atm for this status effect. Only SPDDown atm.
+				break;
 			case BURN:
 				// 8% DoT & p atk down
 				if (this.statusTurnCounter [BURN] > 0) {
@@ -299,6 +298,11 @@ public class CharacterStats : Character {
 	// Increase/decrease defense by 25% of the base value
 	private int defMod(int baseDef, bool up) {
 		return (int) (up ? baseDef * 0.25f : baseDef * (-0.25f));
+	}
+
+	// Increase/decrease speed by 20% of the base value
+	private int spdMod(int baseSpd, bool up) {
+		return (int) (up ? baseSpd * 0.2f : baseSpd * (-0.2f));
 	}
 
 	// Calculate the amount of exp required to get to the next level

@@ -8,8 +8,8 @@ using UnityEngine;
  */
 public class StatusEffects : MonoBehaviour {
 
-	public enum Status { /*Bog,*/ Burn, Poison, Stun, Silence };
-	public enum StatChange { ATKUp, /*SpeedUp,*/ DEFUp, HPUp, ATKDown, /*SpeedDown,*/ DEFDown, HPDestruct}
+	public enum Status { Bog, Burn, Poison, Stun, Silence };
+	public enum StatChange { ATKUp, DEFUp,SpeedUp, HPUp, ATKDown, DEFDown, SpeedDown, HPDestruct}
 	//	public enum StatUps { PATKUp, MATKUp, /*SpeedUp,*/ PDEFUp, MDEFUp, HPUp }; 
 	//	public enum StatDowns { PATKDown, MATKDown, /*SpeedDown,*/ PDEFDown, MDEFDown, HPDestruct };
 //	public enum StatChange { PATKUp, MATKUp, /*SpeedUp,*/ PDEFUp, MDEFUp, HPUp, 
