@@ -17,14 +17,18 @@ public class CharacterStats : StatusEffects {
 	public int expUntilLevelUp;
 	public int currentExp = 0;
 
-	protected int maxHP = 2;
-	public int currentHP;
+	[SerializeField]
+	protected int maxHP = 20;
+	protected int currentHP;
+	[SerializeField]
 	protected int baseAtk = 5;
-	public int currentAtk;
+	protected int currentAtk;
+	[SerializeField]
 	protected int baseDef = 5;
-	public int currentDef;
+	protected int currentDef;
+	[SerializeField]
 	protected int baseSpd = 5;
-	public int currentSpd;
+	protected int currentSpd;
 
 //	private int basePAtk = 5;
 //	public int currentPAtk = basePAtk;
@@ -59,7 +63,7 @@ public class CharacterStats : StatusEffects {
 	protected const int SPDDOWN = (int) StatusEffects.StatChange.SpeedDown;
 	protected const int HPDESTRUCTION = (int) StatusEffects.StatChange.HPDestruct;
 
-	public CharacterStats() {
+	void Awake() {
 		this.expUntilLevelUp = calcNextLevel (currentLevel);
 		this.currentHP = this.maxHP;
 		this.currentAtk = this.baseAtk;
@@ -123,45 +127,59 @@ public class CharacterStats : StatusEffects {
 	/* 
 	 * Status effects
 	 */
-	public bool tryStatusAffliction(StatusEffects.Status status, int turnsToAfflict) {
+	public bool tryStatusAffliction(int status, int turnsToAfflict) {
 		if(!doesResistStatus(status) && !afflictedByStatus(status)) {
 			// TODO: afflict the state
 			afflictStatus(status);
-			this.statusTurnCounter[(int) status] = turnsToAfflict;
+			this.statusTurnCounter[status] = turnsToAfflict;
 			return true;
 		}
 		return false;
 	}
 
-	public bool tryStatChange(StatusEffects.StatChange statChange, int turnsToAfflict) {
+	public bool tryStatChange(int statChange, int turnsToAfflict) {
 		if(!doesResistStatChange(statChange) && !afflictedByStatChange(statChange)) {
 			// TODO: afflict the stat change
 			afflictStatChange(statChange);
-			this.statChangeTurnCounter [(int) statChange] = turnsToAfflict;
+			this.statChangeTurnCounter [statChange] = turnsToAfflict;
 			return true;
 		}
 		return false;
 	}
 
-	public bool tryRemoveStatChange(StatusEffects.StatChange statChange) {
+	public bool tryRemoveStatus(int status) {
+		if(!doesResistStatusRemoval(status) && !afflictedByStatus(status)) {
+			// TODO: afflict the stat change
+			removeStatus(status);
+			this.statusTurnCounter [status] = 0;
+			return true;
+		}
+		return false;
+	}
+
+	public bool tryRemoveStatChange(int statChange) {
 		if(!doesResistStatChangeRemoval(statChange) && !afflictedByStatChange(statChange)) {
 			// TODO: afflict the stat change
-			removeStatChange((int) statChange);
-			this.statChangeTurnCounter [(int) statChange] = 0;
+			removeStatChange(statChange);
+			this.statChangeTurnCounter [statChange] = 0;
 			return true;
 		}
 		return false;
 	}
 
-	public bool doesResistStatus(StatusEffects.Status status) {
+	public bool doesResistStatus(int status) {
 		return resistsStatusEffect(status);
 	}
 
-	public bool doesResistStatChange(StatusEffects.StatChange statChange) {
+	public bool doesResistStatChange(int statChange) {
 		return resistsStatChange(statChange);
 	}
 
-	public bool doesResistStatChangeRemoval(StatusEffects.StatChange statChange) {
+	public bool doesResistStatusRemoval(int status) {
+		return resistsStatusEffectRemoval(status);
+	}
+
+	public bool doesResistStatChangeRemoval(int statChange) {
 		return resistsStatChangeRemoval(statChange);
 	}
 
@@ -169,26 +187,26 @@ public class CharacterStats : StatusEffects {
 	 * Initial state of the affliction. This method is used to initialize effects that only happen once
 	 * to the character. checkStatusAfflictions() is used for effects that happen each turn.
 	 */ 
-	public void initAffliction(StatusEffects.Status status, int turns) {
+	public void initAffliction(int status, int turns) {
 		// Check status afflictions and do action depending on the affliction
 		if (tryStatusAffliction (status, turns)) {
-			switch ((int) status) {
+			switch (status) {
 			case BOG:
-				if(tryStatChange(StatusEffects.StatChange.SpeedDown, turns)) {
+				if(tryStatChange(SPDDOWN, turns)) {
 					modifySpd (false);
 				} else {
 					Debug.Log("Already afflicted by speed down...");
 				}
 				break;
 			case BURN:
-				if(tryStatChange(StatusEffects.StatChange.ATKDown, turns)) {
+				if(tryStatChange(ATKDOWN, turns)) {
 					modifyAtk (false);
 				} else {
 					Debug.Log("Already afflicted by physical attack down...");
 				}
 				break;
 			case POISON:
-				if(tryStatChange(StatusEffects.StatChange.ATKDown, turns)) {
+				if(tryStatChange(ATKDOWN, turns)) {
 					modifyAtk (false);
 				} else {
 					Debug.Log("Already afflicted by magical attack down...");
@@ -209,10 +227,10 @@ public class CharacterStats : StatusEffects {
 	/**
 	 * Removes the specified affliction. This method reverses any 
 	 */ 
-	public void removeAffliction(StatusEffects.Status status) {
-		switch ((int) status) {
+	public void removeAffliction(int status) {
+		switch (status) {
 		case BOG:
-			if (tryRemoveStatChange (StatusEffects.StatChange.SpeedDown)) {
+			if (tryRemoveStatChange (SPDDOWN)) {
 				modifySpd (true);// Only need to happen once, not every turn
 			}
 			removeStatus(BOG);
@@ -221,13 +239,13 @@ public class CharacterStats : StatusEffects {
 			modifyAtk (true); // Only need to happen once, not every turn
 			removeStatus(BURN);
 			// Tries to remove atk down if not afflicted with a stat change removal resist
-			if (tryRemoveStatChange (StatusEffects.StatChange.ATKDown)) {
+			if (tryRemoveStatChange (ATKDOWN)) {
 				modifyAtk (true);// Only need to happen once, not every turn
 			}
 			break;
 		case POISON:
 			removeStatus (POISON);
-			if (tryRemoveStatChange (StatusEffects.StatChange.ATKDown)) {
+			if (tryRemoveStatChange (ATKDOWN)) {
 				modifyAtk (true);
 			}
 			break;
@@ -256,6 +274,45 @@ public class CharacterStats : StatusEffects {
 				break;
 			case BURN:
 				// 8% DoT & p atk down
+//				if (this.statusTurnCounter [BURN] > 0) {
+//					modifyHP (-0.08f);
+//				}
+				break;
+			case POISON:
+				// 10% DoT & m atk down
+//				if (this.statusTurnCounter [BURN] > 0) {
+//					modifyHP (-0.1f);
+//				}
+				break;
+			case STUN:
+				// Can't act for x turns
+				this.canAct = false;
+				break;
+			case SILENCE:
+				// Can't cast spells for x turns. Can still use skills
+				this.canCastSpells = false;
+				break;
+			default:
+				Debug.Log ("Affliction not valid");
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Check this characters status afflictions. This method is meant to be executed at the end of each of
+	 * this character's turns.
+	 */ 
+	public void resolveStatusAfflictions() {
+		bool[] afflictions = getStatusAfflictions();
+		for(int i = 0; i < afflictions.Length; i++) {
+			// Check status afflictions and do action depending on the affliction
+			switch (i) {
+			case BOG:
+				//Nothing planned atm for this status effect. Only SPDDown atm.
+				break;
+			case BURN:
+				// 8% DoT & p atk down
 				if (this.statusTurnCounter [BURN] > 0) {
 					modifyHP (-0.08f);
 				}
@@ -268,11 +325,15 @@ public class CharacterStats : StatusEffects {
 				break;
 			case STUN:
 				// Can't act for x turns
-				this.canAct = false;
+				if(this.statusTurnCounter[STUN] > 0) {
+					this.statusTurnCounter[STUN] -= 1;
+					if(this.statusTurnCounter[STUN] == 0) {
+						tryRemoveStatus (STUN);
+					}
+				}
 				break;
 			case SILENCE:
 				// Can't cast spells for x turns. Can still use skills
-				this.canCastSpells = false;
 				break;
 			default:
 				Debug.Log ("Affliction not valid");

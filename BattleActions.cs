@@ -6,6 +6,8 @@ public class BattleActions : MonoBehaviour {
 
 	public enum Action { Attack, Defend, UseItem };
 
+	// action menu that loops around to beginning
+
 	private Action currentAction;
 	private int atk;
 	private ElementalAffinity.Element element = ElementalAffinity.Element.None;

@@ -7,6 +7,7 @@ using UnityEngine;
 public class Character : CharacterStats, IComparable {
 
 	private BattleActions currentBattleActions;
+	private int partySlot = 0;
 
 	// Use this for initialization
 	void Start () {
@@ -22,16 +23,20 @@ public class Character : CharacterStats, IComparable {
 		return this.currentBattleActions;
 	}
 
+	public void setPartySlot(int slot) {
+		this.partySlot = slot;
+	}
+
 	/**
 	 * Compare to method that helps sort units by speed.
 	 */ 
-	public int CompareTo(object obj) {
+	int IComparable.CompareTo(object obj) {
 		if (obj == null) {
 			return 1;
 		} 
 		Character otherCharacter = obj as Character;
 		if(otherCharacter != null) {
-			return this.currentSpd.CompareTo(otherCharacter.currentSpd);
+			return this.currentSpd - otherCharacter.currentSpd;
 		} else {
 			throw new ArgumentException("Object is not a Character...");
 		}
@@ -39,5 +44,9 @@ public class Character : CharacterStats, IComparable {
 
 	public bool canCharacterAct() {
 		return this.canAct;
+	}
+		
+	public int getPartySlot() {
+		return this.partySlot;
 	}
 }

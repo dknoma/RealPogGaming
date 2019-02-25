@@ -3,11 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MaxHeap : MonoBehaviour {
+public class MaxHeap {
 	
 	private IComparable[] heap; // the array to store the sorting
 	private int maxIndex; 		// the highest index of the sublist of the array
 	private int lowIndex; 		// lowest index of the sublist of the array
+	private int heapSize;
 
 	/**
 	 * Constructor
@@ -19,6 +20,7 @@ public class MaxHeap : MonoBehaviour {
 		this.heap = array;
 		this.maxIndex = highindex;
 		this.lowIndex = lowindex;
+		this.heapSize = this.heap.Length;
 	}
 
 	/** 
@@ -96,10 +98,6 @@ public class MaxHeap : MonoBehaviour {
 			swap(lowIndex, lowIndex +1);
 		}
 	}
-		
-	public IComparable[] getHeap() {
-		return this.heap;
-	}
 
 	/** 
 	 * Push the value down the sorting if it does not satisfy the sorting property
@@ -122,5 +120,13 @@ public class MaxHeap : MonoBehaviour {
 			swap(position, largestchild);
 			position = largestchild;
 		}
+	}
+
+	public IComparable get(int index) {
+		return this.heap[index];
+	}
+
+	public int size() {
+		return this.heapSize;
 	}
 }
