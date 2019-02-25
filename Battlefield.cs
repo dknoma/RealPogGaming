@@ -147,44 +147,27 @@ public class Battlefield : MonoBehaviour {
 //		this.battleOver = true;
 	}
 
+	/*** Methods that determine poll rate of inputs ***/
 	IEnumerator waitForInput() {
-//		while(!this.isPressed) {
-//			if(Input.GetAxisRaw("Horizontal") != 0) {
-//				this.isPressed = true;
-//				Debug.Log ("Action has occurred.");
-//			}
-//			yield return null;
-////			break;
-		//		}
-//		this.isPressed = false;
-		//		Debug.Log("axx: " + Input.GetAxisRaw("Horizontal"));
-//		if(this.isPressed) {
-//		yield return new WaitUntil (() => Input.GetAxisRaw ("Horizontal") == 0);
 		this.isPressed = false;
-//			yield return new WaitForSeconds (0.75f);
-//		}
 		StartCoroutine(waitForButtonReset());
 		yield return new WaitUntil(() => this.isPressed && this.canBePressed);
-//		yield return new WaitForSeconds (0.75f);
-//		yield return new WaitUntil(() => Input.GetAxisRaw("Horizontal") != 0 && !isPressed);
-//		this.isPressed = true;
 		this.finishedActionPhase = true;
-//		Debug.Log ("Action has occurred.");
 	}
 
 	IEnumerator waitForButtonReset() {
 		if(this.canBePressed) {
 			this.canBePressed = false;
-//			yield return new WaitUntil (() => Input.GetAxisRaw ("Horizontal") == 0);
-			yield return new WaitForSeconds (0.5f);
+			yield return new WaitForSecondsRealtime(0.4f);
+			yield return new WaitUntil (() => Input.GetAxisRaw ("Horizontal") == 0);
 			this.isPressed = false;
 			this.canBePressed = true;
 
 		}
 		yield return new WaitUntil (() => Input.GetAxisRaw ("Horizontal") != 0);
 		this.isPressed = true;
-//		this.canBePressed = false;
 	}
+	/**************************************************/
 
 	// TODO: Debug to end battle phase
 	public void endBattle(WinStatus winStatus) {
