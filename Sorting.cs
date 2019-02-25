@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public static class Sorting {
-	
+
+	// Descending order sort. Useful for checking who has a greater stat
 	public static void descendingMergeSort(List<GameObject> list, IComparer customComparer) {
 		List<GameObject> temp = new List<GameObject> (new GameObject[list.Count]);
 		//loop 2^i times, inc m which is how many times we merge
@@ -33,23 +34,19 @@ public static class Sorting {
 		int j = mid + 1;
 		while (k <= high) {
 			if (i > mid) {                  // ran out of elements in the i sublist
-				Debug.Log ("\tRan out of ele in i sublist.");
 				temp [k] = list [j];
 				k++;
 				j++;
 			} else if (j > high) {          // ran out of elements in the j sublist
-				Debug.Log ("\tRan out of ele in j sublist");
 				temp [k] = list [i];
 				k++;
 				i++;
 			} else if (customComparer.Compare(list [i], (list [j])) > 0) { // place list[i] in temp, move i
-				Debug.Log ("\tplace list[i] in temp, move i");
 				temp [k] = list [i];
 				k++;
 				i++;
 			} else {
 				temp [k] = list [j];           // place list[j] in temp, move j
-				Debug.Log ("\tPlace list[j] in temp, move j");
 				k++;
 				j++;
 			}
@@ -89,23 +86,19 @@ public static class Sorting {
 		int j = mid + 1;
 		while (k <= high) {
 			if (i > mid) {                  // ran out of elements in the i sublist
-				Debug.Log ("\tRan out of ele in i sublist.");
 				temp [k] = arr [j];
 				k++;
 				j++;
 			} else if (j > high) {          // ran out of elements in the j sublist
-				Debug.Log ("\tRan out of ele in j sublist");
 				temp [k] = arr [i];
 				k++;
 				i++;
 			} else if (arr [i].CompareTo(arr [j]) > 0) { // place list[i] in temp, move i
-				Debug.Log ("\tplace list[i] in temp, move i");
 				temp [k] = arr [i];
 				k++;
 				i++;
 			} else {
 				temp [k] = arr [j];           // place list[j] in temp, move j
-				Debug.Log ("\tPlace list[j] in temp, move j");
 				k++;
 				j++;
 			}

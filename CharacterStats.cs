@@ -44,8 +44,8 @@ public class CharacterStats : StatusEffects {
 //	private StatusEffects characterStatus = new StatusEffects();
 	private int[] statusTurnCounter;
 	private int[] statChangeTurnCounter;
-	protected bool canAct = true;
-	protected bool canCastSpells = true;
+	protected bool canAct;
+	protected bool canCastSpells;
 
 	// Status effect constants
 	protected const int BOG = (int) StatusEffects.Status.Bog;
@@ -71,6 +71,8 @@ public class CharacterStats : StatusEffects {
 		this.currentSpd = this.baseSpd;
 		this.statusTurnCounter = new int[getStatusAfflictions().Length];
 		this.statChangeTurnCounter = new int[getStatChangeAfflictions().Length];
+		this.canAct = true;
+		this.canCastSpells = true;
 	}
 
 	/******
@@ -286,11 +288,15 @@ public class CharacterStats : StatusEffects {
 				break;
 			case STUN:
 				// Can't act for x turns
-				this.canAct = false;
+				if(afflictions[STUN]) {
+					this.canAct = false;
+				}
 				break;
 			case SILENCE:
 				// Can't cast spells for x turns. Can still use skills
-				this.canCastSpells = false;
+				if(afflictions[SILENCE]) {
+					this.canCastSpells = false;
+				}
 				break;
 			default:
 				Debug.Log ("Affliction not valid");

@@ -7,6 +7,7 @@ public class GameMaster : MonoBehaviour {
 	// Use a queue to insert character actions
 	//		Resets every turn; turns determined when actionqueue is empty
 	private Battlefield battle;
+	private bool battleInProgress = false;
 
 	void Start () {
 		this.battle = transform.GetComponentInChildren<Battlefield> ();
@@ -14,12 +15,15 @@ public class GameMaster : MonoBehaviour {
 
 	void Update () {
 		if(Input.GetButtonDown("Fire1")) {
-			this.battle.InitBattle ();
-			Debug.Log ("End");
+			if (!this.battleInProgress) {
+				this.battleInProgress = true;
+				this.battle.InitBattle ();
+				Debug.Log ("End");
+			}
 		}
 		if(Input.GetButtonDown("Fire2")) {
-//			this.battle.endBattle (Battlefield.WinStatus.Escape);
-			this.battle.debugList();
+			this.battle.endBattle (Battlefield.WinStatus.Escape);
+			this.battleInProgress = false;
 			Debug.Log ("End");
 		}
 	}

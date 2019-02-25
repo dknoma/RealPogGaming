@@ -12,118 +12,110 @@ public class Battlefield : MonoBehaviour {
 	private Queue actionQueueUI = new Queue();
 	private Party party;
 	// List of units to be part of the battle
-//		private List<CharacterToSort> units = new List<CharacterToSort>();
-	//	private List<Character> units = new List<Character>();
 	private List<GameObject> units = new List<GameObject>();
-//	private MaxHeap unitHeap;
 	private GameObject currentUnit;
 	private int numUnits;
 	private int expToGive = 0;
 
-	private bool battleOver = false;
+	public bool battleOver = false;
+	private bool isPressed = false;
+	private bool canBePressed = true;
+	private bool finishedStatusPhase = false;
+	private bool finishedActionPhase = false;
+	private bool finishedBattlePhase = false;
+	private bool finishedResolve = false;
+	private bool finishedTurn = false;
 
 	void Start() {
 		this.party = transform.parent.GetComponentInChildren<Party>();
 		this.party.initPartyMembers ();
 	}
 
+	public bool battleFinished() {
+		return this.battleOver;
+	}
+
 	// Use this for initialization
 	public void InitBattle () {
-//		this.party = transform.parent.GetComponentInChildren<Party>();
-//		this.units = new List<CharacterToSort> ();
-		//		this.units = new List<Character> ();
 		this.units = new List<GameObject> ();
 		addPartyToList();
 		addEnemiesToList();
 		this.numUnits = this.units.Count;
 		Debug.Log ("number of units: " + this.numUnits);
-		//		this.unitHeap = new MaxHeap(this.units.ToArray(), 0, this.numUnits-1);
-
-		string[] strings = { "a", "c", "b"};
-		Sorting.mergeSort (strings);
-		debugList (strings);
-		debugList ();
-		Sorting.descendingMergeSort (this.units, new CompareCharacters());
-		debugList ();
-//		CharacterToSort[] characters = Sorting.mergeSort(this.units.ToArray()) as CharacterToSort[];
-		//		Character[] characters = Sorting.mergeSort(this.units.ToArray()) as Character[];
-//		Character[] characters = Sorting.descendingMergeSort(this.units.ToArray()) as Character[];
-//		debugList (characters);
-//		startBattle ();
+		StartCoroutine(startBattle ());
 	}
 
-
-	public void debugList(object[] array) {
-		for(int i = 0; i < array.Length; i++) {
-			Debug.Log ("thing: " + array[i]);
-		}
-	}
-
-	public void debugList(Character[] array) {
-		for(int i = 0; i < array.Length; i++) {
-			Character character = array[i];
-			Debug.Log ("Char: " + character.name);
-		}
-	}
-
-	public void debugList() {
-		for(int i = 0; i < this.units.Count; i++) {
-			GameObject character = this.units[i];
-			Debug.Log ("Char: " + character.name);
-		}
-	}
-//	public void debugList() {
-//		for(int i = 0; i < this.units.Count; i++) {
-//			CharacterToSort character = this.units[i] as CharacterToSort;
-//			Debug.Log ("Char: " + character);
-//		}
-//	}
-//	public void debugList() {
-//		for(int i = 0; i < this.units.Count; i++) {
-//			Character character = this.units[i] as Character;
-//			Debug.Log ("Char: " + character.name);
-//		}
-//	}
-
-	private void startBattle() {
+	private IEnumerator startBattle() {
 		// Can add things here if need things to happen before a battle starts.
 		// startEvent(); // Event class takes care of events that happen before a battle.
 		// While battle isnt over, take turns
 		while(!battleOver) {
 			Debug.Log ("Action.");
-//			calculatePriority ();
-			startTurns ();
+			calculatePriority ();
+			Debug.Log ("Queue size: " + this.actionQueue.Count);
+	//			startTurns ();
+			StartCoroutine (startTurns ());
+			this.finishedTurn = false;
+			StartCoroutine (finishTurn ());
+			yield return new WaitUntil(() => this.finishedTurn);
 		}
 		Debug.Log ("Battle over.");
 		this.battleOver = false;
 	}
 
-	private void startTurns() {
-		//
+	private IEnumerator finishTurn() {
+		yield return new WaitUntil(() => this.finishedStatusPhase && this.finishedActionPhase &&
+			this.finishedBattlePhase && this.finishedResolve);
+		this.finishedTurn = true;
+	}
+
+	private IEnumerator startTurns() {
+//	private void startTurns() {
+//		while(this.actionQueue.Count > 0 && this.battleOver == false) {
+//			takeTurn ();
+//			yield return null;
+//		}
 		while(this.actionQueue.Count > 0) {
 			takeTurn ();
+			this.finishedTurn = false;
+			StartCoroutine (finishTurn ());
+			yield return new WaitUntil(() => this.finishedTurn);
 		}
 		// TODO: Debug so unity doesnt crash
-		this.battleOver = true;
+//		while(this.battleOver == false) {
+//			yield return null;
+//		}
+//		yield return new WaitUntil(() => this.battleOver);
 	}
 
 	public void takeTurn() {
+		Debug.Log ("Units in queue: " + this.actionQueue.Count);
 		this.currentUnit = this.actionQueue.Dequeue() as GameObject;
+		Debug.Log ("Starting " + this.currentUnit.name + "'s turn.");
+		//		battlePhase ();
+		//		resolveTurn ();
 		statusPhase ();
-		actionPhase ();
-		battlePhase ();
-		resolveTurn ();
+		StartCoroutine(actionPhase ());
+		StartCoroutine(battlePhase ());
+		StartCoroutine(resolveTurn ());
 	}
 
 	public void statusPhase() {
 		// Check status of current unit before it acts
+		this.finishedStatusPhase = false;
 		this.currentUnit.GetComponent<Character>().checkStatusAfflictions();
+		this.finishedStatusPhase = true;
 	}
 
-	public void actionPhase() {
+	public IEnumerator actionPhase() {
 		// Start of turn
 		// Check if unit can act before acting
+		yield return new WaitUntil(() => this.finishedStatusPhase);
+		this.finishedActionPhase = false;
 		if(this.currentUnit.GetComponent<Character>().canCharacterAct()) {
+//			Debug.Log ("Units left in queue: " + this.actionQueue.Count);
+			StartCoroutine (waitForInput ());
+			yield return new WaitUntil (() => this.finishedActionPhase);
 			// Check if party member or enemy
 			// If party member, Choose action
 				//	attack
@@ -139,13 +131,59 @@ public class Battlefield : MonoBehaviour {
 		}
 	}
 
-	public void battlePhase() {
+	public IEnumerator battlePhase() {
 		// When action is chosen, do stuff
-
+		this.finishedBattlePhase = false;
+		yield return new WaitUntil (() => this.finishedActionPhase);
+		// Do stuff once previous phase is finished
+		this.finishedBattlePhase = true;
 	}
 
-	public void resolveTurn() {
-		
+	public IEnumerator resolveTurn() {
+		this.finishedResolve = false;
+		yield return new WaitUntil (() => this.finishedBattlePhase);
+		// Do stuff once previous phase is finished
+		this.finishedResolve = true;
+//		this.battleOver = true;
+	}
+
+	IEnumerator waitForInput() {
+//		while(!this.isPressed) {
+//			if(Input.GetAxisRaw("Horizontal") != 0) {
+//				this.isPressed = true;
+//				Debug.Log ("Action has occurred.");
+//			}
+//			yield return null;
+////			break;
+		//		}
+//		this.isPressed = false;
+		//		Debug.Log("axx: " + Input.GetAxisRaw("Horizontal"));
+//		if(this.isPressed) {
+//		yield return new WaitUntil (() => Input.GetAxisRaw ("Horizontal") == 0);
+		this.isPressed = false;
+//			yield return new WaitForSeconds (0.75f);
+//		}
+		StartCoroutine(waitForButtonReset());
+		yield return new WaitUntil(() => this.isPressed && this.canBePressed);
+//		yield return new WaitForSeconds (0.75f);
+//		yield return new WaitUntil(() => Input.GetAxisRaw("Horizontal") != 0 && !isPressed);
+//		this.isPressed = true;
+		this.finishedActionPhase = true;
+//		Debug.Log ("Action has occurred.");
+	}
+
+	IEnumerator waitForButtonReset() {
+		if(this.canBePressed) {
+			this.canBePressed = false;
+//			yield return new WaitUntil (() => Input.GetAxisRaw ("Horizontal") == 0);
+			yield return new WaitForSeconds (0.5f);
+			this.isPressed = false;
+			this.canBePressed = true;
+
+		}
+		yield return new WaitUntil (() => Input.GetAxisRaw ("Horizontal") != 0);
+		this.isPressed = true;
+//		this.canBePressed = false;
 	}
 
 	// TODO: Debug to end battle phase
@@ -166,8 +204,6 @@ public class Battlefield : MonoBehaviour {
 		List<GameObject> partyMembers = this.party.getPartyMembers();
 		foreach(GameObject member in partyMembers) {
 			this.units.Add (member);
-//			this.units.Add (member.GetComponent<Character> ());
-//			this.units.Add(new CharacterToSort(member.name, member.GetComponent<Character>().getCurrentSpd()));
 		}
 	}
 
@@ -177,8 +213,6 @@ public class Battlefield : MonoBehaviour {
 		for(int i = 0; i < enemyCount; i++) {
 			GameObject enemy = enemyPool.transform.GetChild (i).gameObject;
 			this.units.Add (enemy);
-//			this.units.Add (enemy.GetComponent<Character> ());
-//			this.units.Add(new CharacterToSort(enemy.name, enemy.GetComponent<Character>().getCurrentSpd()));
 		}
 	}
 
@@ -195,7 +229,7 @@ public class Battlefield : MonoBehaviour {
 	 */ 
 	private void calculatePriority() {
 		// Sor the units based on speed
-//		Sorting.mergeSort(this.units, new CompareCharacters());
+		Sorting.descendingMergeSort (this.units, new CompareCharactersBySpeed());
 		// Add unit to the queue
 		for(int i = 0; i < this.units.Count; i++) {
 			this.actionQueue.Enqueue(this.units[i]);
@@ -216,43 +250,11 @@ public class Battlefield : MonoBehaviour {
 //		}
 	}
 
-//	private class CharacterToSort : IComparable {
-//
-//		private string characterName;
-//		private int currentSpeed;
-//
-//		public CharacterToSort(string name, int currentSpd) {
-//			this.characterName = name;
-//			this.currentSpeed = currentSpd;
-//		}
-//
-//		/**
-//		 * Compare to method that helps sort units by speed.
-//		 */ 
-//		int IComparable.CompareTo(object obj) {
-//			if (obj == null) {
-//				return 1;
-//			} 
-//			CharacterToSort otherCharacter = obj as CharacterToSort;
-//			if(otherCharacter != null) {
-//				return this.currentSpeed - otherCharacter.currentSpeed;
-//			} else {
-//				throw new ArgumentException("Object is not a Character...");
-//			}
-//		}
-//
-//		public override string ToString() {
-//			return "Name: " + this.characterName + ", current speed: " + this.currentSpeed;
-//		}
-//	}
-
 	// Custom comparer for character game objects
-	private class CompareCharacters : IComparer {
+	private class CompareCharactersBySpeed : IComparer {
 		int IComparer.Compare(object x, object y) {
 			GameObject src = x as GameObject;
 			GameObject target = y as GameObject;
-//			Debug.Log ("src spd: " + src.GetComponent<Character>().getCurrentSpd() + 
-//				", target spd: " + target.GetComponent<Character>().getCurrentSpd());
 			return src.GetComponent<Character>().getCurrentSpd() - target.GetComponent<Character>().getCurrentSpd();
 		}
 	}
