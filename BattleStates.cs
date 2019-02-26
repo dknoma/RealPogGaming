@@ -23,6 +23,7 @@ public class BattleStates : MonoBehaviour {
 	private GameObject currentUnit;
 	private int numUnits;
 	private int expToGive = 0;
+	private bool fastestFirst = true;
 
 	public bool battleOver = false;
 	private bool directionIsPressed = false;
@@ -38,7 +39,7 @@ public class BattleStates : MonoBehaviour {
 	private bool finishedResolve = false;
 	private bool finishedTurn = false;
 
-	private List<int> testOptions = new List<int> ();	// Get options from units Character component
+	private Menu<int> testMenu;	// Get options from units Character component
 	private int currentOption = 0;
 
 	private Direction currentDirection;
@@ -55,14 +56,25 @@ public class BattleStates : MonoBehaviour {
 	private Coroutine directionRoutine;
 	private Coroutine directionResetRoutine;
 
+	private void testMultiAxisMenu() {
+		int width = 5;
+		int height = 3;
+		this.testMenu = new Menu<int> (width, height, Menu<int>.Type.Both);
+		this.testMenu.initMATestMenu (new int[width, height]);
+	}
+
+	private void testSingleAxisMenu() {
+		int testSize = 5;
+		this.testMenu = new Menu<int> (testSize, Menu<int>.Type.Horizontal);
+		this.testMenu.initSATestMenu (new int[testSize]);
+	}
+
 	void Start() {
 		this.party = transform.parent.GetComponentInChildren<Party>();
 		this.party.initPartyMembers ();
 
-		// init test options
-		for(int i = 0; i < 5; i++) {
-			this.testOptions.Add (i);
-		}
+		testMultiAxisMenu ();
+//		testSingleAxisMenu ();
 
 //		this.startBattleRoutine = startBattle ();
 //		this.startTurnRoutine = startTurns ();
@@ -96,7 +108,7 @@ public class BattleStates : MonoBehaviour {
 		// While the battle isnt over, do another round of turns
 		while(!battleOver) {
 			Debug.Log ("Action.");
-			calculatePriority ();
+			calculatePriority (this.fastestFirst);
 //			Debug.Log ("Queue size: " + this.turnQueue.Count);
 //			StartCoroutine (this.startTurnRoutine);
 			this.startTurnRoutine = StartCoroutine(startTurns());
@@ -251,20 +263,22 @@ public class BattleStates : MonoBehaviour {
 		switch(this.currentDirection) {
 		case Direction.Up:
 			Debug.Log ("Up");
+			this.testMenu.traverseTestMenu ((int) this.currentDirection);
 			break;
 		case Direction.Down:
 			Debug.Log ("Down");
+			this.testMenu.traverseTestMenu ((int) this.currentDirection);
 			break;
 		case Direction.Left:
 			Debug.Log ("Left");
-			traverseTestMenu (this.currentDirection);
+			this.testMenu.traverseTestMenu ((int) this.currentDirection);
 			break;
 		case Direction.Right:
 			Debug.Log ("Right");
-			traverseTestMenu (this.currentDirection);
+			this.testMenu.traverseTestMenu ((int) this.currentDirection);
 			break;
 		}
-		Debug.Log ("Current option: " + this.currentOption);
+//		Debug.Log ("Current option: " + this.currentOption);
 //		resetButtonInputs ();
 		this.finishedUnitAction = true;
 	}
@@ -277,11 +291,17 @@ public class BattleStates : MonoBehaviour {
 			this.directionIsPressed = false;
 			this.directionCanBePressed = true;
 		}
-		yield return new WaitUntil (() => Input.GetAxisRaw ("Horizontal") > 0 || Input.GetAxisRaw ("Horizontal") < 0);
+		yield return new WaitUntil (() => Input.GetAxisRaw ("Horizontal") > 0 || Input.GetAxisRaw ("Horizontal") < 0
+			|| Input.GetAxisRaw ("Vertical") > 0 || Input.GetAxisRaw ("Vertical") < 0);
+//		yield return new WaitUntil (() => Input.GetAxisRaw ("Horizontal") > 0 || Input.GetAxisRaw ("Horizontal") < 0);
 		if(Input.GetAxisRaw ("Horizontal") > 0) {
 			this.currentDirection = Direction.Right;
 		} else if(Input.GetAxisRaw ("Horizontal") < 0) {
 			this.currentDirection = Direction.Left;
+		} else if(Input.GetAxisRaw ("Vertical") > 0) {
+			this.currentDirection = Direction.Up;
+		} else if(Input.GetAxisRaw ("Vertical") < 0) {
+			this.currentDirection = Direction.Down;
 		}
 		this.directionIsPressed = true;
 	}
@@ -290,13 +310,13 @@ public class BattleStates : MonoBehaviour {
 	 **************************************************
 	 **************************************************/
 
-	private void traverseTestMenu(Direction direction) {
-		if(direction == Direction.Right) {
-			this.currentOption = (this.currentOption + 1) % this.testOptions.Count;
-		} else if (direction == Direction.Left) {
-			this.currentOption = (this.currentOption + this.testOptions.Count-1) % this.testOptions.Count;
-		}
-	}
+//	private void traverseTestMenu(Direction direction) {
+//		if(direction == Direction.Right) {
+//			this.currentOption = (this.currentOption + 1) % this.testOptions.Count;
+//		} else if (direction == Direction.Left) {
+//			this.currentOption = (this.currentOption + this.testOptions.Count-1) % this.testOptions.Count;
+//		}
+//	}
 
 	/**************************************************
 	 **************************************************
@@ -394,9 +414,13 @@ public class BattleStates : MonoBehaviour {
 	/**
 	 * Sort the characters by their speeds, then enqueue them into the action queue.
 	 */ 
-	private void calculatePriority() {
+	private void calculatePriority(bool fastestFirst) {
 		// Sor the units based on speed
-		Sorting.descendingMergeSort (this.units, new CompareCharactersBySpeed());
+		if (fastestFirst) {
+			Sorting.descendingMergeSort (this.units, new CompareCharactersBySpeed ());
+		} else {
+			Sorting.mergeSort (this.units, new CompareCharactersBySpeed ());
+		}
 		// Add unit to the queue
 		for(int i = 0; i < this.units.Count; i++) {
 			this.turnQueue.Enqueue(this.units[i]);
