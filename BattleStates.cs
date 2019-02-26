@@ -265,19 +265,19 @@ public class BattleStates : MonoBehaviour {
 		switch(this.currentDirection) {
 		case Direction.Up:
 			Debug.Log ("Up");
-			this.testMenu.traverseTestMenu ((int) this.currentDirection);
+			this.testMenu.traverseOptions ((int) this.currentDirection);
 			break;
 		case Direction.Down:
 			Debug.Log ("Down");
-			this.testMenu.traverseTestMenu ((int) this.currentDirection);
+			this.testMenu.traverseOptions ((int) this.currentDirection);
 			break;
 		case Direction.Left:
 			Debug.Log ("Left");
-			this.testMenu.traverseTestMenu ((int) this.currentDirection);
+			this.testMenu.traverseOptions ((int) this.currentDirection);
 			break;
 		case Direction.Right:
 			Debug.Log ("Right");
-			this.testMenu.traverseTestMenu ((int) this.currentDirection);
+			this.testMenu.traverseOptions ((int) this.currentDirection);
 			break;
 		}
 //		Debug.Log ("Current option: " + this.currentOption);
