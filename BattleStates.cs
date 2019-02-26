@@ -60,13 +60,15 @@ public class BattleStates : MonoBehaviour {
 		int width = 5;
 		int height = 3;
 		this.testMenu = new Menu<int> (width, height, Menu<int>.Type.Both);
-		this.testMenu.initMATestMenu (new int[width, height]);
+		this.testMenu.initTestMenu (new int[width*height]);
+//		this.testMenu.initMATestMenu (new int[width, height]);
 	}
 
 	private void testSingleAxisMenu() {
 		int testSize = 5;
 		this.testMenu = new Menu<int> (testSize, Menu<int>.Type.Horizontal);
-		this.testMenu.initSATestMenu (new int[testSize]);
+		this.testMenu.initTestMenu (new int[testSize]);
+//		this.testMenu.initSATestMenu (new int[testSize]);
 	}
 
 	void Start() {
