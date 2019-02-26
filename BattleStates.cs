@@ -57,8 +57,8 @@ public class BattleStates : MonoBehaviour {
 	private Coroutine directionResetRoutine;
 
 	private void testMultiAxisMenu() {
-		int width = 5;
-		int height = 3;
+		int width = 6;
+		int height = 10;
 		this.testMenu = new Menu<int> (width, height, Menu<int>.Type.Both);
 		this.testMenu.initTestMenu (new int[width*height]);
 //		this.testMenu.initMATestMenu (new int[width, height]);

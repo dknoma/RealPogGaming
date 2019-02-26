@@ -88,10 +88,6 @@ public class Menu<T> {
 				} else {
 					this.currentOptionIndex = rightNeighbor;
 				}
-//				return rightNeighbor < 0 ?
-//					this.currentOptionIndex = calculateMoveRight()
-//						: rightNeighbor;
-//				this.currentOptionIndex = calculateMoveRight()
 			} else if (direction == (int) Direction.Left) {
 				int leftNeighbor = this.neighborOptions [this.currentOptionIndex].leftNeighbor;
 				if(leftNeighbor < 0) {
@@ -101,7 +97,6 @@ public class Menu<T> {
 				} else {
 					this.currentOptionIndex = leftNeighbor;
 				}
-//				this.currentOptionIndex = calculateMoveLeft ();
 			} else  if (direction == (int) Direction.Down) {
 				int bottomNeighbor = this.neighborOptions [this.currentOptionIndex].bottomNeighbor;
 				if(bottomNeighbor < 0) {
@@ -111,17 +106,15 @@ public class Menu<T> {
 				} else {
 					this.currentOptionIndex = bottomNeighbor;
 				}
-//				this.currentOptionIndex = (this.currentOptionIndex + this.width) % this.size;
 			} else if (direction == (int) Direction.Up) {
 				int topNeighbor = this.neighborOptions [this.currentOptionIndex].topNeighbor;
 				if(topNeighbor < 0) {
-					int newNeighbor = (this.currentOptionIndex + (this.width*2)) % this.size;
+					int newNeighbor = (this.currentOptionIndex + (this.size-this.width)) % this.size;
 					this.neighborOptions [this.currentOptionIndex].topNeighbor = newNeighbor;
 					this.currentOptionIndex = newNeighbor;
 				} else {
 					this.currentOptionIndex = topNeighbor;
 				}
-//				this.currentOptionIndex = (this.currentOptionIndex + (this.width*2)) % this.size;
 			}
 			break;
 		}
@@ -130,7 +123,6 @@ public class Menu<T> {
 
 	private int calculateMoveRight() {
 		int firstRowIndex = getFirstIndexOfRow ();
-		Debug.Log ("rowCorrection: " + firstRowIndex);
 		return this.currentOptionIndex < (this.width-1 + firstRowIndex) 
 			// if not the last option in the row
 			? ((this.currentOptionIndex + (((int)Mathf.Floor (this.currentOptionIndex / this.width)+1)*firstRowIndex) + 1) % (this.width + firstRowIndex))
@@ -140,8 +132,6 @@ public class Menu<T> {
 
 	private int calculateMoveLeft() {
 		int firstRowIndex = getFirstIndexOfRow ();
-		Debug.Log ("rowCorrection: " + firstRowIndex);
-		Debug.Log("adad: " + (this.width * (firstRowIndex/this.width)+1));
 		return this.currentOptionIndex == 0 || this.currentOptionIndex > firstRowIndex
 			// if not the first option in the row
 			? (this.currentOptionIndex + (this.width-1 + firstRowIndex)) % (this.width + firstRowIndex)
@@ -152,6 +142,11 @@ public class Menu<T> {
 	// Gets the first index in the current options row
 	private int getFirstIndexOfRow() {
 		int first = (this.width * (int)Mathf.Floor (this.currentOptionIndex / this.width));
+		return first;
+	}
+
+	private int getFirstIndexOfColumn() {
+		int first = this.currentOptionIndex % this.width;
 		return first;
 	}
 
