@@ -20,15 +20,19 @@ public class CharacterStats : StatusEffects {
 	[SerializeField]
 	protected int maxHP = 20;
 	protected int currentHP;
+	protected int totalRuneHP = 0;
 	[SerializeField]
 	protected int baseAtk = 5;
 	protected int currentAtk;
+	protected int totalRuneAtk = 0;
 	[SerializeField]
 	protected int baseDef = 5;
 	protected int currentDef;
+	protected int totalRuneDef = 0;
 	[SerializeField]
 	protected int baseSpd = 5;
 	protected int currentSpd;
+	protected int totalRuneSpd = 0;
 
 //	private int basePAtk = 5;
 //	public int currentPAtk = basePAtk;
@@ -42,15 +46,18 @@ public class CharacterStats : StatusEffects {
 
 
 //	private StatusEffects characterStatus = new StatusEffects();
-	private int[] statusTurnCounter;
-	private int[] statChangeTurnCounter;
+	protected int[] statusTurnCounter;
+	protected int[] statChangeTurnCounter;
+	protected bool disableRunes = false;
 	protected bool canAct;
 	protected bool canCastSpells;
+	protected bool hasStatusAffliction = false;
 
 	// Status effect constants
 	protected const int BOG = (int) StatusEffects.Status.Bog;
 	protected const int BURN = (int) StatusEffects.Status.Burn;
 	protected const int POISON = (int) StatusEffects.Status.Poison;
+	protected const int RUNE_LOCK = (int) StatusEffects.Status.RuneLock;
 	protected const int STUN = (int) StatusEffects.Status.Stun;
 	protected const int SILENCE = (int) StatusEffects.Status.Silence;
 
@@ -130,10 +137,11 @@ public class CharacterStats : StatusEffects {
 	 * Status effects
 	 */
 	public bool tryStatusAffliction(int status, int turnsToAfflict) {
-		if(!doesResistStatus(status) && !afflictedByStatus(status)) {
+		if(!doesResistStatus(status) && !hasStatusAffliction && !afflictedByStatus(status)) {
 			// TODO: afflict the state
 			afflictStatus(status);
 			this.statusTurnCounter[status] = turnsToAfflict;
+			this.hasStatusAffliction = true;
 			return true;
 		}
 		return false;
@@ -214,6 +222,9 @@ public class CharacterStats : StatusEffects {
 					Debug.Log("Already afflicted by magical attack down...");
 				}
 				break;
+			case RUNE_LOCK:
+				this.disableRunes = true;
+				break;
 			case STUN:
 				this.canAct = false;
 				break;
@@ -221,6 +232,7 @@ public class CharacterStats : StatusEffects {
 				this.canCastSpells = false;
 				break;
 			}
+			this.hasStatusAffliction = true;
 		} else {
 			Debug.Log("Already afflicted with status " + status);
 		}
@@ -232,33 +244,100 @@ public class CharacterStats : StatusEffects {
 	public void removeAffliction(int status) {
 		switch (status) {
 		case BOG:
+			if(tryRemoveStatus(BOG)) {
+				this.hasStatusAffliction = false;
+			}
 			if (tryRemoveStatChange (SPDDOWN)) {
 				modifySpd (true);// Only need to happen once, not every turn
 			}
-			removeStatus(BOG);
 			break;
 		case BURN:
 			modifyAtk (true); // Only need to happen once, not every turn
-			removeStatus(BURN);
+			if(tryRemoveStatus(BURN)){
+				this.hasStatusAffliction = false;
+			}
 			// Tries to remove atk down if not afflicted with a stat change removal resist
 			if (tryRemoveStatChange (ATKDOWN)) {
 				modifyAtk (true);// Only need to happen once, not every turn
 			}
 			break;
 		case POISON:
-			removeStatus (POISON);
+			if(tryRemoveStatus (POISON)){
+				this.hasStatusAffliction = false;
+			}
 			if (tryRemoveStatChange (ATKDOWN)) {
 				modifyAtk (true);
 			}
 			break;
+		case RUNE_LOCK:
+			if(tryRemoveStatus(STUN)) {
+				this.hasStatusAffliction = false;
+				this.disableRunes = false;
+			}
+			break;
 		case STUN:
-			removeStatus(STUN);
-			this.canAct = true;
+			if(tryRemoveStatus(STUN)) {
+				this.hasStatusAffliction = false;
+				this.canAct = true;
+			}
 			break;
 		case SILENCE:
-			removeStatus(SILENCE);
-			this.canCastSpells = true;
+			if(tryRemoveStatus(SILENCE)) {
+				this.hasStatusAffliction = false;
+				this.canCastSpells = true;
+			}
 			break;
+		}
+	}
+
+	public void removeAllAfflictions() {
+		for (int status = 0; status < this.afflictedStatuses.Length; status++) {
+			switch (status) {
+			case BOG:
+				if (tryRemoveStatChange (SPDDOWN)) {
+					modifySpd (true);// Only need to happen once, not every turn
+				}
+				if(tryRemoveStatus(BOG)) {
+					this.hasStatusAffliction = false;
+				}
+				break;
+			case BURN:
+				modifyAtk (true); // Only need to happen once, not every turn
+				if(tryRemoveStatus(BURN)) {
+					this.hasStatusAffliction = false;
+				}
+			// Tries to remove atk down if not afflicted with a stat change removal resist
+				if (tryRemoveStatChange (ATKDOWN)) {
+					modifyAtk (true);// Only need to happen once, not every turn
+				}
+				break;
+			case POISON:
+				if(tryRemoveStatus(POISON)) {
+					this.hasStatusAffliction = false;
+				}
+				if (tryRemoveStatChange (ATKDOWN)) {
+					modifyAtk (true);
+				}
+				break;
+			case RUNE_LOCK:
+				if(tryRemoveStatus(STUN)) {
+					this.hasStatusAffliction = false;
+					this.disableRunes = false;
+				}
+				break;
+			case STUN:
+				if(tryRemoveStatus(STUN)) {
+					this.hasStatusAffliction = false;
+				}
+				this.canAct = true;
+				break;
+			case SILENCE:
+				if(tryRemoveStatus(SILENCE)) {
+					this.hasStatusAffliction = false;
+				}
+				this.canCastSpells = true;
+				break;
+			}
 		}
 	}
 
@@ -267,8 +346,7 @@ public class CharacterStats : StatusEffects {
 	 * this character's turns.
 	 */ 
 	public void checkStatusAfflictions() {
-		bool[] afflictions = getStatusAfflictions();
-		for(int i = 0; i < afflictions.Length; i++) {
+		for(int i = 0; i < this.afflictedStatuses.Length; i++) {
 			// Check status afflictions and do action depending on the affliction
 			switch (i) {
 			case BOG:
@@ -286,15 +364,21 @@ public class CharacterStats : StatusEffects {
 //					modifyHP (-0.1f);
 //				}
 				break;
+			case RUNE_LOCK:
+				// Can't use runes for x turns
+				if(this.afflictedStatuses[RUNE_LOCK]) {
+					this.disableRunes = true;
+				}
+				break;
 			case STUN:
 				// Can't act for x turns
-				if(afflictions[STUN]) {
+				if(this.afflictedStatuses[STUN]) {
 					this.canAct = false;
 				}
 				break;
 			case SILENCE:
 				// Can't cast spells for x turns. Can still use skills
-				if(afflictions[SILENCE]) {
+				if(this.afflictedStatuses[SILENCE]) {
 					this.canCastSpells = false;
 				}
 				break;
@@ -310,8 +394,7 @@ public class CharacterStats : StatusEffects {
 	 * this character's turns.
 	 */ 
 	public void resolveStatusAfflictions() {
-		bool[] afflictions = getStatusAfflictions();
-		for(int i = 0; i < afflictions.Length; i++) {
+		for(int i = 0; i < this.afflictedStatuses.Length; i++) {
 			// Check status afflictions and do action depending on the affliction
 			switch (i) {
 			case BOG:
@@ -321,12 +404,20 @@ public class CharacterStats : StatusEffects {
 				// 8% DoT & p atk down
 				if (this.statusTurnCounter [BURN] > 0) {
 					modifyHP (-0.08f);
+					this.statusTurnCounter[BURN] -= 1;
+					if(this.statusTurnCounter[BURN] == 0) {
+						tryRemoveStatus (BURN);
+					}
 				}
 				break;
 			case POISON:
 				// 10% DoT & m atk down
-				if (this.statusTurnCounter [BURN] > 0) {
+				if (this.statusTurnCounter [POISON] > 0) {
 					modifyHP (-0.1f);
+					this.statusTurnCounter[POISON] -= 1;
+					if(this.statusTurnCounter[POISON] == 0) {
+						tryRemoveStatus (POISON);
+					}
 				}
 				break;
 			case STUN:
@@ -340,6 +431,12 @@ public class CharacterStats : StatusEffects {
 				break;
 			case SILENCE:
 				// Can't cast spells for x turns. Can still use skills
+				if(this.statusTurnCounter[SILENCE] > 0) {
+					this.statusTurnCounter[SILENCE] -= 1;
+					if(this.statusTurnCounter[SILENCE] == 0) {
+						tryRemoveStatus (SILENCE);
+					}
+				}
 				break;
 			default:
 				Debug.Log ("Affliction not valid");

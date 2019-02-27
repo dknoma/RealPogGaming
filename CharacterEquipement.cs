@@ -31,4 +31,8 @@ public class CharacterEquipement : MonoBehaviour {
 	private int totalAtk = 0;
 	private int totalDef = 0;
 	private int totalSpd = 0;
+	private int runeHP = 0;
+	private int runeAtk = 0;
+	private int runeDef = 0;
+	private int runeSpd = 0;
 }

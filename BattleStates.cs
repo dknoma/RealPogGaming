@@ -39,7 +39,7 @@ public class BattleStates : MonoBehaviour {
 	private bool finishedResolve = false;
 	private bool finishedTurn = false;
 
-	private Menu<int> testMenu;	// Get options from units Character component
+	private MenuGraph<int> testMenu;	// Get options from units Character component
 	private int currentOption = 0;
 
 	private Direction currentDirection;
@@ -59,14 +59,14 @@ public class BattleStates : MonoBehaviour {
 	private void testMultiAxisMenu() {
 		int width = 6;
 		int height = 10;
-		this.testMenu = new Menu<int> (width, height, Menu<int>.Type.Both);
+		this.testMenu = new MenuGraph<int> (width, height, MenuGraph<int>.Type.Both);
 		this.testMenu.initTestMenu (new int[width*height]);
 //		this.testMenu.initMATestMenu (new int[width, height]);
 	}
 
 	private void testSingleAxisMenu() {
 		int testSize = 5;
-		this.testMenu = new Menu<int> (testSize, Menu<int>.Type.Horizontal);
+		this.testMenu = new MenuGraph<int> (testSize, MenuGraph<int>.Type.Horizontal);
 		this.testMenu.initTestMenu (new int[testSize]);
 //		this.testMenu.initSATestMenu (new int[testSize]);
 	}
@@ -98,7 +98,6 @@ public class BattleStates : MonoBehaviour {
 		addEnemiesToList();
 		this.numUnits = this.units.Count;
 		Debug.Log ("number of units: " + this.numUnits);
-		//		StartCoroutine(this.startBattleRoutine);
 		this.startBattleRoutine = StartCoroutine(startBattle());
 	}
 
@@ -112,11 +111,9 @@ public class BattleStates : MonoBehaviour {
 			Debug.Log ("Action.");
 			calculatePriority (this.fastestFirst);
 //			Debug.Log ("Queue size: " + this.turnQueue.Count);
-//			StartCoroutine (this.startTurnRoutine);
 			this.startTurnRoutine = StartCoroutine(startTurns());
 			this.finishedTurn = false;
 			this.finishTurnRoutine = StartCoroutine (finishTurn ());
-//			StartCoroutine (this.finishTurnRoutine);
 			yield return new WaitUntil(() => this.finishedTurn);
 		}
 		Debug.Log ("Battle over.\nTurn count: " + TURN_COUNT);
@@ -137,14 +134,8 @@ public class BattleStates : MonoBehaviour {
 			takeTurn ();
 			this.finishedTurn = false;
 			this.finishTurnRoutine = StartCoroutine (finishTurn ());
-//			StartCoroutine (this.finishTurnRoutine);
 			yield return new WaitUntil(() => this.finishedTurn);
 		}
-		// TODO: Debug so unity doesnt crash
-//		while(this.battleOver == false) {
-//			yield return null;
-//		}
-//		yield return new WaitUntil(() => this.battleOver);
 	}
 
 	public void takeTurn() {
@@ -405,6 +396,7 @@ public class BattleStates : MonoBehaviour {
 	 ***************************/ 
 
 	private int calculateDamage(Character source, Character target) {
+//		calculateRuneStats ();	// Not implemented yet, should add bonuses in correct position
 		int damage = Mathf.RoundToInt(
 			Mathf.Pow (source.getCurrentAtk(), 2) / target.getCurrentDef() 	// Standard atk-def calc
 			* (1 + (source.currentLevel*2 - target.currentLevel) / 50)	// Level compensation
@@ -428,6 +420,16 @@ public class BattleStates : MonoBehaviour {
 			this.turnQueue.Enqueue(this.units[i]);
 			this.turnQueueUI.Enqueue(this.units[i]);
 		}
+	}
+
+	private void calculateRuneStats() {
+		
+	}
+
+	private void checkRuneStatus() {
+		// TODO: Check if unit can use rune effects
+		// Runes don't add to current stat, rather show to the side the bonuses they give
+		// Allows us to disable those bonuses, add a rune calculation to the damage formula
 	}
 
 	// Custom comparer for character game objects

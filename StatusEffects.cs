@@ -8,7 +8,7 @@ using UnityEngine;
  */
 public class StatusEffects : MonoBehaviour {
 
-	public enum Status { Bog, Burn, Poison, Stun, Silence };
+	public enum Status { Bog, Burn, Poison, RuneLock, Stun, Silence };
 	public enum StatChange { ATKUp, DEFUp, SpeedUp, HPUp, ATKDown, DEFDown, SpeedDown, HPDestruct}
 	//	public enum StatUps { PATKUp, MATKUp, /*SpeedUp,*/ PDEFUp, MDEFUp, HPUp }; 
 	//	public enum StatDowns { PATKDown, MATKDown, /*SpeedDown,*/ PDEFDown, MDEFDown, HPDestruct };

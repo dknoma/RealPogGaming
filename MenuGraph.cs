@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Menu<T> {
+public class MenuGraph<T> {
 
 	public enum Type { Horizontal, Vertical, Both };
 	public enum Direction { Up, Down, Left, Right };
@@ -19,42 +19,25 @@ public class Menu<T> {
 	private int width;
 	private int height;
 
-	public Menu(int size, Type type) {
+	public MenuGraph(int size, Type type) {
 		this.size = size;
 		this.width = size;
 		this.height = size;
 		this.menuType = type;
 		this.menuNodes = new MenuNode[size];
-//		for(int i = 0; i < size; i++) {
-//			this.menuNodes [i] = new MenuNode (i);
-//		}
 	}
 
-	public Menu(int width, int height, Type type) {
+	public MenuGraph(int width, int height, Type type) {
 		this.size = width * height;
 		this.width = width;
 		this.height = height;
 		this.menuType = type;
 		this.menuNodes = new MenuNode[this.size];
-//		for(int i = 0; i < this.size; i++) {
-//			this.menuNodes [i] = new MenuNode (i);
-//		}
 	}
 
 	public void initTestMenu(T[] arr) {
 		this.menuItems = arr;
 	}
-
-//	public void initSATestMenu(T[] arr) {
-//		if(this.menuType != Type.Horizontal || this.menuType != Type.Vertical) {
-//			
-//		}
-//		this.singleAxisMenuOptions = arr;
-//	}
-
-//	public void initMATestMenu(T[,] arr) {
-//		this.multiAxisMenuOptions = arr;
-//	}
 
 	public T getItem() {
 		return this.menuItems [this.currentOptionIndex];
@@ -81,6 +64,7 @@ public class Menu<T> {
 					// If the desired neighbor doesnt exist -> create it, else set using existing node
 					if (this.menuNodes [newNeighborIndex] == null) {
 						MenuNode newNode = new MenuNode (newNeighborIndex);
+						// set the new nodes origin neighbor to this node
 						newNode.leftNeighbor = this.menuNodes [this.currentOptionIndex];
 						this.menuNodes [this.currentOptionIndex].rightNeighbor = newNode;
 						// Change current index and update the next node
@@ -93,6 +77,7 @@ public class Menu<T> {
 						this.currentOptionIndex = newNeighborIndex;
 					}
 				} else {
+					// Set this nodes neighbor to the desired node, move index
 					this.menuNodes [this.currentOptionIndex].rightNeighbor = rightNeighbor;
 					this.currentOptionIndex = rightNeighbor.index;
 				}
@@ -105,6 +90,7 @@ public class Menu<T> {
 					// If the desired neighbor doesnt exist -> create it, else set using existing node
 					if (this.menuNodes [newNeighborIndex] == null) {
 						MenuNode newNode = new MenuNode (newNeighborIndex);
+						// set the new nodes origin neighbor to this node
 						newNode.rightNeighbor = this.menuNodes [this.currentOptionIndex];
 						this.menuNodes [this.currentOptionIndex].leftNeighbor = newNode;
 						// Change current index and update the next node
@@ -117,6 +103,7 @@ public class Menu<T> {
 						this.currentOptionIndex = newNeighborIndex;
 					}
 				} else {
+					// Set this nodes neighbor to the desired node, move index
 					this.menuNodes [this.currentOptionIndex].leftNeighbor = leftNeighbor;
 					this.currentOptionIndex = leftNeighbor.index;
 				}
@@ -137,6 +124,7 @@ public class Menu<T> {
 					// If the desired neighbor doesnt exist -> create it, else set using existing node
 					if (this.menuNodes [newNeighborIndex] == null) {
 						MenuNode newNode = new MenuNode (newNeighborIndex);
+						// set the new nodes origin neighbor to this node
 						newNode.topNeighbor = this.menuNodes [this.currentOptionIndex];
 						this.menuNodes [this.currentOptionIndex].bottomNeighbor = newNode;
 //						this.menuNodes [this.currentOptionIndex].bottomNeighbor.topNeighbor = this.menuNodes [this.currentOptionIndex];
@@ -150,6 +138,7 @@ public class Menu<T> {
 						this.currentOptionIndex = newNeighborIndex;
 					}
 				} else {
+					// Set this nodes neighbor to the desired node, move index
 					this.menuNodes [this.currentOptionIndex].bottomNeighbor = bottomNeighbor;
 					this.currentOptionIndex = bottomNeighbor.index;
 				}
@@ -162,9 +151,10 @@ public class Menu<T> {
 					// If the desired neighbor doesnt exist -> create it, else set using existing node
 					if (this.menuNodes [newNeighborIndex] == null) {
 						MenuNode newNode = new MenuNode (newNeighborIndex);
+						// set the new nodes origin neighbor to this node
 						newNode.bottomNeighbor = this.menuNodes [this.currentOptionIndex];
 						this.menuNodes [this.currentOptionIndex].topNeighbor = newNode;
-						this.menuNodes [this.currentOptionIndex].topNeighbor.bottomNeighbor = this.menuNodes [this.currentOptionIndex];
+//						this.menuNodes [this.currentOptionIndex].topNeighbor.bottomNeighbor = this.menuNodes [this.currentOptionIndex];
 						// Change current index and update the next node
 						this.currentOptionIndex = newNeighborIndex;
 						this.menuNodes [this.currentOptionIndex] = newNode;
@@ -175,6 +165,7 @@ public class Menu<T> {
 						this.currentOptionIndex = newNeighborIndex;
 					}
 				} else {
+					// Set this nodes neighbor to the desired node, move index
 					this.menuNodes [this.currentOptionIndex].topNeighbor = topNeighbor;
 					this.currentOptionIndex = topNeighbor.index;
 				}
@@ -196,9 +187,10 @@ public class Menu<T> {
 					// If the desired neighbor doesnt exist -> create it, else set using existing node
 					if(this.menuNodes[newNeighborIndex] == null) {
 						MenuNode newNode = new MenuNode (newNeighborIndex);
+						// set the new nodes origin neighbor to this node
 						newNode.leftNeighbor = this.menuNodes [this.currentOptionIndex];
 						this.menuNodes [this.currentOptionIndex].rightNeighbor = newNode;
-						this.menuNodes [this.currentOptionIndex].rightNeighbor.leftNeighbor = this.menuNodes [this.currentOptionIndex];
+//						this.menuNodes [this.currentOptionIndex].rightNeighbor.leftNeighbor = this.menuNodes [this.currentOptionIndex];
 						// Change current index and update the next node
 						this.currentOptionIndex = newNeighborIndex;
 						this.menuNodes [this.currentOptionIndex] = newNode;
@@ -209,7 +201,10 @@ public class Menu<T> {
 						this.currentOptionIndex = newNeighborIndex;
 					}
 				} else {
-					this.menuNodes [this.currentOptionIndex].rightNeighbor = rightNeighbor;
+					// Set this nodes neighbor to the desired node, move index
+					if(this.menuNodes [this.currentOptionIndex].rightNeighbor.index < 0) {
+						this.menuNodes [this.currentOptionIndex].rightNeighbor = rightNeighbor;
+					}
 					this.currentOptionIndex = rightNeighbor.index;
 				}
 				break;
@@ -221,9 +216,10 @@ public class Menu<T> {
 					// If the desired neighbor doesnt exist -> create it, else set using existing node
 					if(this.menuNodes[newNeighborIndex] == null) {
 						MenuNode newNode = new MenuNode (newNeighborIndex);
+						// set the new nodes origin neighbor to this node
 						newNode.rightNeighbor = this.menuNodes [this.currentOptionIndex];
 						this.menuNodes [this.currentOptionIndex].leftNeighbor = newNode;
-						this.menuNodes [this.currentOptionIndex].leftNeighbor.rightNeighbor = this.menuNodes [this.currentOptionIndex];
+//						this.menuNodes [this.currentOptionIndex].leftNeighbor.rightNeighbor = this.menuNodes [this.currentOptionIndex];
 						// Change current index and update the next node
 						this.currentOptionIndex = newNeighborIndex;
 						this.menuNodes [this.currentOptionIndex] = newNode;
@@ -234,6 +230,7 @@ public class Menu<T> {
 						this.currentOptionIndex = newNeighborIndex;
 					}
 				} else {
+					// Set this nodes neighbor to the desired node, move index
 					this.menuNodes [this.currentOptionIndex].leftNeighbor = leftNeighbor;
 					this.currentOptionIndex = leftNeighbor.index;
 				}
@@ -246,9 +243,10 @@ public class Menu<T> {
 					// If the desired neighbor doesnt exist -> create it, else set using existing node
 					if(this.menuNodes[newNeighborIndex] == null) {
 						MenuNode newNode = new MenuNode (newNeighborIndex);
+						// set the new nodes origin neighbor to this node
 						newNode.topNeighbor = this.menuNodes [this.currentOptionIndex];
 						this.menuNodes [this.currentOptionIndex].bottomNeighbor = newNode;
-						this.menuNodes [this.currentOptionIndex].bottomNeighbor.topNeighbor = this.menuNodes [this.currentOptionIndex];
+//						this.menuNodes [this.currentOptionIndex].bottomNeighbor.topNeighbor = this.menuNodes [this.currentOptionIndex];
 						// Change current index and update the next node
 						this.currentOptionIndex = newNeighborIndex;
 						this.menuNodes [this.currentOptionIndex] = newNode;
@@ -258,6 +256,7 @@ public class Menu<T> {
 						this.currentOptionIndex = newNeighborIndex;
 					}
 				} else {
+					// Set this nodes neighbor to the desired node, move index
 					this.menuNodes [this.currentOptionIndex].bottomNeighbor = bottomNeighbor;
 					this.currentOptionIndex = bottomNeighbor.index;
 				}
@@ -270,9 +269,10 @@ public class Menu<T> {
 					// If the desired neighbor doesnt exist -> create it, else set using existing node
 					if(this.menuNodes[newNeighborIndex] == null) {
 						MenuNode newNode = new MenuNode (newNeighborIndex);
+						// set the new nodes origin neighbor to this node
 						newNode.bottomNeighbor = this.menuNodes [this.currentOptionIndex];
 						this.menuNodes [this.currentOptionIndex].topNeighbor = newNode;
-						this.menuNodes [this.currentOptionIndex].topNeighbor.bottomNeighbor = this.menuNodes [this.currentOptionIndex];
+//						this.menuNodes [this.currentOptionIndex].topNeighbor.bottomNeighbor = this.menuNodes [this.currentOptionIndex];
 						// Change current index and update the next node
 						this.currentOptionIndex = newNeighborIndex;
 						this.menuNodes [this.currentOptionIndex] = newNode;
@@ -283,6 +283,7 @@ public class Menu<T> {
 						this.currentOptionIndex = newNeighborIndex;
 					}
 				} else {
+					// Set this nodes neighbor to the desired node, move index
 					this.menuNodes [this.currentOptionIndex].topNeighbor = topNeighbor;
 					this.currentOptionIndex = topNeighbor.index;
 				}
