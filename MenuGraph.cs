@@ -48,7 +48,7 @@ public class MenuGraph<T> {
 	}
 
 	// Node based graph traversal for neighbor system
-	public void traverseOptions(int direction) {
+	public void TraverseOptions(int direction) {
 		switch(menuType) {
 		case Type.Horizontal:
 			// If the node at the current index is null, create a new one

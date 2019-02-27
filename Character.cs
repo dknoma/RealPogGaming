@@ -12,11 +12,10 @@ public class Character : CharacterStats, IComparable {
 	// Use this for initialization
 	void Start () {
 		this.currentBattleActions = GetComponent<BattleActions>();
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
+		Weapon weapon = GetComponentInChildren<Weapon> ();
+		if(weapon != null) {
+			this.currentBattleActions.setElement (weapon.weaponElement);
+		}
 	}
 
 	public BattleActions getCurrentBattleActions() {

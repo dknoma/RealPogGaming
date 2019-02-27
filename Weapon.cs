@@ -10,7 +10,7 @@ public class Weapon : MonoBehaviour {
 	public enum WeaponSlot { MainHand, OffHand };
 
 	// Can choose stats for the weapon in the inspector.
-	public ElementalAffinity.Element weaponElement;
+	public ElementalAffinity.Element weaponElement = ElementalAffinity.Element.None;
 	public HandType handType;
 	public WeaponType weaponType;
 	public WeaponSlot weaponSlot;

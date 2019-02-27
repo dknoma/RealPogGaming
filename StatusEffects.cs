@@ -65,6 +65,14 @@ public class StatusEffects : MonoBehaviour {
 	/* 
 	 * Resists 
 	 */
+	public void addStatusResist(int status) {
+		this.statusResists[status] = true;
+	}
+
+	public void removeStatusResist(int status) {
+		this.statusResists[status] = false;
+	}
+
 	protected bool resistsStatusEffect(int status) {
 		return this.statusResists[status];
 	}

@@ -22,7 +22,7 @@ public class GameMaster : MonoBehaviour {
 			}
 		}
 		if(Input.GetButtonDown("Fire3")) {
-			this.battle.endBattle (BattleStates.WinStatus.Escape);
+			this.battle.EndBattle (BattleStates.WinStatus.Escape);
 			this.battleInProgress = false;
 			Debug.Log ("Ending the battle...");
 		}

@@ -5,9 +5,10 @@ using UnityEngine;
 public class CharacterStats : StatusEffects {
 
 	/* Public/inspector elements */
-//	public bool bogResist = false;
+	public bool bogResist = false;
 	public bool burnResist = false;
 	public bool poisonResist = false;
+	public bool runeLockResist = false;
 	public bool stunResist = false;
 	public bool silenceResist = false;
 
@@ -33,6 +34,7 @@ public class CharacterStats : StatusEffects {
 	protected int baseSpd = 5;
 	protected int currentSpd;
 	protected int totalRuneSpd = 0;
+	public ElementalAffinity.Element element;
 
 //	private int basePAtk = 5;
 //	public int currentPAtk = basePAtk;
@@ -53,6 +55,7 @@ public class CharacterStats : StatusEffects {
 	protected bool canCastSpells;
 	protected bool hasStatusAffliction = false;
 
+
 	// Status effect constants
 	protected const int BOG = (int) StatusEffects.Status.Bog;
 	protected const int BURN = (int) StatusEffects.Status.Burn;
@@ -71,7 +74,7 @@ public class CharacterStats : StatusEffects {
 	protected const int HPDESTRUCTION = (int) StatusEffects.StatChange.HPDestruct;
 
 	void Awake() {
-		this.expUntilLevelUp = calcNextLevel (currentLevel);
+		this.expUntilLevelUp = calcNextLevel();
 		this.currentHP = this.maxHP;
 		this.currentAtk = this.baseAtk;
 		this.currentDef = this.baseDef;
@@ -80,6 +83,12 @@ public class CharacterStats : StatusEffects {
 		this.statChangeTurnCounter = new int[getStatChangeAfflictions().Length];
 		this.canAct = true;
 		this.canCastSpells = true;
+		if (bogResist) { addStatusResist (BOG); } 
+		if (burnResist) { addStatusResist (BURN); } 
+		if (poisonResist) { addStatusResist (POISON); } 
+		if (runeLockResist) { addStatusResist (RUNE_LOCK); } 
+		if (stunResist) { addStatusResist (STUN); } 
+		if (silenceResist) { addStatusResist (SILENCE); } 
 	}
 
 	/******
@@ -128,7 +137,7 @@ public class CharacterStats : StatusEffects {
 	public int getBaseSpd() { return 0 + this.baseSpd; }
 
 	// Return a copy of this characters current defense
-	public int getCurrentSpd() { return 0 + this.currentSpd; }
+	public int GetCurrentSpd() { return 0 + this.currentSpd; }
 
 	// Modify current defense w/ new value
 	public void modifySpd(bool up) { this.currentSpd += defMod(this.baseSpd, up); }
@@ -456,7 +465,23 @@ public class CharacterStats : StatusEffects {
 //			// TODO: afflict the stat down
 //		}
 //	}
-		
+
+	public void GrantExp(int exp) {
+		//int remainingExp = exp - this.expUntilLevelUp;
+		int totalExp = this.currentExp + exp;
+		int remainingExp = this.expUntilLevelUp - totalExp;
+		if(remainingExp > 0) {
+			this.currentExp = totalExp;
+			this.expUntilLevelUp = remainingExp;
+		} else {
+			this.currentLevel += 1;
+			this.currentExp = Mathf.Abs(remainingExp);
+			this.expUntilLevelUp = calcNextLevel() - this.currentExp;
+			Debug.Log(string.Format("{0} has leveled up: {1}, exp until next level: {2}", 
+				this.name, this.currentLevel, this.expUntilLevelUp));
+		}
+	}
+
 	// Increase/decrease atk by 25% of the base value
 	private int atkMod(int baseAtk, bool up) {
 		return (int) (up ? baseAtk * 0.25f : baseAtk * (-0.25f));
@@ -474,7 +499,7 @@ public class CharacterStats : StatusEffects {
 
 	// Calculate the amount of exp required to get to the next level
 	// 1->2: 1, 2->3: 5, 3->4: 33, 4->5: 73, ...
-	private int calcNextLevel(int currentLevel) {
-		return (int) Mathf.Round(4+(15*(Mathf.Pow(currentLevel, 3)))/14);
+	private int calcNextLevel() {
+		return (int) Mathf.Round(4+(15*(Mathf.Pow(this.currentLevel, 3)))/14);
 	}
 }
