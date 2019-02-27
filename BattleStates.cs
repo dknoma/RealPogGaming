@@ -133,6 +133,9 @@ public class BattleStates : MonoBehaviour {
 //		Debug.Log ("Units in queue: " + this.turnQueue.Count);
 		this.currentUnit = this.turnQueue.Dequeue() as GameObject;
 		Debug.Log ("Starting " + this.currentUnit.name + "'s turn.");
+		Debug.Log(string.Format("HP: {0}, exp until level up: {1}", 
+			this.currentUnit.GetComponent<Character>().getCurrentHP(),
+			this.currentUnit.GetComponent<Character>().expUntilLevelUp));
 		// Start acting
 		StatusPhase ();
 		// Battle states
@@ -154,11 +157,11 @@ public class BattleStates : MonoBehaviour {
 	IEnumerator ActionPhase() {
 		// Start of turn
 		// Check if unit can act before acting
-		if(this.currentUnit.GetComponent<Character>().canCharacterAct()) {
+		this.finishedActing = false;
+		this.finishedActionPhase = false;
+		if (this.currentUnit.GetComponent<Character>().canCharacterAct()) {
 			yield return new WaitUntil(() => this.finishedStatusPhase);
             Debug.Log("=== Entering Action Phase ===");
-            this.finishedActing = false;
-			this.finishedActionPhase = false;
 			while(this.currentUnit.GetComponent<Character>().canCharacterAct() && !this.finishedActing) {
 				TryResetUnitInputs ();	// Try to reset previous inputs
 				this.finishedUnitAction = false;
@@ -181,6 +184,8 @@ public class BattleStates : MonoBehaviour {
 			this.finishedActionPhase = true;
 		} else {
 			Debug.Log ("Skipping turn.");
+			this.finishedActing = true;
+			this.finishedActionPhase = true;
 		}
 	}
 
@@ -191,9 +196,9 @@ public class BattleStates : MonoBehaviour {
         Debug.Log("=== Entering Battle Phase ===");
         // Do stuff once previous phase is finished
         GameObject target = this.currentUnit.CompareTag("Enemy") ? this.party.frontUnit : this.enemies[0];
-        int dmg = CalculateDamage(this.currentUnit, target);
-        TryDamage(dmg, target);
-        this.finishedBattlePhase = true;
+		int dmg = CalculateDamage(this.currentUnit, target);
+		yield return new WaitUntil(() => TryDamage(dmg, target));
+		this.finishedBattlePhase = true;
 	}
 
 	IEnumerator ResolveTurn() {
@@ -205,20 +210,23 @@ public class BattleStates : MonoBehaviour {
         this.finishedResolve = true;
 	}
 
-    private void TryDamage(int dmg, GameObject target) {
-        // TODO: Check if target can be damaged.
-        Debug.Log(string.Format("\t{0} dealt {1} damage to {2}", this.currentUnit.name, dmg, target.name));
-        target.GetComponent<Character>().modifyHP(dmg);
+    private bool TryDamage(int dmg, GameObject target) {
+		// TODO: Check if target can be damaged.
+		Debug.Log(string.Format("\t{0} dealt {1} damage to {2}", this.currentUnit.name, dmg, target.name));
+        target.GetComponent<Character>().modifyHP(-dmg);
+		Debug.Log(string.Format("current HP: {0}", target.GetComponent<Character>().getCurrentHP()));
         if(target.GetComponent<Character>().getCurrentHP() <= 0) {
 			// Remove unit from the list if no more HP
 			this.units.Remove(target);
 			if(target.CompareTag("Enemy")) {
 				this.enemies.Remove(target);
+				this.expToGive += target.GetComponent<Character>().expToGrant;
 				if(this.enemies.Count == 0) {
 					EndBattle(WinStatus.Win);
 				}
 			}
 		}
+		return true;
 	}
 
     /*** 

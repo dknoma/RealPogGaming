@@ -4,7 +4,11 @@ using UnityEngine;
 
 public class CharacterStats : StatusEffects {
 
+	public enum Affiliation { Ally, Enemy };
+
 	/* Public/inspector elements */
+	public Affiliation affiliation;
+	public int expToGrant = 10;
 	public bool bogResist = false;
 	public bool burnResist = false;
 	public bool poisonResist = false;
@@ -406,50 +410,56 @@ public class CharacterStats : StatusEffects {
 		for(int i = 0; i < this.afflictedStatuses.Length; i++) {
 			// Check status afflictions and do action depending on the affliction
 			switch (i) {
-			case BOG:
-				//Nothing planned atm for this status effect. Only SPDDown atm.
-				break;
-			case BURN:
-				// 8% DoT & p atk down
-				if (this.statusTurnCounter [BURN] > 0) {
-					modifyHP (-0.08f);
-					this.statusTurnCounter[BURN] -= 1;
-					if(this.statusTurnCounter[BURN] == 0) {
-						tryRemoveStatus (BURN);
+				case BOG:
+					//Nothing planned atm for this status effect. Only SPDDown atm.
+					break;
+				case BURN:
+					// 8% DoT & p atk down
+					if (this.statusTurnCounter [BURN] > 0) {
+						modifyHP (-0.08f);
+						this.statusTurnCounter[BURN] -= 1;
+						if(this.statusTurnCounter[BURN] == 0) {
+							tryRemoveStatus (BURN);
+						}
 					}
-				}
-				break;
-			case POISON:
-				// 10% DoT & m atk down
-				if (this.statusTurnCounter [POISON] > 0) {
-					modifyHP (-0.1f);
-					this.statusTurnCounter[POISON] -= 1;
-					if(this.statusTurnCounter[POISON] == 0) {
-						tryRemoveStatus (POISON);
+					break;
+				case POISON:
+					// 10% DoT & m atk down
+					if (this.statusTurnCounter [POISON] > 0) {
+						modifyHP (-0.1f);
+						this.statusTurnCounter[POISON] -= 1;
+						if(this.statusTurnCounter[POISON] == 0) {
+							tryRemoveStatus (POISON);
+						}
 					}
-				}
-				break;
-			case STUN:
-				// Can't act for x turns
-				if(this.statusTurnCounter[STUN] > 0) {
-					this.statusTurnCounter[STUN] -= 1;
-					if(this.statusTurnCounter[STUN] == 0) {
-						tryRemoveStatus (STUN);
+					break;
+				case RUNE_LOCK:
+					this.statusTurnCounter[RUNE_LOCK] -= 1;
+					if (this.statusTurnCounter[RUNE_LOCK] == 0) {
+						tryRemoveStatus(RUNE_LOCK);
 					}
-				}
-				break;
-			case SILENCE:
-				// Can't cast spells for x turns. Can still use skills
-				if(this.statusTurnCounter[SILENCE] > 0) {
-					this.statusTurnCounter[SILENCE] -= 1;
-					if(this.statusTurnCounter[SILENCE] == 0) {
-						tryRemoveStatus (SILENCE);
+					break;
+				case STUN:
+					// Can't act for x turns
+					if(this.statusTurnCounter[STUN] > 0) {
+						this.statusTurnCounter[STUN] -= 1;
+						if(this.statusTurnCounter[STUN] == 0) {
+							tryRemoveStatus (STUN);
+						}
 					}
-				}
-				break;
-			default:
-				Debug.Log ("Affliction not valid");
-				break;
+					break;
+				case SILENCE:
+					// Can't cast spells for x turns. Can still use skills
+					if(this.statusTurnCounter[SILENCE] > 0) {
+						this.statusTurnCounter[SILENCE] -= 1;
+						if(this.statusTurnCounter[SILENCE] == 0) {
+							tryRemoveStatus (SILENCE);
+						}
+					}
+					break;
+				default:
+					Debug.Log ("Affliction not valid");
+					break;
 			}
 		}
 	}
@@ -473,6 +483,8 @@ public class CharacterStats : StatusEffects {
 		if(remainingExp > 0) {
 			this.currentExp = totalExp;
 			this.expUntilLevelUp = remainingExp;
+			Debug.Log(string.Format("{0} has gained {1} exp! exp until next level: {2}",
+				this.name, exp, this.expUntilLevelUp));
 		} else {
 			this.currentLevel += 1;
 			this.currentExp = Mathf.Abs(remainingExp);
