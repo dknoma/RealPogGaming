@@ -12,4 +12,6 @@ public class Rune : MonoBehaviour {
 	public Type runeType;
 	public StatType statType;
 	public Stat whichStat;
+	public int statCount;
+	public int statPercent;
 }

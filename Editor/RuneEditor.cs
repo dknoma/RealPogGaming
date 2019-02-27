@@ -7,11 +7,12 @@ using UnityEngine;
 [CanEditMultipleObjects]
 public class RuneEditor : Editor {
 
-//	public SerializedProperty runeType;
 	public SerializedProperty
 		runeType,
 		statType,
-		whichStat;
+		whichStat,
+		statCount,
+		statPercent;
 
 	private bool showStats = false;
 
@@ -19,20 +20,17 @@ public class RuneEditor : Editor {
 		runeType = serializedObject.FindProperty("runeType");
 		statType = serializedObject.FindProperty("statType");
 		whichStat = serializedObject.FindProperty("whichStat");
+		statCount = serializedObject.FindProperty("statCount");
+		statPercent = serializedObject.FindProperty("statPercent");
 	}
 
 	public override void OnInspectorGUI() {
 		// Update the serializedProperty - always do this in the beginning of OnInspectorGUI.
 		serializedObject.Update();
-		// Get the rune type enum dropdown
-//		EditorGUILayout.PropertyField (runeType);
+
 		Rune rune = target as Rune;
-		rune.runeType = (Rune.Type)EditorGUILayout.EnumPopup ("Rune Type", rune.runeType);	// Update the value of the dropdown based on enum index
-//		rune.statType = (Rune.StatType)statType.enumValueIndex;
-//		rune.whichStat = (Rune.Stat)whichStat.enumValueIndex;
-//		rune.runeType = (Rune.Type)runeType.enumValueIndex;	// Update the value of the dropdown based on enum index
-//		rune.statType = (Rune.StatType)statType.enumValueIndex;
-//		rune.whichStat = (Rune.Stat)whichStat.enumValueIndex;
+		// Get the rune type enum dropdown & update value and display value based on choice
+		rune.runeType = (Rune.Type)EditorGUILayout.EnumPopup ("Rune Type", rune.runeType);
 
 		// Check the rune type. Show/hide options depending on the chosen enum
 		switch(rune.runeType) {
@@ -45,9 +43,19 @@ public class RuneEditor : Editor {
 			break;
 		}
 
+		// If rune is a stat rune, show all the stat options
 		if(this.showStats) {
 			rune.statType = (Rune.StatType)EditorGUILayout.EnumPopup (rune.statType);
 			rune.whichStat = (Rune.Stat)EditorGUILayout.EnumPopup (rune.whichStat);
+			// Check what kind of stat modifier is used: flat vs. percentage
+			switch(rune.statType) {
+			case Rune.StatType.Flat:
+				rune.statCount = EditorGUILayout.IntField ("Stat Count", rune.statCount);
+				break;
+			case Rune.StatType.Percent:
+				rune.statPercent = EditorGUILayout.IntField ("Stat Percentage", rune.statPercent);
+				break;
+			}
 		}
 	}
 }
