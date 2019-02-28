@@ -25,33 +25,36 @@ public class CharacterStats : StatusEffects {
 	[SerializeField]
 	protected int maxHP = 20;
 	protected int currentHP;
-	protected int totalRuneHP = 0;
+	protected int totalRuneHP;
 	[SerializeField]
 	protected int baseAtk = 5;
 	protected int currentAtk;
-	protected int totalRuneAtk = 0;
+	protected int totalRuneAtk;
 	[SerializeField]
 	protected int baseDef = 5;
 	protected int currentDef;
-	protected int totalRuneDef = 0;
+	protected int totalRuneDef;
 	[SerializeField]
 	protected int baseSpd = 5;
 	protected int currentSpd;
-	protected int totalRuneSpd = 0;
+	protected int totalRuneSpd;
 	public ElementalAffinity.Element element;
 
-//	private int basePAtk = 5;
-//	public int currentPAtk = basePAtk;
-//	public int baseMAtk = 5;
-//	public int currentMAtk = baseMAtk;
-//
-//	private int basePDef = 5;
-//	public int currentPDef = basePDef;
-//	public int baseMDef = 5;
-//	public int currentMDef = baseMDef;
+	//[SerializeField]
+	//	protected int basePAtk = 5;
+	//	protected int currentPAtk = basePAtk;
+	//[SerializeField]
+	//	protected int baseMAtk = 5;
+	//	protected int currentMAtk = baseMAtk;
+	//[SerializeField]
+	//	protected int basePDef = 5;
+	//	protected int currentPDef = basePDef;
+	//[SerializeField]
+	//	protected int baseMDef = 5;
+	//	protected int currentMDef = baseMDef;
 
 
-//	private StatusEffects characterStatus = new StatusEffects();
+	//	private StatusEffects characterStatus = new StatusEffects();
 	protected int[] statusTurnCounter;
 	protected int[] statChangeTurnCounter;
 	protected bool disableRunes = false;
@@ -61,21 +64,21 @@ public class CharacterStats : StatusEffects {
 
 
 	// Status effect constants
-	protected const int BOG = (int) StatusEffects.Status.Bog;
-	protected const int BURN = (int) StatusEffects.Status.Burn;
-	protected const int POISON = (int) StatusEffects.Status.Poison;
-	protected const int RUNE_LOCK = (int) StatusEffects.Status.RuneLock;
-	protected const int STUN = (int) StatusEffects.Status.Stun;
-	protected const int SILENCE = (int) StatusEffects.Status.Silence;
+	protected const int BOG = (int) Status.Bog;
+	protected const int BURN = (int) Status.Burn;
+	protected const int POISON = (int) Status.Poison;
+	protected const int RUNE_LOCK = (int) Status.RuneLock;
+	protected const int STUN = (int) Status.Stun;
+	protected const int SILENCE = (int) Status.Silence;
 
-	protected const int ATKUP = (int) StatusEffects.StatChange.ATKUp;
-	protected const int DEFUP = (int) StatusEffects.StatChange.DEFUp;
-	protected const int SPDUP = (int) StatusEffects.StatChange.SpeedUp;
-	protected const int HPUP = (int) StatusEffects.StatChange.HPUp;
-	protected const int ATKDOWN = (int) StatusEffects.StatChange.ATKDown;
-	protected const int DEFDOWN = (int) StatusEffects.StatChange.DEFDown;
-	protected const int SPDDOWN = (int) StatusEffects.StatChange.SpeedDown;
-	protected const int HPDESTRUCTION = (int) StatusEffects.StatChange.HPDestruct;
+	protected const int ATKUP = (int) StatChange.ATKUp;
+	protected const int DEFUP = (int) StatChange.DEFUp;
+	protected const int SPDUP = (int) StatChange.SpeedUp;
+	protected const int HPUP = (int) StatChange.HPUp;
+	protected const int ATKDOWN = (int) StatChange.ATKDown;
+	protected const int DEFDOWN = (int) StatChange.DEFDown;
+	protected const int SPDDOWN = (int) StatChange.SpeedDown;
+	protected const int HPDESTRUCTION = (int) StatChange.HPDestruct;
 
 	void Awake() {
 		this.expUntilLevelUp = calcNextLevel();
@@ -93,58 +96,69 @@ public class CharacterStats : StatusEffects {
 		if (runeLockResist) { addStatusResist (RUNE_LOCK); } 
 		if (stunResist) { addStatusResist (STUN); } 
 		if (silenceResist) { addStatusResist (SILENCE); } 
+		if(transform.GetComponentInChildren<RuneSlots>() != null) {
+			transform.GetComponentInChildren<RuneSlots>().GetStatCount();
+		}
 	}
 
 	/******
 	 * HP *
 	 ******/
 	// Return a copy of this characters max hp
-	public int getMaxHP() { return 0 + this.maxHP; }
+	public int GetMaxHP() { return 0 + this.maxHP; }
 
 	// Return a copy of this characters current attack
-	public int getCurrentHP() { return 0 + this.currentHP; }
+	public int GetCurrentHP() { return 0 + this.currentHP; }
 
 	// Modify current HP w/ new value
-	public void modifyHP(int hp) { this.currentHP += hp; }
+	public void ModifyHP(int hp) { this.currentHP += hp; }
 
 	// A % modifier for HP
-	public void modifyHP(float hpPercentage) { this.currentHP += (int) Mathf.Round(this.maxHP * hpPercentage); }
+	public void ModifyHP(float hpPercentage) { this.currentHP += (int) Mathf.Round(this.maxHP * hpPercentage); }
+
+	public int GetRuneHP() { return 0 + this.totalRuneHP; }
 
 	/*******
 	 * ATK *
 	 *******/
 	// Return a copy of this characters base attack
-	public int getBaseAtk() { return 0 + this.baseAtk; }
+	public int GetBaseAtk() { return 0 + this.baseAtk; }
 
 	// Return a copy of this characters current attack
-	public int getCurrentAtk() { return 0 + this.currentAtk; }
+	public int GetCurrentAtk() { return 0 + this.currentAtk; }
 
 	// Modify current attack w/ new value
-	public void modifyAtk(bool up) { this.currentAtk += atkMod(this.baseAtk, up); }
+	public void ModifyAtk(bool up) { this.currentAtk += atkMod(this.baseAtk, up); }
+
+	public int GetRuneAtk() { return 0 + this.totalRuneAtk; }
 
 	/*******
 	 * DEF *
 	 *******/
 	// Return a copy of this characters base defense
-	public int getBaseDef() { return 0 + this.baseDef; }
+	public int GetBaseDef() { return 0 + this.baseDef; }
 
 	// Return a copy of this characters current defense
-	public int getCurrentDef() { return 0 + this.currentDef; }
+	public int GetCurrentDef() { return 0 + this.currentDef; }
 
 	// Modify current defense w/ new value
-	public void modifyDef(bool up) { this.currentDef += defMod(this.baseDef, up); }
+	public void ModifyDef(bool up) { this.currentDef += defMod(this.baseDef, up); }
+
+	public int GetRuneDef() { return 0 + this.totalRuneDef; }
 
 	/*******
 	 * SPD *
 	 *******/
 	// Return a copy of this characters base defense
-	public int getBaseSpd() { return 0 + this.baseSpd; }
+	public int GetBaseSpd() { return 0 + this.baseSpd; }
 
 	// Return a copy of this characters current defense
 	public int GetCurrentSpd() { return 0 + this.currentSpd; }
 
 	// Modify current defense w/ new value
-	public void modifySpd(bool up) { this.currentSpd += defMod(this.baseSpd, up); }
+	public void ModifySpd(bool up) { this.currentSpd += defMod(this.baseSpd, up); }
+
+	public int GetRuneSpd() { return 0 + this.totalRuneSpd; }
 
 	/* 
 	 * Status effects
@@ -216,21 +230,21 @@ public class CharacterStats : StatusEffects {
 			switch (status) {
 			case BOG:
 				if(tryStatChange(SPDDOWN, turns)) {
-					modifySpd (false);
+					ModifySpd (false);
 				} else {
 					Debug.Log("Already afflicted by speed down...");
 				}
 				break;
 			case BURN:
 				if(tryStatChange(ATKDOWN, turns)) {
-					modifyAtk (false);
+					ModifyAtk (false);
 				} else {
 					Debug.Log("Already afflicted by physical attack down...");
 				}
 				break;
 			case POISON:
 				if(tryStatChange(ATKDOWN, turns)) {
-					modifyAtk (false);
+					ModifyAtk (false);
 				} else {
 					Debug.Log("Already afflicted by magical attack down...");
 				}
@@ -261,17 +275,17 @@ public class CharacterStats : StatusEffects {
 				this.hasStatusAffliction = false;
 			}
 			if (tryRemoveStatChange (SPDDOWN)) {
-				modifySpd (true);// Only need to happen once, not every turn
+				ModifySpd (true);// Only need to happen once, not every turn
 			}
 			break;
 		case BURN:
-			modifyAtk (true); // Only need to happen once, not every turn
+			ModifyAtk (true); // Only need to happen once, not every turn
 			if(tryRemoveStatus(BURN)){
 				this.hasStatusAffliction = false;
 			}
 			// Tries to remove atk down if not afflicted with a stat change removal resist
 			if (tryRemoveStatChange (ATKDOWN)) {
-				modifyAtk (true);// Only need to happen once, not every turn
+				ModifyAtk (true);// Only need to happen once, not every turn
 			}
 			break;
 		case POISON:
@@ -279,7 +293,7 @@ public class CharacterStats : StatusEffects {
 				this.hasStatusAffliction = false;
 			}
 			if (tryRemoveStatChange (ATKDOWN)) {
-				modifyAtk (true);
+				ModifyAtk (true);
 			}
 			break;
 		case RUNE_LOCK:
@@ -308,20 +322,20 @@ public class CharacterStats : StatusEffects {
 			switch (status) {
 			case BOG:
 				if (tryRemoveStatChange (SPDDOWN)) {
-					modifySpd (true);// Only need to happen once, not every turn
+					ModifySpd (true);// Only need to happen once, not every turn
 				}
 				if(tryRemoveStatus(BOG)) {
 					this.hasStatusAffliction = false;
 				}
 				break;
 			case BURN:
-				modifyAtk (true); // Only need to happen once, not every turn
+				ModifyAtk (true); // Only need to happen once, not every turn
 				if(tryRemoveStatus(BURN)) {
 					this.hasStatusAffliction = false;
 				}
 			// Tries to remove atk down if not afflicted with a stat change removal resist
 				if (tryRemoveStatChange (ATKDOWN)) {
-					modifyAtk (true);// Only need to happen once, not every turn
+					ModifyAtk (true);// Only need to happen once, not every turn
 				}
 				break;
 			case POISON:
@@ -329,7 +343,7 @@ public class CharacterStats : StatusEffects {
 					this.hasStatusAffliction = false;
 				}
 				if (tryRemoveStatChange (ATKDOWN)) {
-					modifyAtk (true);
+					ModifyAtk (true);
 				}
 				break;
 			case RUNE_LOCK:
@@ -416,7 +430,7 @@ public class CharacterStats : StatusEffects {
 				case BURN:
 					// 8% DoT & p atk down
 					if (this.statusTurnCounter [BURN] > 0) {
-						modifyHP (-0.08f);
+						ModifyHP (-0.08f);
 						this.statusTurnCounter[BURN] -= 1;
 						if(this.statusTurnCounter[BURN] == 0) {
 							tryRemoveStatus (BURN);
@@ -426,7 +440,7 @@ public class CharacterStats : StatusEffects {
 				case POISON:
 					// 10% DoT & m atk down
 					if (this.statusTurnCounter [POISON] > 0) {
-						modifyHP (-0.1f);
+						ModifyHP (-0.1f);
 						this.statusTurnCounter[POISON] -= 1;
 						if(this.statusTurnCounter[POISON] == 0) {
 							tryRemoveStatus (POISON);
@@ -464,13 +478,13 @@ public class CharacterStats : StatusEffects {
 		}
 	}
 
-//	public void tryStatUp(StatusEffects.StatUps statUp) {
+//	public void tryStatUp(StatUps statUp) {
 //		if(!status.alreadyAfflictedStatUp[statUp]) {
 //			// TODO: afflict the stat up
 //		}
 //	}
 //
-//	public void tryStatDown(StatusEffects.StatDowns statDown) {
+//	public void tryStatDown(StatDowns statDown) {
 //		if(!status.alreadyAfflictedStatDown[statDown]) {
 //			// TODO: afflict the stat down
 //		}

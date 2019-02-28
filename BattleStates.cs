@@ -74,7 +74,7 @@ public class BattleStates : MonoBehaviour {
 	}
 
 	void Start() {
-		this.party = transform.parent.GetComponentInChildren<Party>();
+		this.party = GameObject.FindGameObjectWithTag("Party").GetComponent<Party>();
 		this.party.initPartyMembers ();
 	}
 
@@ -82,11 +82,17 @@ public class BattleStates : MonoBehaviour {
 	public void InitBattle () {
 		TestMultiAxisMenu ();
 		//		TestSingleAxisMenu ();
+		// Initialize battle settings
 		TURN_COUNT = 0;
 		this.units = new List<GameObject> ();
 		this.turnQueue = new Queue ();
+		// Add all units involved in the battle to the list
 		AddPartyToList();
 		AddEnemiesToList();
+		// Init each characters rune bonuses
+		foreach(GameObject unit in units) {
+			CalculateRuneStats(unit);
+		}
 		this.numUnits = this.units.Count;
 		Debug.Log ("number of units: " + this.numUnits);
 		this.startBattleRoutine = StartCoroutine(StartBattle());
@@ -132,9 +138,10 @@ public class BattleStates : MonoBehaviour {
 	public void TakeTurn() {
 //		Debug.Log ("Units in queue: " + this.turnQueue.Count);
 		this.currentUnit = this.turnQueue.Dequeue() as GameObject;
-		Debug.Log ("Starting " + this.currentUnit.name + "'s turn.");
-		Debug.Log(string.Format("HP: {0}, exp until level up: {1}", 
-			this.currentUnit.GetComponent<Character>().getCurrentHP(),
+		Debug.Log("=== Begin Turn ===");
+		Debug.Log(string.Format("Name: {0}, HP: {1}, exp until level up: {2}",
+			this.currentUnit.name,
+			this.currentUnit.GetComponent<Character>().GetCurrentHP(),
 			this.currentUnit.GetComponent<Character>().expUntilLevelUp));
 		// Start acting
 		StatusPhase ();
@@ -213,9 +220,9 @@ public class BattleStates : MonoBehaviour {
     private bool TryDamage(int dmg, GameObject target) {
 		// TODO: Check if target can be damaged.
 		Debug.Log(string.Format("\t{0} dealt {1} damage to {2}", this.currentUnit.name, dmg, target.name));
-        target.GetComponent<Character>().modifyHP(-dmg);
-		Debug.Log(string.Format("current HP: {0}", target.GetComponent<Character>().getCurrentHP()));
-        if(target.GetComponent<Character>().getCurrentHP() <= 0) {
+        target.GetComponent<Character>().ModifyHP(-dmg);
+		Debug.Log(string.Format("current HP: {0}", target.GetComponent<Character>().GetCurrentHP()));
+        if(target.GetComponent<Character>().GetCurrentHP() <= 0) {
 			// Remove unit from the list if no more HP
 			this.units.Remove(target);
 			if(target.CompareTag("Enemy")) {
@@ -349,7 +356,7 @@ public class BattleStates : MonoBehaviour {
 	public void EndBattle(WinStatus winStatus) {
 		switch(winStatus) {
 			case WinStatus.Win:
-				GrantExp();
+				GrantExpToParty();
 				break;
 			case WinStatus.Lose:
 				break;
@@ -434,20 +441,20 @@ public class BattleStates : MonoBehaviour {
 		source = src.GetComponent<Character> (),
 		target = dest.GetComponent<Character> ();
 		Debug.Log (string.Format("{0}'s atk: {1}, {2}'s def: {3}", 
-			source.name, source.getCurrentAtk(), target.name, target.getCurrentDef()));
+			source.name, source.GetCurrentAtk(), target.name, target.GetCurrentDef()));
 		Debug.Log (string.Format("{0}'s attack element: {1}, {2} element: {3}", 
 			source.name, source.getCurrentBattleActions().getElement(), target.name, target.element));
-//		calculateRuneStats ();	// Not implemented yet, should add bonuses in correct position
+		// Calculate the current units rune bonuses
+		CalculateRuneStats (this.currentUnit);
 		int damage = Mathf.RoundToInt(
-			Mathf.Pow (source.getCurrentAtk(), 2) / target.getCurrentDef() 	// Standard atk-def calc
+			(Mathf.Pow(source.GetCurrentAtk(), 2) + source.GetRuneAtk())/ (target.GetCurrentDef() + target.GetRuneDef()) 	// Standard atk-def calc
 			* (1 + (source.currentLevel*2 - target.currentLevel) / 50)	// Level compensation
 			* ElementalAffinity.calcElementalDamage(source.getCurrentBattleActions().getElement(), 
 				target.element));  				// elemental multiplier
-//				target.getCurrentBattleActions().getElement()));  				// elemental multiplier
 		return damage;
 	}
 
-	private void GrantExp() {
+	private void GrantExpToParty() {
 		foreach(GameObject ally in this.allies) {
 			ally.GetComponent<Character>().GrantExp(this.expToGive);
 		}
@@ -470,8 +477,8 @@ public class BattleStates : MonoBehaviour {
 		}
 	}
 
-	private void CalculateRuneStats() {
-		
+	private void CalculateRuneStats(GameObject currentUnit) {
+		RuneSlots slots = currentUnit.GetComponent<RuneSlots>();
 	}
 
 	private void CheckRuneStatus() {

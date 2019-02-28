@@ -8,22 +8,27 @@ public class GameMaster : MonoBehaviour {
 	//		Resets every turn; turns determined when actionqueue is empty
 	private BattleStates battle;
 	private bool battleInProgress = false;
+	private Camera cam;
 
 	void Start () {
-		this.battle = transform.GetComponentInChildren<BattleStates> ();
+		battle = transform.GetComponentInChildren<BattleStates> ();
+		cam = Camera.main;
 	}
 
 	void Update () {
-		if(Input.GetButtonDown("Fire1")) {
-			if (!this.battleInProgress) {
-				this.battleInProgress = true;
-				this.battle.InitBattle ();
+		// Let camera focus on player
+		Vector3 newCamPos = new Vector3(transform.position.x, cam.transform.position.y, cam.transform.position.z);
+
+		if (Input.GetButtonDown("Fire1")) {
+			if (!battleInProgress) {
+				battleInProgress = true;
+				battle.InitBattle ();
 //				Debug.Log ("Battle ended.");
 			}
 		}
 		if(Input.GetButtonDown("Fire3")) {
-			this.battle.EndBattle (BattleStates.WinStatus.Escape);
-			this.battleInProgress = false;
+			battle.EndBattle (BattleStates.WinStatus.Escape);
+			battleInProgress = false;
 			Debug.Log ("Ending the battle...");
 		}
 	}
