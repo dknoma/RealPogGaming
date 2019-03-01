@@ -7,9 +7,9 @@ public class ElementalAffinity : MonoBehaviour {
 	// water-electric = 0-3, light-dark = 4,5, none = 6
 	public enum Element { Water, Fire, Earth, Electric, Light, Dark, None };
 
-	private static int lastNormalEle = (int)ElementalAffinity.Element.Electric;
+	private static readonly int lastNormalEle = (int)Element.Electric;
 
-	public static float calcElementalDamage(Element source, Element target) {
+	public static float CalcElementalDamage(Element source, Element target) {
 		switch(source) {
 		case Element.None:
 			return 1.0f;
@@ -17,17 +17,17 @@ public class ElementalAffinity : MonoBehaviour {
 		case Element.Fire:
 		case Element.Earth:
 		case Element.Electric:
-			return calcNormal(source, target);
+			return CalcNormal(source, target);
 		case Element.Light:
 		case Element.Dark:
-			return calcLD(source, target);
+			return CalcLD(source, target);
 		default:
 			return 1.0f;
 		}
 	}
 
 	// Normal elemental damage calculations
-	private static float calcNormal(Element source, Element target) {
+	private static float CalcNormal(Element source, Element target) {
 		if ((int)target == ((int)source + 1) % (lastNormalEle+1)) {
 			return 1.5f;
 		} else if ((int)target == ((int)source + lastNormalEle) % (lastNormalEle+1)) {
@@ -37,7 +37,7 @@ public class ElementalAffinity : MonoBehaviour {
 	}
 
 	// Light-dark elemental damage calculations
-	private static float calcLD(Element source, Element target) {
+	private static float CalcLD(Element source, Element target) {
 		if((int) target > lastNormalEle && ((int) target == ((int) source+1) % 6 || (int) target == ((int) source+5) % 6)) {
 			return 1.5f;
 		}

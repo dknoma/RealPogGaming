@@ -449,7 +449,7 @@ public class BattleStates : MonoBehaviour {
 		int damage = Mathf.RoundToInt(
 			(Mathf.Pow(source.GetCurrentAtk(), 2) + source.GetRuneAtk())/ (target.GetCurrentDef() + target.GetRuneDef()) 	// Standard atk-def calc
 			* (1 + (source.currentLevel*2 - target.currentLevel) / 50)	// Level compensation
-			* ElementalAffinity.calcElementalDamage(source.getCurrentBattleActions().getElement(), 
+			* ElementalAffinity.CalcElementalDamage(source.getCurrentBattleActions().getElement(), 
 				target.element));  				// elemental multiplier
 		return damage;
 	}
