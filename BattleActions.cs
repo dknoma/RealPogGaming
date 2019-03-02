@@ -10,20 +10,20 @@ public class BattleActions : MonoBehaviour {
 
 	private Action currentAction;
 	private int atk;
-	private ElementalAffinity.Element element = ElementalAffinity.Element.None;
+	private Element element = Element.None;
 
 	public BattleActions() {
 	}
 
 	public int getAtk() {
-		return this.atk;
+		return atk;
 	}
 
-	public ElementalAffinity.Element getElement() {
-		return this.element;
+	public Element getElement() {
+		return element;
 	}
 
-	public void setElement(ElementalAffinity.Element element) {
+	public void setElement(Element element) {
 		this.element = element;
 	}
 }

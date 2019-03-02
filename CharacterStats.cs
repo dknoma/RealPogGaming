@@ -38,7 +38,7 @@ public class CharacterStats : StatusEffects {
 	protected int baseSpd = 5;
 	protected int currentSpd;
 	protected int totalRuneSpd;
-	public ElementalAffinity.Element element;
+	public Element element;
 
 	//[SerializeField]
 	//	protected int basePAtk = 5;

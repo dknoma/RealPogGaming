@@ -2,10 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// water-electric = 0-3, light-dark = 4,5, none = 6
+public enum Element { 
+	Water, 
+	Fire, 
+	Earth, 
+	Electric, 
+	Light, 
+	Dark,
+	None 
+};
+
 public class ElementalAffinity : MonoBehaviour {
 
-	// water-electric = 0-3, light-dark = 4,5, none = 6
-	public enum Element { Water, Fire, Earth, Electric, Light, Dark, None };
 
 	private static readonly int lastNormalEle = (int)Element.Electric;
 
