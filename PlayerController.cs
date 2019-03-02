@@ -97,6 +97,7 @@ public class PlayerController : MonoBehaviour {
 		switch (facingDirection) {
 			case Direction.Up:
 				rb2d.Cast(Vector2.up, resultsUp, Mathf.Infinity);
+				// Block all upward directions to prevent sliding into walls
 				if (Mathf.Abs(resultsUp[0].distance) < 0.5f) {
 					isDirectionBlocked[(int)facingDirection] = true;
 					isDirectionBlocked[(int)Direction.UpLeft] = true;
@@ -107,6 +108,7 @@ public class PlayerController : MonoBehaviour {
 				break;
 			case Direction.Down:
 				rb2d.Cast(Vector2.down, resultsDown, Mathf.Infinity);
+				// Block all downward ...
 				if (Mathf.Abs(resultsDown[0].distance) < 0.5f) {
 					isDirectionBlocked[(int)facingDirection] = true;
 					isDirectionBlocked[(int)Direction.DownLeft] = true;
@@ -117,6 +119,7 @@ public class PlayerController : MonoBehaviour {
 					break;
 			case Direction.Right:
 				rb2d.Cast(Vector2.right, resultsRight, Mathf.Infinity);
+				// ...
 				if (Mathf.Abs(resultsRight[0].distance) < 0.5f) {
 					isDirectionBlocked[(int)facingDirection] = true;
 					isDirectionBlocked[(int)Direction.UpRight] = true;
@@ -127,6 +130,7 @@ public class PlayerController : MonoBehaviour {
 				break;
 			case Direction.Left:
 				rb2d.Cast(Vector2.left, resultsLeft, Mathf.Infinity);
+				// ...
 				if (Mathf.Abs(resultsLeft[0].distance) < 0.5f) {
 					isDirectionBlocked[(int)facingDirection] = true;
 					isDirectionBlocked[(int)Direction.UpLeft] = true;
@@ -138,10 +142,12 @@ public class PlayerController : MonoBehaviour {
 			case Direction.UpRight:
 				rb2d.Cast(Vector2.up, resultsUp, Mathf.Infinity);
 				rb2d.Cast(Vector2.right, resultsRight, Mathf.Infinity);
+				// ...
 				if (Mathf.Abs(resultsUp[0].distance) < 0.5f) {
 					isDirectionBlocked[(int)facingDirection] = true;
 					isDirectionBlocked[(int)Direction.Up] = true;
 				} else {
+					// Only unblock the diagonal if not blocked my multiple things
 					if (!isDirectionBlocked[(int)Direction.Right]) {
 						isDirectionBlocked[(int)facingDirection] = false;
 					}
@@ -151,6 +157,7 @@ public class PlayerController : MonoBehaviour {
 					isDirectionBlocked[(int)facingDirection] = true;
 					isDirectionBlocked[(int)Direction.Right] = true;
 				} else {
+					// Only unblock the diagonal if not blocked my multiple things
 					if (!isDirectionBlocked[(int)Direction.Up]) {
 						isDirectionBlocked[(int)facingDirection] = false;
 					}
@@ -160,11 +167,12 @@ public class PlayerController : MonoBehaviour {
 			case Direction.UpLeft:
 				rb2d.Cast(Vector2.up, resultsUp, Mathf.Infinity);
 				rb2d.Cast(Vector2.left, resultsLeft, Mathf.Infinity);
-				//isDirectionBlocked[(int)facingDirection] = true;
+				// ...
 				if (Mathf.Abs(resultsUp[0].distance) < 0.5f) {
 					isDirectionBlocked[(int)facingDirection] = true;
 					isDirectionBlocked[(int)Direction.Up] = true;
 				} else {
+					// Only unblock the diagonal if not blocked my multiple things
 					if (!isDirectionBlocked[(int)Direction.Left]) {
 						isDirectionBlocked[(int)facingDirection] = false;
 					}
@@ -174,6 +182,7 @@ public class PlayerController : MonoBehaviour {
 					isDirectionBlocked[(int)facingDirection] = true;
 					isDirectionBlocked[(int)Direction.Left] = true;
 				} else {
+					// Only unblock the diagonal if not blocked my multiple things
 					if (!isDirectionBlocked[(int)Direction.Up]) {
 						isDirectionBlocked[(int)facingDirection] = false;
 					}
@@ -183,11 +192,12 @@ public class PlayerController : MonoBehaviour {
 			case Direction.DownRight:
 				rb2d.Cast(Vector2.down, resultsDown, Mathf.Infinity);
 				rb2d.Cast(Vector2.right, resultsRight, Mathf.Infinity);
-				//isDirectionBlocked[(int)facingDirection] = true;
+				// ...
 				if (Mathf.Abs(resultsDown[0].distance) < 0.5f) {
 					isDirectionBlocked[(int)facingDirection] = true;
 					isDirectionBlocked[(int)Direction.Down] = true;
 				} else {
+					// Only unblock the diagonal if not blocked my multiple things
 					if (!isDirectionBlocked[(int)Direction.Right]) {
 						isDirectionBlocked[(int)facingDirection] = false;
 					}
@@ -197,6 +207,7 @@ public class PlayerController : MonoBehaviour {
 					isDirectionBlocked[(int)facingDirection] = true;
 					isDirectionBlocked[(int)Direction.Right] = true;
 				} else {
+					// Only unblock the diagonal if not blocked my multiple things
 					if (!isDirectionBlocked[(int)Direction.Down]) {
 						isDirectionBlocked[(int)facingDirection] = false;
 					}
@@ -206,11 +217,12 @@ public class PlayerController : MonoBehaviour {
 			case Direction.DownLeft:
 				rb2d.Cast(Vector2.down, resultsDown, Mathf.Infinity);
 				rb2d.Cast(Vector2.left, resultsLeft, Mathf.Infinity);
-				//isDirectionBlocked[(int)facingDirection] = true;
+				// ...
 				if (Mathf.Abs(resultsDown[0].distance) < 0.5f) {
 					isDirectionBlocked[(int)facingDirection] = true;
 					isDirectionBlocked[(int)Direction.Down] = true;
 				} else {
+					// Only unblock the diagonal if not blocked my multiple things
 					if (!isDirectionBlocked[(int)Direction.Left]) {
 						isDirectionBlocked[(int)facingDirection] = false;
 					}
@@ -220,101 +232,17 @@ public class PlayerController : MonoBehaviour {
 					isDirectionBlocked[(int)facingDirection] = true;
 					isDirectionBlocked[(int)Direction.Left] = true;
 				} else {
+					// Only unblock the diagonal if not blocked my multiple things
 					if (!isDirectionBlocked[(int)Direction.Down]) {
 						isDirectionBlocked[(int)facingDirection] = false;
 					}
 					isDirectionBlocked[(int)Direction.Left] = false;
 				}
-				//isDirectionBlocked[(int)Direction.DownLeft] = true;
 				break;
 
 		}
-		//} else {
-		//	for (int i = 0; i < isDirectionBlocked.Length; i++) {
-		//		isDirectionBlocked[i] = false;
-		//	}
-		//}
 	}
 
-	//if(Mathf.Abs(distance) < 0.5f) {
-			//switch(facingDirection) {
-			//	case Direction.Up:
-			//		isDirectionBlocked[(int)facingDirection] = true;
-			//		isDirectionBlocked[(int)Direction.UpLeft] = true;
-			//		isDirectionBlocked[(int)Direction.UpRight] = true;
-			//		break;
-			//	case Direction.Down:
-			//		isDirectionBlocked[(int)facingDirection] = true;
-			//		isDirectionBlocked[(int)Direction.DownLeft] = true;
-			//		isDirectionBlocked[(int)Direction.DownRight] = true;
-			//		break;
-			//	case Direction.Right:
-			//		isDirectionBlocked[(int)facingDirection] = true;
-			//		isDirectionBlocked[(int)Direction.UpRight] = true;
-			//		isDirectionBlocked[(int)Direction.DownRight] = true;
-			//		break;
-			//	case Direction.Left:
-			//		isDirectionBlocked[(int)facingDirection] = true;
-			//		isDirectionBlocked[(int)Direction.UpLeft] = true;
-			//		isDirectionBlocked[(int)Direction.DownLeft] = true;
-			//		break;
-			//	case Direction.UpRight:
-			//		isDirectionBlocked[(int)facingDirection] = true;
-			//		isDirectionBlocked[(int)Direction.Up] = true;
-			//		//if(!isDirectionBlocked[(int)Direction.Up]) {
-			//		//	isDirectionBlocked[(int)Direction.Right] = true;
-			//		//}
-			//		break;
-			//	case Direction.UpLeft:
-			//		isDirectionBlocked[(int)facingDirection] = true;
-			//		isDirectionBlocked[(int)Direction.Up] = true;
-			//		//if (!isDirectionBlocked[(int)Direction.Up]) {
-			//			//isDirectionBlocked[(int)Direction.Left] = true;
-			//		//}
-			//		//if (!isDirectionBlocked[(int)Direction.Left]) {
-			//		//	isDirectionBlocked[(int)Direction.Up] = true;
-			//		//} 
-			//		break;
-			//	case Direction.DownRight:
-			//		isDirectionBlocked[(int)facingDirection] = true;
-			//		isDirectionBlocked[(int)Direction.Down] = true;
-			//		//isDirectionBlocked[(int)Direction.Right] = true;
-			//		break;
-			//	case Direction.DownLeft:
-			//		isDirectionBlocked[(int)facingDirection] = true;
-			//		isDirectionBlocked[(int)Direction.Down] = true;
-			//		//isDirectionBlocked[(int)Direction.DownLeft] = true;
-			//		break;
-
-			//}
-
-//private void OnCollisionStay2D(Collision2D collision) {
-//	if(collision.gameObject.CompareTag("Platform")) {
-//		Debug.Log("Touching a platform.");
-//		//int contacts = collision.contactCount;
-//		//Debug.Log(string.Format("contacts: {0}", contacts));
-//		ContactPoint2D[] contactPoints = new ContactPoint2D[10];
-//		collider.GetContacts(contactPoints);
-//		Debug.Log(string.Format("contacts: {0}", contactPoints[0].point));
-//		//transform.position.x
-//		//isBlocked = true;
-//		isDirectionBlocked[(int)facingDirection] = true;
-//		//transform.
-//		//blockedDirection = facingDirection;
-//	}
-//}
-
-//private void OnCollisionExit(Collision collision) {
-//	if (collision.gameObject.CompareTag("Platform")) {
-//		Debug.Log("Not touching a platform.");
-//		//isBlocked = false;
-//		//isDirectionBlocked[(int)blockedDirection] = false;
-//		//isDirectionBlocked[(int)facingDirection] = false;
-//		for(int i = 0; i < isDirectionBlocked.Length; i++) {
-//			isDirectionBlocked[i] = false;
-//		}
-//	}
-//}
 
 private void MovePlayer() {
 		//Debug.Log(string.Format("v: {0}, h {1}", Input.GetAxisRaw("Vertical"), Input.GetAxisRaw("Horizontal")));
