@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class TopDownPlayerOrder : MonoBehaviour {
 // Update is called once per frame
-	void Update(){
+	void Update() {
 		// Get object height object from parent
 		// Update the objects sorting order depending on if want to determine
 		// order w/ height
