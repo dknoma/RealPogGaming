@@ -10,6 +10,6 @@ public class TopDownPlayerOrder : MonoBehaviour {
 		// order w/ height
 		PlayerController character = GetComponentInParent<PlayerController>();
 		gameObject.GetComponent<Renderer>().sortingOrder = (int)(transform.position.y * -10
-		+ ((character != null  ? character.GetJumpingHeight() + (character.GetTotalHeight()*10) : 0) * 10));
+		+ ((character != null  ? character.GetJumpingHeight() + (character.GetCurrentHeight()*10) : 0) * 10));
 	}
 }

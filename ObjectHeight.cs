@@ -34,7 +34,7 @@ public class ObjectHeight : MonoBehaviour {
 			coll = GetComponent<CompositeCollider2D>();
 			GameObject dummyObj = GetComponentInChildren<ObjectPosition>().gameObject;
 			objectPosition = dummyObj.transform.position;
-			Debug.Log(string.Format("{0} pos: {1}", name, objectPosition));
+			//Debug.Log(string.Format("{0} pos: {1}", name, objectPosition));
 
 			// Send raycast down to check the height of this object
 			if (!checkUpCollider) {
@@ -56,13 +56,20 @@ public class ObjectHeight : MonoBehaviour {
 				}
 				Physics2D.Raycast(bottomeOfObject, Vector2.up, objectContactFilter, groundHits, Mathf.Infinity);
 			}
-			Debug.Log(string.Format("{0} from center: {1}, name: {2}", name,
-				Mathf.Round(groundHits[0].distance), groundHits[0].collider.name));
+			//Debug.Log(string.Format("{0} from center: {1}, name: {2}", name,
+				//Mathf.Round(groundHits[0].distance), groundHits[0].collider.name));
 			height = Mathf.Round(groundHits[0].distance);
 		} else {
 			Debug.Log(string.Format("Using a fixed height: {0}", height));
 		}
 	}
+
+	//private void OnValidate() {
+	//	ObjectPosition dummyObj = GetComponentInChildren<ObjectPosition>();
+	//	if(dummyObj == null) {
+	//		Debug.unityLogger.LogError("ObjectHeight","ObjectPosition component could not be located in the children. Please make sure it's attached.", dummyObj);
+	//	}
+	//}
 
 	// Draw debug ray to show where the raycast is originating from
 	// Red line means the cast is down; yellow is up
