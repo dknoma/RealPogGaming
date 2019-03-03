@@ -30,7 +30,7 @@ public class PlayerController : MonoBehaviour {
 	private Animator animator;
 	private BoxCollider2D collider;
 	private Rigidbody2D rb2d;
-	private ContactFilter2D wallContactFilter;
+	private ContactFilter2D baseContactFilter;
 	private ContactFilter2D platformContactFilter;
 	private PlayerShadow shadow;
 	private GameObject jumpHeight;
@@ -72,7 +72,7 @@ public class PlayerController : MonoBehaviour {
 		collider = GetComponent<BoxCollider2D>();
 		rb2d = GetComponent<Rigidbody2D>();
 		//wallContactFilter = new ContactFilter2D();
-		wallContactFilter.SetLayerMask(LayerMask.GetMask("Wall"));
+		baseContactFilter.SetLayerMask(LayerMask.GetMask("Base"));
 		platformContactFilter.SetLayerMask(LayerMask.GetMask("Platform"));
 		yOffset = Mathf.Abs(collider.offset.y);
 		yRadius = collider.size.y / 2;
@@ -124,8 +124,8 @@ public class PlayerController : MonoBehaviour {
 						int platHeight = (int)pResultsUp[0].collider.gameObject.GetComponent<PlatformHeight>().height;
 						if (currentHeight + totalHeight >= platHeight) {
 							Debug.Log("Trying to jump on platform");
-							wallContactFilter.ClearLayerMask();
-							wallContactFilter.NoFilter();
+							baseContactFilter.ClearLayerMask();
+							baseContactFilter.NoFilter();
 							ClearBlocks();
 							//totalHeight += platHeight;
 							//isOnPlatform = true;
@@ -138,33 +138,33 @@ public class PlayerController : MonoBehaviour {
 				break;
 			// TODO: handle case when going down (behind a platform)
 			case Direction.Down:
-				rb2d.Cast(Vector2.down, wallContactFilter, resultsDown, Mathf.Infinity);
+				rb2d.Cast(Vector2.down, baseContactFilter, resultsDown, Mathf.Infinity);
 				break;
 			case Direction.Right:
-				rb2d.Cast(Vector2.right, wallContactFilter, resultsRight, Mathf.Infinity);
+				rb2d.Cast(Vector2.right, baseContactFilter, resultsRight, Mathf.Infinity);
 				break;
 			case Direction.Left:
-				rb2d.Cast(Vector2.left, wallContactFilter, resultsLeft, Mathf.Infinity);
+				rb2d.Cast(Vector2.left, baseContactFilter, resultsLeft, Mathf.Infinity);
 				break;
 			case Direction.UpRight:
 				//rb2d.Cast(new Vector2(1, 1), contactFilter, resultsUpRight, Mathf.Infinity);
-				rb2d.Cast(Vector2.up, wallContactFilter, resultsUp, Mathf.Infinity);
-				rb2d.Cast(Vector2.right, wallContactFilter, resultsRight, Mathf.Infinity);
+				rb2d.Cast(Vector2.up, baseContactFilter, resultsUp, Mathf.Infinity);
+				rb2d.Cast(Vector2.right, baseContactFilter, resultsRight, Mathf.Infinity);
 				break;
 			case Direction.UpLeft:
 				//rb2d.Cast(new Vector2(-1, 1), contactFilter, resultsUpLeft, Mathf.Infinity);
-				rb2d.Cast(Vector2.up, wallContactFilter, resultsUp, Mathf.Infinity);
-				rb2d.Cast(Vector2.left, wallContactFilter, resultsLeft, Mathf.Infinity);
+				rb2d.Cast(Vector2.up, baseContactFilter, resultsUp, Mathf.Infinity);
+				rb2d.Cast(Vector2.left, baseContactFilter, resultsLeft, Mathf.Infinity);
 				break;
 			case Direction.DownRight:
 				//rb2d.Cast(new Vector2(1, -1), contactFilter, resultsDownRight, Mathf.Infinity);
-				rb2d.Cast(Vector2.down, wallContactFilter, resultsDown, Mathf.Infinity);
-				rb2d.Cast(Vector2.right, wallContactFilter, resultsRight, Mathf.Infinity);
+				rb2d.Cast(Vector2.down, baseContactFilter, resultsDown, Mathf.Infinity);
+				rb2d.Cast(Vector2.right, baseContactFilter, resultsRight, Mathf.Infinity);
 				break;
 			case Direction.DownLeft:
 				//rb2d.Cast(new Vector2(-1, -1), contactFilter, resultsDownLeft, Mathf.Infinity);
-				rb2d.Cast(Vector2.down, wallContactFilter, resultsDown, Mathf.Infinity);
-				rb2d.Cast(Vector2.left, wallContactFilter, resultsLeft, Mathf.Infinity);
+				rb2d.Cast(Vector2.down, baseContactFilter, resultsDown, Mathf.Infinity);
+				rb2d.Cast(Vector2.left, baseContactFilter, resultsLeft, Mathf.Infinity);
 				break;
 
 		}
@@ -562,7 +562,7 @@ public class PlayerController : MonoBehaviour {
 		//Vector2 currPos = new Vector2(transform.position.x, transform.position.y);
 		switch (facingDirection) {
 			case Direction.Up:
-				if (targetRb2d.Cast(Vector2.up, wallContactFilter, resultsUp, Mathf.Infinity) > 0) {
+				if (targetRb2d.Cast(Vector2.up, baseContactFilter, resultsUp, Mathf.Infinity) > 0) {
 					// Block all upward directions to prevent sliding into walls
 					if (Mathf.Abs(resultsUp[0].distance) < 0.5f) {
 						isDirectionBlocked[(int)facingDirection] = true;
@@ -575,7 +575,7 @@ public class PlayerController : MonoBehaviour {
 				break;
 			// TODO: handle case when going down (behind a platform)
 			case Direction.Down:
-				if(targetRb2d.Cast(Vector2.down, wallContactFilter, resultsDown, Mathf.Infinity) > 0) {
+				if(targetRb2d.Cast(Vector2.down, baseContactFilter, resultsDown, Mathf.Infinity) > 0) {
 					// Block all downward ...
 					if (Mathf.Abs(resultsDown[0].distance) < 0.5f) {
 						isDirectionBlocked[(int)facingDirection] = true;
@@ -587,7 +587,7 @@ public class PlayerController : MonoBehaviour {
 				}
 				break;
 			case Direction.Right:
-				if(targetRb2d.Cast(Vector2.right, wallContactFilter, resultsRight, Mathf.Infinity) > 0) {
+				if(targetRb2d.Cast(Vector2.right, baseContactFilter, resultsRight, Mathf.Infinity) > 0) {
 					// ...
 					if (Mathf.Abs(resultsRight[0].distance) < 0.5f) {
 						isDirectionBlocked[(int)facingDirection] = true;
@@ -599,7 +599,7 @@ public class PlayerController : MonoBehaviour {
 				}
 				break;
 			case Direction.Left:
-				if (targetRb2d.Cast(Vector2.left, wallContactFilter, resultsLeft, Mathf.Infinity) > 0) {
+				if (targetRb2d.Cast(Vector2.left, baseContactFilter, resultsLeft, Mathf.Infinity) > 0) {
 					// ...
 					if (Mathf.Abs(resultsLeft[0].distance) < 0.5f) {
 						isDirectionBlocked[(int)facingDirection] = true;
@@ -612,8 +612,8 @@ public class PlayerController : MonoBehaviour {
 				break;
 			case Direction.UpRight:
 				//rb2d.Cast(new Vector2(1, 1), contactFilter, resultsUpRight, Mathf.Infinity);
-				int upHit = targetRb2d.Cast(Vector2.up, wallContactFilter, resultsUp, Mathf.Infinity);
-				int rightHit = targetRb2d.Cast(Vector2.right, wallContactFilter, resultsRight, Mathf.Infinity);
+				int upHit = targetRb2d.Cast(Vector2.up, baseContactFilter, resultsUp, Mathf.Infinity);
+				int rightHit = targetRb2d.Cast(Vector2.right, baseContactFilter, resultsRight, Mathf.Infinity);
 				// ...
 				if (upHit > 0 && Mathf.Abs(resultsUp[0].distance) < 0.5f) {
 					isDirectionBlocked[(int)facingDirection] = true;
@@ -644,8 +644,8 @@ public class PlayerController : MonoBehaviour {
 				break;
 			case Direction.UpLeft:
 				//rb2d.Cast(new Vector2(-1, 1), contactFilter, resultsUpLeft, Mathf.Infinity);
-				upHit = targetRb2d.Cast(Vector2.up, wallContactFilter, resultsUp, Mathf.Infinity);
-				int leftHit = targetRb2d.Cast(Vector2.left, wallContactFilter, resultsLeft, Mathf.Infinity);
+				upHit = targetRb2d.Cast(Vector2.up, baseContactFilter, resultsUp, Mathf.Infinity);
+				int leftHit = targetRb2d.Cast(Vector2.left, baseContactFilter, resultsLeft, Mathf.Infinity);
 				// ...
 				if (upHit > 0 && Mathf.Abs(resultsUp[0].distance) < 0.5f) {
 					isDirectionBlocked[(int)facingDirection] = true;
@@ -676,8 +676,8 @@ public class PlayerController : MonoBehaviour {
 				break;
 			case Direction.DownRight:
 				//rb2d.Cast(new Vector2(1, -1), contactFilter, resultsDownRight, Mathf.Infinity);
-				int downHit = targetRb2d.Cast(Vector2.down, wallContactFilter, resultsDown, Mathf.Infinity);
-				rightHit = targetRb2d.Cast(Vector2.right, wallContactFilter, resultsRight, Mathf.Infinity);
+				int downHit = targetRb2d.Cast(Vector2.down, baseContactFilter, resultsDown, Mathf.Infinity);
+				rightHit = targetRb2d.Cast(Vector2.right, baseContactFilter, resultsRight, Mathf.Infinity);
 				// ...
 				if (downHit > 0 && Mathf.Abs(resultsDown[0].distance) < 0.5f) {
 					isDirectionBlocked[(int)facingDirection] = true;
@@ -708,8 +708,8 @@ public class PlayerController : MonoBehaviour {
 				break;
 			case Direction.DownLeft:
 				//rb2d.Cast(new Vector2(-1, -1), contactFilter, resultsDownLeft, Mathf.Infinity);
-				downHit = targetRb2d.Cast(Vector2.down, wallContactFilter, resultsDown, Mathf.Infinity);
-				leftHit = targetRb2d.Cast(Vector2.left, wallContactFilter, resultsLeft, Mathf.Infinity);
+				downHit = targetRb2d.Cast(Vector2.down, baseContactFilter, resultsDown, Mathf.Infinity);
+				leftHit = targetRb2d.Cast(Vector2.left, baseContactFilter, resultsLeft, Mathf.Infinity);
 				// ...
 				if (downHit > 0 && Mathf.Abs(resultsDown[0].distance) < 0.5f) {
 					isDirectionBlocked[(int)facingDirection] = true;

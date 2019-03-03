@@ -42,6 +42,7 @@ public class PlatformHeight : MonoBehaviour {
 					bottomOfPlatform = new Vector3(platformPosition.x, platformPosition.y - coll.bounds.extents.y + .1f,
 					platformPosition.z);
 				}
+				Physics2D.Raycast(bottomOfPlatform, Vector2.down, groundContactFilter, groundHits, Mathf.Infinity);
 			} else {
 				if (startRayAboveEdge) {
 					bottomOfPlatform = new Vector3(platformPosition.x, platformPosition.y - coll.bounds.extents.y + .1f,
@@ -50,8 +51,8 @@ public class PlatformHeight : MonoBehaviour {
 					bottomOfPlatform = new Vector3(platformPosition.x, platformPosition.y - coll.bounds.extents.y - .1f,
 					platformPosition.z);
 				}
+				Physics2D.Raycast(bottomOfPlatform, Vector2.up, groundContactFilter, groundHits, Mathf.Infinity);
 			}
-			int hits = Physics2D.Raycast(bottomOfPlatform, Vector2.down, groundContactFilter, groundHits, Mathf.Infinity);
 			Debug.Log(string.Format("{0} from center: {1}, name: {2}", name,
 				Mathf.Round(groundHits[0].distance), groundHits[0].collider.name));
 			height = Mathf.Round(groundHits[0].distance);

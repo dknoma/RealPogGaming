@@ -6,6 +6,7 @@ using UnityEngine;
 public class ObjectHeight : MonoBehaviour {
 
 	public float height;
+	public bool determinePriortyWithHeight;
 	public bool fixedHeight;
 	public bool fixedSorting;
 	public bool checkUpCollider;
@@ -44,6 +45,7 @@ public class ObjectHeight : MonoBehaviour {
 					bottomeOfObject = new Vector3(objectPosition.x, objectPosition.y - coll.bounds.extents.y + 0.1f,
 						objectPosition.z);
 				}
+				Physics2D.Raycast(bottomeOfObject, Vector2.down, objectContactFilter, groundHits, Mathf.Infinity);
 			} else {
 				if (startRayAboveEdge) {
 					bottomeOfObject = new Vector3(objectPosition.x, objectPosition.y - coll.bounds.extents.y + 0.1f,
@@ -52,15 +54,11 @@ public class ObjectHeight : MonoBehaviour {
 					bottomeOfObject = new Vector3(objectPosition.x, objectPosition.y - coll.bounds.extents.y - 0.1f,
 						objectPosition.z);
 				}
+				Physics2D.Raycast(bottomeOfObject, Vector2.up, objectContactFilter, groundHits, Mathf.Infinity);
 			}
-			Physics2D.Raycast(bottomeOfObject, Vector2.up, objectContactFilter, groundHits, Mathf.Infinity);
 			Debug.Log(string.Format("{0} from center: {1}, name: {2}", name,
 				Mathf.Round(groundHits[0].distance), groundHits[0].collider.name));
 			height = Mathf.Round(groundHits[0].distance);
-			// Set sort order to platform positions sorting order
-			if (!fixedSorting && dummyObj.GetComponent<Renderer>() != null) {
-				GetComponent<Renderer>().sortingOrder = dummyObj.GetComponent<Renderer>().sortingOrder;
-			}
 		} else {
 			Debug.Log(string.Format("Using a fixed height: {0}", height));
 		}
@@ -76,6 +74,11 @@ public class ObjectHeight : MonoBehaviour {
 			} else {
 				Debug.DrawRay(lineOrigin, Vector3.up * height, upColor);
 			}
+		}
+		GameObject dummyObj = GetComponentInChildren<ObjectPosition>().gameObject;
+		// Set sort order to platform positions sorting order
+		if (!fixedSorting && dummyObj.GetComponent<Renderer>() != null) {
+			GetComponent<Renderer>().sortingOrder = dummyObj.GetComponent<Renderer>().sortingOrder;
 		}
 	}
 }

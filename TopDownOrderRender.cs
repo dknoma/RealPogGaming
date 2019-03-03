@@ -6,6 +6,12 @@ using UnityEngine;
 public class TopDownOrderRender : MonoBehaviour {
 
 	void Update() {
-		gameObject.GetComponent<Renderer>().sortingOrder = (int)(transform.position.y * -10);
+		// Get object height object from parent
+		// Update the objects sorting order depending on if want to determine
+		// order w/ height
+		ObjectHeight objHeight = GetComponentInParent<ObjectHeight>();
+		Debug.Log(string.Format("a: {0}", (objHeight != null && objHeight.determinePriortyWithHeight ? objHeight.height : 0) * 10));
+		gameObject.GetComponent<Renderer>().sortingOrder = (int)(transform.position.y * -10 
+		+ ((objHeight != null && objHeight.determinePriortyWithHeight ? objHeight.height : 0) * 10));
 	}
 }
