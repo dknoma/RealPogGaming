@@ -3,55 +3,57 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [ExecuteInEditMode]
-public class PlatformHeight : MonoBehaviour {
+public class ObjectHeight : MonoBehaviour {
 
 	public float height;
 	public bool fixedHeight;
 	public bool fixedSorting;
 	public bool checkUpCollider;
-	public bool debugLines = true;
 	public bool startRayAboveEdge;
+	public bool debugLines = true;
+	public LayerMask objectMaskToCheck;
 	public float debugRayPos;
 	public Color upColor;
 	public Color downColor;
-	//public LayerMask groundMask = LayerMask.GetMask("Ground");
-	//public LayerMask voidMask = LayerMask.GetMask("Void");
 
-	//private Rigidbody2D rb2d;
 	private CompositeCollider2D coll;
-	private ContactFilter2D groundContactFilter;
+	private ContactFilter2D objectContactFilter;
+	private ContactFilter2D  platformContactFilter;
 	private ContactFilter2D voidContactFilter;
 	private RaycastHit2D[] groundHits = new RaycastHit2D[3];
 	private RaycastHit2D[] voidHits = new RaycastHit2D[3];
-	private Vector3 platformPosition;
-	private Vector3 bottomOfPlatform;
+	private Vector3 objectPosition;
+	private Vector3 bottomeOfObject;
 
-	void OnEnable()  {
+	void OnEnable() {
 		// If platform doesn't have a fixed height, calculate the height from the bottom of the platform
 		if (!fixedHeight) {
-			groundContactFilter.SetLayerMask(LayerMask.GetMask("Ground"));
+			objectContactFilter.SetLayerMask(objectMaskToCheck);
+			//platformContactFilter.SetLayerMask(LayerMask.GetMask("Platform"));
 			coll = GetComponent<CompositeCollider2D>();
 			GameObject dummyObj = GetComponentInChildren<ObjectPosition>().gameObject;
-			platformPosition = dummyObj.transform.position;
-			Debug.Log(string.Format("{0} pos: {1}", name, platformPosition));
-			if(!checkUpCollider) {
+			objectPosition = dummyObj.transform.position;
+			Debug.Log(string.Format("{0} pos: {1}", name, objectPosition));
+
+			// Send raycast down to check the height of this object
+			if (!checkUpCollider) {
 				if (!startRayAboveEdge) {
-					bottomOfPlatform = new Vector3(platformPosition.x, platformPosition.y - coll.bounds.extents.y - .1f,
-					platformPosition.z);
+					bottomeOfObject = new Vector3(objectPosition.x, objectPosition.y - coll.bounds.extents.y - 0.1f,
+						objectPosition.z);
 				} else {
-					bottomOfPlatform = new Vector3(platformPosition.x, platformPosition.y - coll.bounds.extents.y + .1f,
-					platformPosition.z);
+					bottomeOfObject = new Vector3(objectPosition.x, objectPosition.y - coll.bounds.extents.y + 0.1f,
+						objectPosition.z);
 				}
 			} else {
 				if (startRayAboveEdge) {
-					bottomOfPlatform = new Vector3(platformPosition.x, platformPosition.y - coll.bounds.extents.y + .1f,
-					platformPosition.z);
+					bottomeOfObject = new Vector3(objectPosition.x, objectPosition.y - coll.bounds.extents.y + 0.1f,
+						objectPosition.z);
 				} else {
-					bottomOfPlatform = new Vector3(platformPosition.x, platformPosition.y - coll.bounds.extents.y - .1f,
-					platformPosition.z);
+					bottomeOfObject = new Vector3(objectPosition.x, objectPosition.y - coll.bounds.extents.y - 0.1f,
+						objectPosition.z);
 				}
 			}
-			int hits = Physics2D.Raycast(bottomOfPlatform, Vector2.down, groundContactFilter, groundHits, Mathf.Infinity);
+			Physics2D.Raycast(bottomeOfObject, Vector2.up, objectContactFilter, groundHits, Mathf.Infinity);
 			Debug.Log(string.Format("{0} from center: {1}, name: {2}", name,
 				Mathf.Round(groundHits[0].distance), groundHits[0].collider.name));
 			height = Mathf.Round(groundHits[0].distance);
@@ -65,9 +67,10 @@ public class PlatformHeight : MonoBehaviour {
 	}
 
 	// Draw debug ray to show where the raycast is originating from
+	// Red line means the cast is down; yellow is up
 	void Update() {
 		if (debugLines) {
-			Vector3 lineOrigin = new Vector3(bottomOfPlatform.x + 0.5f, bottomOfPlatform.y, bottomOfPlatform.y);
+			Vector3 lineOrigin = new Vector3(bottomeOfObject.x + debugRayPos, bottomeOfObject.y, bottomeOfObject.y);
 			if (!checkUpCollider) {
 				Debug.DrawRay(lineOrigin, Vector3.down * height, downColor);
 			} else {

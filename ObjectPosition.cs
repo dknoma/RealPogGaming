@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [ExecuteInEditMode]
-public class PlatformPosition : MonoBehaviour {
+public class ObjectPosition : MonoBehaviour {
 
 	//public Vector3 position;
 
