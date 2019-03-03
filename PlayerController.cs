@@ -59,6 +59,7 @@ public class PlayerController : MonoBehaviour {
 	private bool jumping;
 	private bool isFalling;
 	private bool isOnPlatform;
+	private float jumpingHeight;
 	private float currentHeight;
 	private int totalHeight;
 
@@ -82,10 +83,23 @@ public class PlayerController : MonoBehaviour {
 		jumpHeight = GameObject.FindGameObjectWithTag("JumpHeight");
 	}
 
+	public float GetJumpingHeight() {
+		return jumpingHeight;
+	}
+
+	public float GetCurrentHeight() {
+		return currentHeight;
+	}
+
+	public float GetTotalHeight() {
+		return totalHeight;
+	}
+
 	private void OnCollisionStay2D(Collision2D coll) {
-		if(coll.gameObject.CompareTag("Platform")) {
-			int platHeight = (int) coll.gameObject.GetComponent<PlatformHeight>().height;
-			if (currentHeight + totalHeight >= platHeight) {
+		if (coll.gameObject.CompareTag("Platform")) {
+			Debug.Log(string.Format("Touching platform {0}", coll.gameObject.name));
+			int platHeight = (int) coll.gameObject.GetComponent<ObjectHeight>().height;
+			if (!isOnPlatform && jumpingHeight + totalHeight >= platHeight) {
 				//wallContactFilter.ClearLayerMask();
 				isOnPlatform = true;
 				totalHeight += platHeight;
@@ -96,15 +110,18 @@ public class PlayerController : MonoBehaviour {
 
 	private void OnCollisionExit2D(Collision2D coll) {
 		if (coll.gameObject.CompareTag("Platform")) {
-			Debug.Log("\t\t\tExiting: Falling...");
-			//if (currentHeight + totalHeight > coll.gameObject.GetComponent<PlatformHeight>().height) {
-			//wallContactFilter.ClearLayerMask();
-			isFalling = true;
-			//totalHeight -= (int)coll.gameObject.GetComponent<PlatformHeight>().height;
-			//wallContactFilter.SetLayerMask(LayerMask.GetMask("Wall"));
-			isOnPlatform = false;
-			//ClearBlocks();
-			//}
+			Debug.Log(string.Format("Exiting platform {0}", coll.gameObject.name));
+			if (isOnPlatform) {
+				Debug.Log("\t\t\tExiting: Falling...");
+				//if (currentHeight + totalHeight > coll.gameObject.GetComponent<ObjectHeight>().height) {
+				//wallContactFilter.ClearLayerMask();
+				isFalling = true;
+				totalHeight -= (int)coll.gameObject.GetComponent<ObjectHeight>().height;
+				//wallContactFilter.SetLayerMask(LayerMask.GetMask("Wall"));
+				isOnPlatform = false;
+				//ClearBlocks();
+				//}
+			}
 		}
 	}
 
@@ -121,8 +138,8 @@ public class PlayerController : MonoBehaviour {
 					// Block all upward directions to prevent sliding into walls
 					//Debug.Log(string.Format("thing: {0}", pResultsUp[0].distance));
 					if (Mathf.Abs(pResultsUp[0].distance) < 4.5f && !isOnPlatform && jumping) {
-						int platHeight = (int)pResultsUp[0].collider.gameObject.GetComponent<PlatformHeight>().height;
-						if (currentHeight + totalHeight >= platHeight) {
+						int platHeight = (int)pResultsUp[0].collider.gameObject.GetComponent<ObjectHeight>().height;
+						if (jumpingHeight + totalHeight >= platHeight) {
 							Debug.Log("Trying to jump on platform");
 							baseContactFilter.ClearLayerMask();
 							baseContactFilter.NoFilter();
@@ -170,8 +187,15 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
+	private void UpdateShadowPosition() {
+		if(currentHeight > shadow.transform.position.y) {
+			shadow.transform.Translate(transform.position);
+		}
+	}
+
 	void Update() {
 		Debug.Log("on plat: " + isOnPlatform);
+		Debug.Log("total height: " + totalHeight);
 		// Let camera focus on player
 		//Vector3 newCamPos;
 		//if (grounded || (grounded && isWalking && facingDirection != Direction.Left 
@@ -231,12 +255,12 @@ public class PlayerController : MonoBehaviour {
 				transform.position = Vector3.MoveTowards(transform.position, jumpHeight.transform.position,
 						jumpSpeed * Time.deltaTime);
 				// Calculate current height when jumping
-				currentHeight = transform.position.y - groundPosition.y;
+				jumpingHeight = transform.position.y - groundPosition.y;
 				//Debug.Log(string.Format("curr h: {0}", currentHeight));
 			} else {
 				transform.position = Vector3.MoveTowards(transform.position, groundPosition,
 					jumpSpeed * Time.deltaTime);
-				currentHeight = transform.position.y - groundPosition.y;
+				jumpingHeight = transform.position.y - groundPosition.y;
 				//Debug.Log(string.Format("curr h: {0}", currentHeight));
 				if (transform.position == groundPosition) {
 					grounded = true;
