@@ -24,7 +24,7 @@ public class ObjectHeight : MonoBehaviour {
 	private RaycastHit2D[] groundHits = new RaycastHit2D[3];
 	private RaycastHit2D[] voidHits = new RaycastHit2D[3];
 	private Vector3 objectPosition;
-	private Vector3 bottomeOfObject;
+	private Vector3 boundOfObject;
 
 	void OnEnable() {
 		// If platform doesn't have a fixed height, calculate the height from the bottom of the platform
@@ -39,22 +39,22 @@ public class ObjectHeight : MonoBehaviour {
 			// Send raycast down to check the height of this object
 			if (!checkUpCollider) {
 				if (!startRayAboveEdge) {
-					bottomeOfObject = new Vector3(objectPosition.x, objectPosition.y - coll.bounds.extents.y - 0.1f,
+					boundOfObject = new Vector3(objectPosition.x, objectPosition.y - coll.bounds.extents.y - 0.1f,
 						objectPosition.z);
 				} else {
-					bottomeOfObject = new Vector3(objectPosition.x, objectPosition.y - coll.bounds.extents.y + 0.1f,
+					boundOfObject = new Vector3(objectPosition.x, objectPosition.y - coll.bounds.extents.y + 0.1f,
 						objectPosition.z);
 				}
-				Physics2D.Raycast(bottomeOfObject, Vector2.down, objectContactFilter, groundHits, Mathf.Infinity);
+				Physics2D.Raycast(boundOfObject, Vector2.down, objectContactFilter, groundHits, Mathf.Infinity);
 			} else {
 				if (startRayAboveEdge) {
-					bottomeOfObject = new Vector3(objectPosition.x, objectPosition.y - coll.bounds.extents.y + 0.1f,
+					boundOfObject = new Vector3(objectPosition.x, objectPosition.y - coll.bounds.extents.y + 0.1f,
 						objectPosition.z);
 				} else {
-					bottomeOfObject = new Vector3(objectPosition.x, objectPosition.y - coll.bounds.extents.y - 0.1f,
+					boundOfObject = new Vector3(objectPosition.x, objectPosition.y - coll.bounds.extents.y - 0.1f,
 						objectPosition.z);
 				}
-				Physics2D.Raycast(bottomeOfObject, Vector2.up, objectContactFilter, groundHits, Mathf.Infinity);
+				Physics2D.Raycast(boundOfObject, Vector2.up, objectContactFilter, groundHits, Mathf.Infinity);
 			}
 			//Debug.Log(string.Format("{0} from center: {1}, name: {2}", name,
 				//Mathf.Round(groundHits[0].distance), groundHits[0].collider.name));
@@ -75,7 +75,7 @@ public class ObjectHeight : MonoBehaviour {
 	// Red line means the cast is down; yellow is up
 	void Update() {
 		if (debugLines) {
-			Vector3 lineOrigin = new Vector3(bottomeOfObject.x + debugRayPos, bottomeOfObject.y, bottomeOfObject.y);
+			Vector3 lineOrigin = new Vector3(boundOfObject.x + debugRayPos, boundOfObject.y, boundOfObject.y);
 			if (!checkUpCollider) {
 				Debug.DrawRay(lineOrigin, Vector3.down * height, downColor);
 			} else {
