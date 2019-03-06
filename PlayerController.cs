@@ -31,7 +31,7 @@ public class PlayerController : TopDownBehavior {
 	public int platformMask;
 
 	// Constants
-	private const float boundCorrection = 1.5f;
+	private const float boundCorrection = 2f;
 
 	// Game Objects
 	private Camera cam;
@@ -150,6 +150,7 @@ public class PlayerController : TopDownBehavior {
 		jumpHeight = GameObject.FindGameObjectWithTag("JumpHeight");
 		diagonalMovementSpeed = Mathf.Sqrt(overworldSpeed * overworldSpeed / 2);
 		diagonalBoundCorrection = Mathf.Sqrt(2 * (boundCorrection*boundCorrection));
+		Debug.Log("diag bound: " + diagonalBoundCorrection);
 	}
 
 	void Update() {
@@ -931,43 +932,86 @@ public class PlayerController : TopDownBehavior {
 				&& !isDirectionBlocked[(int)Direction.UpRight]) {
 				MoveInDirection(Direction.UpRight, diagonalMovementSpeed);	// Blocked on top left, move diag right
 			} else if(!isDirectionBlocked[(int)Direction.Up]
-				 && !isDirectionBlocked[(int)Direction.UpLeft]
-				 && isDirectionBlocked[(int)Direction.UpRight]) {
+				&& !isDirectionBlocked[(int)Direction.UpLeft]
+				&& isDirectionBlocked[(int)Direction.UpRight]) {
 				MoveInDirection(Direction.UpLeft, diagonalMovementSpeed);  // Blocked on top right, move diag left
 			}
 
 		} else if (Input.GetAxisRaw("Vertical") < 0 && Mathf.Abs(Input.GetAxisRaw("Horizontal")) < Mathf.Epsilon) {
 			// Facing down
 			StartDirection(Direction.Down);
-			if (!isDirectionBlocked[(int)Direction.Down]) { MoveInDirection(Direction.Down, overworldSpeed); }
 			if (grounded) {
 				TryBlockDirections(rb2d);
 			} else {
 				TryBlockDirections(shadow.GetComponent<Rigidbody2D>());
+			}
+			if (!isDirectionBlocked[(int)Direction.Down]
+				&& !isDirectionBlocked[(int)Direction.DownLeft]
+				&& !isDirectionBlocked[(int)Direction.DownRight]) {
+				Debug.Log("\t\tWALKING DOWN.");
+				MoveInDirection(Direction.Down, overworldSpeed); 
+			} else if (!isDirectionBlocked[(int)Direction.Down]
+				&& isDirectionBlocked[(int)Direction.DownLeft]
+				&& !isDirectionBlocked[(int)Direction.DownRight]) {
+				MoveInDirection(Direction.DownRight, diagonalMovementSpeed);
+			} else if (!isDirectionBlocked[(int)Direction.Down]
+				&& !isDirectionBlocked[(int)Direction.DownLeft]
+				&& isDirectionBlocked[(int)Direction.DownRight]) {
+				Debug.Log("\t\tWALKING DOWN LEFT.");
+				MoveInDirection(Direction.DownLeft, diagonalMovementSpeed);
 			}
 		} else if (Input.GetAxisRaw("Horizontal") > 0 && Mathf.Abs(Input.GetAxisRaw("Vertical")) < Mathf.Epsilon) {
 			// Facing right
 			StartDirection(Direction.Right);
-			if (!isDirectionBlocked[(int)Direction.Right]) { MoveInDirection(Direction.Right, overworldSpeed); }
 			if (grounded) {
 				TryBlockDirections(rb2d);
 			} else {
 				TryBlockDirections(shadow.GetComponent<Rigidbody2D>());
+			}
+			if (!isDirectionBlocked[(int)Direction.Right]
+				&& !isDirectionBlocked[(int)Direction.UpRight]
+				&& !isDirectionBlocked[(int)Direction.DownRight]) { 
+				MoveInDirection(Direction.Right, overworldSpeed); 
+			} else if (!isDirectionBlocked[(int)Direction.Right]
+				&& isDirectionBlocked[(int)Direction.UpRight]
+				&& !isDirectionBlocked[(int)Direction.DownRight]) {
+				MoveInDirection(Direction.DownRight, diagonalMovementSpeed);
+			} else if (!isDirectionBlocked[(int)Direction.Right]
+				&& !isDirectionBlocked[(int)Direction.UpRight]
+				&& isDirectionBlocked[(int)Direction.DownRight]) {
+				MoveInDirection(Direction.UpRight, diagonalMovementSpeed);
 			}
 		} else if (Input.GetAxisRaw("Horizontal") < 0 && Mathf.Abs(Input.GetAxisRaw("Vertical")) < Mathf.Epsilon) {
 			// Facing left
 			StartDirection(Direction.Left);
-
-			if (!isDirectionBlocked[(int)Direction.Left]) { MoveInDirection(Direction.Left, overworldSpeed); }
-
 			if (grounded) {
 				TryBlockDirections(rb2d);
 			} else {
 				TryBlockDirections(shadow.GetComponent<Rigidbody2D>());
 			}
+			if (!isDirectionBlocked[(int)Direction.Left]
+				&& !isDirectionBlocked[(int)Direction.UpLeft]
+				&& !isDirectionBlocked[(int)Direction.DownLeft]) {
+				Debug.Log("\t\tWALKING LEFT.");
+				MoveInDirection(Direction.Left, overworldSpeed);
+			} else if (!isDirectionBlocked[(int)Direction.Left]
+				&& isDirectionBlocked[(int)Direction.UpLeft]
+				&& !isDirectionBlocked[(int)Direction.DownLeft]) {
+				Debug.Log("\t\tWALKING DOWN LEFT.");
+				MoveInDirection(Direction.DownLeft, diagonalMovementSpeed);
+			} else if (!isDirectionBlocked[(int)Direction.Left]
+				&& !isDirectionBlocked[(int)Direction.UpLeft]
+			 	&& isDirectionBlocked[(int)Direction.DownLeft]) {
+				MoveInDirection(Direction.UpLeft, diagonalMovementSpeed);
+			}
 		} else if (Input.GetAxisRaw("Vertical") > 0 && Input.GetAxisRaw("Horizontal") > 0) {
 			// TODO: Facing up-right
 			StartDirection(Direction.UpRight);
+			if (grounded && !isFalling) {
+				TryBlockDirections(rb2d);
+			} else {
+				TryBlockDirections(shadow.GetComponent<Rigidbody2D>());
+			}
 			if (!isDirectionBlocked[(int)Direction.UpRight]) {
 				Debug.Log("Moving up right...");
 				MoveInDirection(Direction.UpRight, diagonalMovementSpeed);
@@ -976,15 +1020,14 @@ public class PlayerController : TopDownBehavior {
 			} else if (!isDirectionBlocked[(int)Direction.Up]) {
 				MoveInDirection(Direction.Up, overworldSpeed);
 			}
-
-			if (grounded && !isFalling) {
+		} else if (Input.GetAxisRaw("Vertical") > 0 && Input.GetAxisRaw("Horizontal") < 0) {
+			// TODO: Facing up-left
+			StartDirection(Direction.UpLeft);
+			if (grounded) {
 				TryBlockDirections(rb2d);
 			} else {
 				TryBlockDirections(shadow.GetComponent<Rigidbody2D>());
 			}
-		} else if (Input.GetAxisRaw("Vertical") > 0 && Input.GetAxisRaw("Horizontal") < 0) {
-			// TODO: Facing up-left
-			StartDirection(Direction.UpLeft);
 			if (!isDirectionBlocked[(int)Direction.UpLeft]) {
 				//transform.Translate(-0.35f, 0.35f, 0);
 				MoveInDirection(Direction.UpLeft, diagonalMovementSpeed);
@@ -993,14 +1036,14 @@ public class PlayerController : TopDownBehavior {
 			} else if (!isDirectionBlocked[(int)Direction.Up]) {
 				MoveInDirection(Direction.Up, overworldSpeed);
 			}
+		} else if (Input.GetAxisRaw("Vertical") < 0 && Input.GetAxisRaw("Horizontal") < 0) {
+			// Facing down-left
+			StartDirection(Direction.DownLeft);
 			if (grounded) {
 				TryBlockDirections(rb2d);
 			} else {
 				TryBlockDirections(shadow.GetComponent<Rigidbody2D>());
 			}
-		} else if (Input.GetAxisRaw("Vertical") < 0 && Input.GetAxisRaw("Horizontal") < 0) {
-			// Facing down-left
-			StartDirection(Direction.DownLeft);
 			if (!isDirectionBlocked[(int)Direction.DownLeft]) {
 				//transform.Translate(-0.35f, -0.35f, 0);
 				MoveInDirection(Direction.DownLeft, diagonalMovementSpeed);
@@ -1009,14 +1052,14 @@ public class PlayerController : TopDownBehavior {
 			} else if (!isDirectionBlocked[(int)Direction.Down]) {
 				MoveInDirection(Direction.Down, overworldSpeed);
 			}
+		} else if (Input.GetAxisRaw("Vertical") < 0 && Input.GetAxisRaw("Horizontal") > 0) {
+			// Facing down-right
+			StartDirection(Direction.DownRight);
 			if (grounded) {
 				TryBlockDirections(rb2d);
 			} else {
 				TryBlockDirections(shadow.GetComponent<Rigidbody2D>());
 			}
-		} else if (Input.GetAxisRaw("Vertical") < 0 && Input.GetAxisRaw("Horizontal") > 0) {
-			// Facing down-right
-			StartDirection(Direction.DownRight);
 			if (!isDirectionBlocked[(int)Direction.DownRight]) {
 				//transform.Translate(0.35f, -0.35f, 0);
 				MoveInDirection(Direction.DownRight, diagonalMovementSpeed);
@@ -1024,11 +1067,6 @@ public class PlayerController : TopDownBehavior {
 				MoveInDirection(Direction.Right, overworldSpeed);
 			} else if (!isDirectionBlocked[(int)Direction.Down]) {
 				MoveInDirection(Direction.Down, overworldSpeed);
-			}
-			if (grounded) {
-				TryBlockDirections(rb2d);
-			} else {
-				TryBlockDirections(shadow.GetComponent<Rigidbody2D>());
 			}
 		} else {
 			animator.SetBool("isWalking", false);
@@ -1062,14 +1100,41 @@ public class PlayerController : TopDownBehavior {
 						isDirectionBlocked[(int)Direction.UpRight] = false;
 					},
 					() => {
-						currentDownBase = new RaycastHit2D();
-						minDownBaseDistance = Mathf.Infinity;   // Reset distance
-						minUpBaseDistance = Mathf.Infinity;
 						currentUpBase = new RaycastHit2D();
+						currentDownBase = new RaycastHit2D();
+						minUpBaseDistance = Mathf.Infinity;
+						minDownBaseDistance = Mathf.Infinity;   // Reset distance
 					}
 				);
+				// Perform left raycasts
+				//CastLeft(targetRb2d,
+				//	// If blocked on the right, block right direction
+				//	() => {
+				//		currentLeftBase = nextLeftBase;
+				//		//isDirectionBlocked[(int)facingDirection] = true;
+				//		isDirectionBlocked[(int)Direction.Left] = true;
+				//	},
+				//	() => {
+				//		Debug.Log("LEFT IS NOT BEING BLOCKED");
+				//		currentRightBase = new RaycastHit2D();
+				//		minRightBaseDistance = Mathf.Infinity;   // Reset distance
+				//	 // Only unblock the diagonal if not blocked my multiple things
+				//	 //if (!isDirectionBlocked[(int)Direction.Down]) {
+				//	 //	isDirectionBlocked[(int)facingDirection] = false;
+				//	 //}
+				//		isDirectionBlocked[(int)Direction.Left] = false;
+				//		//isDirectionBlocked[(int)Direction.Left] = false;
+				//	},
+				//	// Clear all blocks
+				//	() => {
+				//		currentLeftBase = new RaycastHit2D();
+				//		currentDownBase = new RaycastHit2D();
+				//		minLeftBaseDistance = Mathf.Infinity;
+				//		minDownBaseDistance = Mathf.Infinity;   // Reset distanc
+				//	}
+				//);
 				CastUpLeft(targetRb2d,
-					// try block up right
+					// try block up left
 					() => {
 						// If base is too close on left side, block up left, meaning up will movediag instead
 						Debug.Log("block up from ul");
@@ -1078,7 +1143,7 @@ public class PlayerController : TopDownBehavior {
 					},
 					// try unblock up right
 					() => {
-						isDirectionBlocked[(int)facingDirection] = false;
+						//isDirectionBlocked[(int)facingDirection] = false;
 						isDirectionBlocked[(int)Direction.UpLeft] = false;
 					},
 					// try clear sides
@@ -1099,7 +1164,7 @@ public class PlayerController : TopDownBehavior {
 					},
 					// try unblock up right
 					() => {
-						isDirectionBlocked[(int)facingDirection] = false;
+						//isDirectionBlocked[(int)facingDirection] = false;
 						isDirectionBlocked[(int)Direction.UpRight] = false;
 					},
 					// try clear sides
@@ -1131,6 +1196,33 @@ public class PlayerController : TopDownBehavior {
 						currentDownBase = new RaycastHit2D();
 					}
 				);
+				//// Perform left raycasts
+				//CastLeft(targetRb2d,
+				//	// If blocked on the right, block right direction
+				//	() => {
+				//		currentLeftBase = nextLeftBase;
+				//		//isDirectionBlocked[(int)facingDirection] = true;
+				//		isDirectionBlocked[(int)Direction.Left] = true;
+				//	},
+				//	() => {
+				//		Debug.Log("LEFT IS NOT BEING BLOCKED");
+				//		currentRightBase = new RaycastHit2D();
+				//		minRightBaseDistance = Mathf.Infinity;   // Reset distance
+				//												 // Only unblock the diagonal if not blocked my multiple things
+				//		//if (!isDirectionBlocked[(int)Direction.Down]) {
+				//		//	isDirectionBlocked[(int)facingDirection] = false;
+				//		//}
+				//		isDirectionBlocked[(int)Direction.Left] = false;
+				//		//isDirectionBlocked[(int)Direction.Left] = false;
+				//	},
+				//	// Clear all blocks
+				//	() => {
+				//		currentLeftBase = new RaycastHit2D();
+				//		currentUpBase = new RaycastHit2D();
+				//		minLeftBaseDistance = Mathf.Infinity;
+				//		minRightBaseDistance = Mathf.Infinity;   // Reset distanc
+				//	}
+				//);
 				CastDownLeft(targetRb2d,
 					// try block up right
 					() => {
@@ -1177,8 +1269,8 @@ public class PlayerController : TopDownBehavior {
 					() => {
 						currentRightBase = nextRightBase;
 						isDirectionBlocked[(int)facingDirection] = true;
-						isDirectionBlocked[(int)Direction.UpRight] = true;
-						isDirectionBlocked[(int)Direction.DownRight] = true;
+						//isDirectionBlocked[(int)Direction.UpRight] = true;
+						//isDirectionBlocked[(int)Direction.DownRight] = true;
 					},
 					() => {
 						currentLeftBase = new RaycastHit2D();
@@ -1194,16 +1286,58 @@ public class PlayerController : TopDownBehavior {
 						currentRightBase = new RaycastHit2D();
 					}
 				);
+				CastUpRight(targetRb2d,
+					// try block up right
+					() => {
+						// If base is too close on left side, block up left, meaning up will movediag instead
+						Debug.Log("block up from ur");
+						currentUpRightBase = nextUpRightBase;
+						isDirectionBlocked[(int)Direction.UpRight] = true;
+					},
+					// try unblock up right
+					() => {
+						//isDirectionBlocked[(int)facingDirection] = false;
+						isDirectionBlocked[(int)Direction.UpRight] = false;
+					},
+					// try clear sides
+					() => {
+						currentUpRightBase = new RaycastHit2D();
+						currentDownRightBase = new RaycastHit2D();
+						minUpRightBaseDistance = Mathf.Infinity;
+						minDownRightBaseDistance = Mathf.Infinity;
+					}
+				);
+				CastDownRight(targetRb2d,
+					// try block up right
+					() => {
+						// If base is too close on left side, block up left, meaning up will movediag instead
+						Debug.Log("block down from dr");
+						currentDownRightBase = nextDownRightBase;
+						isDirectionBlocked[(int)Direction.DownRight] = true;
+					},
+					// try unblock up right
+					() => {
+						isDirectionBlocked[(int)Direction.DownRight] = false;
+					},
+					// try clear sides
+					() => {
+						currentDownRightBase = new RaycastHit2D();
+						currentUpRightBase = new RaycastHit2D();
+						minDownRightBaseDistance = Mathf.Infinity;
+						minUpRightBaseDistance = Mathf.Infinity;
+					}
+				);
 				break;
 			case Direction.Left:
 				CastLeft(targetRb2d,
 					() => {
 						currentLeftBase = nextLeftBase;
 						isDirectionBlocked[(int)facingDirection] = true;
-						isDirectionBlocked[(int)Direction.UpLeft] = true;
-						isDirectionBlocked[(int)Direction.DownLeft] = true;
+						//isDirectionBlocked[(int)Direction.UpLeft] = true;
+						//isDirectionBlocked[(int)Direction.DownLeft] = true;
 					},
 					() => {
+						Debug.Log("Unblockingu left");
 						currentRightBase = new RaycastHit2D();
 						minRightBaseDistance = Mathf.Infinity;  // Reset distance
 						isDirectionBlocked[(int)facingDirection] = false;
@@ -1211,12 +1345,68 @@ public class PlayerController : TopDownBehavior {
 						isDirectionBlocked[(int)Direction.DownLeft] = false;
 					},
 					() => {
-						currentRightBase = new RaycastHit2D();
-						minRightBaseDistance = Mathf.Infinity;  // Reset distance
-						minRightBaseDistance = Mathf.Infinity;
 						currentLeftBase = new RaycastHit2D();
+						currentRightBase = new RaycastHit2D();
+						minLeftBaseDistance = Mathf.Infinity;
+						minRightBaseDistance = Mathf.Infinity;  // Reset distances
 					}
 				);
+				CastUpLeft(targetRb2d,
+					// try block up left
+					() => {
+						// If base is too close on left side, block up left, meaning up will movediag instead
+						Debug.Log("block up from ul");
+						currentUpLeftBase = nextUpLeftBase;
+						isDirectionBlocked[(int)Direction.UpLeft] = true;
+					},
+					// try unblock up right
+					() => {
+						//isDirectionBlocked[(int)facingDirection] = false;
+						isDirectionBlocked[(int)Direction.UpLeft] = false;
+					},
+					// try clear sides
+					() => {
+						currentUpLeftBase = new RaycastHit2D();
+						currentDownRightBase = new RaycastHit2D();
+						minUpLeftBaseDistance = Mathf.Infinity;
+						minDownRightBaseDistance = Mathf.Infinity;
+					}
+				);
+				CastDownLeft(targetRb2d,
+					// try block up right
+					() => {
+						// If base is too close on left side, block up left, meaning up will movediag instead
+						Debug.Log("block down from dl");
+						currentDownLeftBase = nextDownLeftBase;
+						isDirectionBlocked[(int)Direction.DownLeft] = true;
+					},
+					// try unblock up right
+					() => {
+						//currentDownLeftBase = new RaycastHit2D();
+						isDirectionBlocked[(int)Direction.DownLeft] = false;
+					},
+					// try clear sides
+					() => {
+						currentDownLeftBase = new RaycastHit2D();
+						currentUpRightBase = new RaycastHit2D();
+						minDownLeftBaseDistance = Mathf.Infinity;
+						minUpRightBaseDistance = Mathf.Infinity;
+					}
+				);
+				//if (resultsLeft.Length > 0 && resultsUp.Length > 0 && resultsDown.Length > 0
+				//	&& isDirectionBlocked[(int)Direction.Left] && isDirectionBlocked[(int)Direction.Up] && isDirectionBlocked[(int)Direction.Down]
+				//	//&& nextUpBase.transform == nextRightBase.transform	//TODO: Handle what happens when touch corner
+				//	&& currentHeight <= nextUpBase.transform.GetComponent<ObjectHeight>().height
+				//	&& currentHeight <= nextLeftBase.transform.GetComponent<ObjectHeight>().height) {
+				//	//Debug.Log("\t\tMoving down...");
+				//	//// If there is a diagonal block & is not a null block, free up the direction
+				//	if (nextUpRightBase.collider != null && Mathf.Abs(nextUpRightBase.distance) < diagonalBoundCorrection
+				//	&& nextRightBase.collider != null && Mathf.Abs(nextRightBase.distance) > boundCorrection) {
+				//		//if (Mathf.Abs(nextUpRightBase.distance) < diagonalBoundCorrection&& Mathf.Abs(nextRightBase.distance) > boundCorrection) {
+				//		Debug.Log("UR: Moving right...");
+				//		isDirectionBlocked[(int)Direction.Right] = false;
+				//	}
+				//}
 				break;
 			// TODO: UpRight()
 			case Direction.UpRight:
@@ -1544,6 +1734,7 @@ public class PlayerController : TopDownBehavior {
 				//	}
 				//}
 				break;
+			// TODO: DownLeft()
 			case Direction.DownLeft:
 				CastDownLeft(targetRb2d,
 					// try block up right
@@ -1700,6 +1891,11 @@ public class PlayerController : TopDownBehavior {
 				shadow.transform.Translate(-speed, -speed, 0);
 				jumpHeight.transform.Translate(-speed, -speed, 0);
 				break;
+			default:
+				transform.Translate(0, 0, 0);
+				shadow.transform.Translate(0, 0, 0);
+				jumpHeight.transform.Translate(0, 0, 0);
+				break;
 		}
 	}
 
@@ -1755,7 +1951,7 @@ public class PlayerController : TopDownBehavior {
 					break;
 				}
 			}
-			if (currentUpBase.collider != null && !Contains(resultsUp, currentUpBase)) {
+			if ((currentUpBase.collider != null && !Contains(resultsUp, currentUpBase)) || resultsUp.Length == 1) {
 				nextUpBase = hit;
 				currentUpBase = new RaycastHit2D();
 				minUpBaseDistance = hit.distance;
@@ -1808,7 +2004,7 @@ public class PlayerController : TopDownBehavior {
 					break;
 				}
 			}
-			if (currentDownBase.collider != null && !Contains(resultsDown, currentDownBase)) {
+			if (currentDownBase.collider != null && !Contains(resultsDown, currentDownBase) || resultsDown.Length == 1) {
 				nextDownRightBase = hit;
 				currentDownBase = new RaycastHit2D();
 				minDownBaseDistance = hit.distance;
@@ -1861,7 +2057,7 @@ public class PlayerController : TopDownBehavior {
 					break;
 				}
 			}
-			if (currentRightBase.collider != null && !Contains(resultsRight, currentRightBase)) {
+			if (currentRightBase.collider != null && !Contains(resultsRight, currentRightBase) || resultsRight.Length == 1) {
 				Debug.Log("CURRENT ISNT IN LIST. REMOVE IT.");
 				nextRightBase = hit;
 				currentUpBase = new RaycastHit2D();
@@ -1905,7 +2101,12 @@ public class PlayerController : TopDownBehavior {
 						nextLeftBase = hit;
 						minLeftBaseDistance = hit.distance;
 						//break;
-					}
+					} 
+					//else if (hit.transform == currentLeftBase.transform && hit.distance >= minLeftBaseDistance) {
+					//	// Base is the same base. update its distance
+					//	nextLeftBase = hit;  // TODO: may not solve issue of when inside a bblock
+					//	minLeftBaseDistance = hit.distance;
+					//}
 				} else {
 					//Debug.Log("current left is null");
 					// If current is null, nextbase is the closest one
@@ -1914,7 +2115,7 @@ public class PlayerController : TopDownBehavior {
 					break;
 				}
 			}
-			if(currentLeftBase.collider != null && !Contains(resultsLeft, currentLeftBase)) {
+			if(currentLeftBase.collider != null && !Contains(resultsLeft, currentLeftBase) || resultsLeft.Length == 1) {
 				Debug.Log("CURRENT ISNT IN LIST. REMOVE IT.");
 				nextLeftBase = hit;
 				currentLeftBase = new RaycastHit2D();
@@ -1956,7 +2157,12 @@ public class PlayerController : TopDownBehavior {
 					// If this hit isnt the same as the current one, and its distance is smaller,
 					// 		Set the nextBase
 					if (hit.transform != currentUpRightBase.transform && hit.distance < minUpRightBaseDistance) {
+						//Debug.Log("next and current are different");
 						nextUpRightBase = hit;
+						minUpRightBaseDistance = hit.distance;
+					} else if (hit.transform == currentUpRightBase.transform && hit.distance >= minUpRightBaseDistance) {
+						// Base is the same base. update its distance
+						nextUpRightBase = hit;	// TODO: may not solve issue of when inside a bblock
 						minUpRightBaseDistance = hit.distance;
 					}
 				} else {
@@ -1967,15 +2173,17 @@ public class PlayerController : TopDownBehavior {
 					break;
 				}
 			}
-			if (currentUpRightBase.collider != null && !Contains(resultsUpRight, currentUpRightBase)) {
+			if (currentUpRightBase.collider != null && !Contains(resultsUpRight, currentUpRightBase) || resultsUpRight.Length == 1) {
 				nextUpRightBase = hit;
 				currentUpRightBase = new RaycastHit2D();
 				minUpRightBaseDistance = hit.distance;
-			}
-			//Debug.Log("next ur base: " + (nextUpRightBase.collider != null ? nextUpRightBase.transform.name : "no next ur base"));
+			} 
+			// TODO: next base isn't updating when next is the same transform
+			Debug.Log("next ur base: " + (nextUpRightBase.collider != null ? nextUpRightBase.transform.name : "no next ur base") + ": " + nextUpRightBase.distance);
 			Debug.DrawRay(targetRb2d.transform.position,
 				Vector3.ClampMagnitude(new Vector3(nextUpRightBase.distance, nextUpRightBase.distance, 0), nextUpRightBase.distance)
 				, Color.red);
+			Debug.Log("is distance in bound: " + (Mathf.Abs(nextUpRightBase.distance) < diagonalBoundCorrection));
 			if (nextUpRightBase.collider != null && Mathf.Abs(nextUpRightBase.distance) < diagonalBoundCorrection && CheckIfBlockPlayerByHeight(nextUpRightBase)
 				&& fallingDirection != Direction.UpRight && !isOnPlatform) {
 				//Debug.Log("blocking upright...");
@@ -2012,6 +2220,10 @@ public class PlayerController : TopDownBehavior {
 					if (hit.transform != currentUpLeftBase.transform && hit.distance < minUpLeftBaseDistance) {
 						nextUpLeftBase = hit;
 						minUpLeftBaseDistance = hit.distance;
+					} else if (hit.transform == currentUpLeftBase.transform && hit.distance >= minLeftBaseDistance) {
+						// Base is the same base. update its distance
+						nextUpLeftBase = hit;  // TODO: may not solve issue of when inside a bblock
+						minUpLeftBaseDistance = hit.distance;
 					}
 				} else {
 					//Debug.Log("current upright is null");
@@ -2021,7 +2233,7 @@ public class PlayerController : TopDownBehavior {
 					break;
 				}
 			}
-			if (currentUpLeftBase.collider != null && !Contains(resultsUp, currentUpLeftBase)) {
+			if (currentUpLeftBase.collider != null && !Contains(resultsUp, currentUpLeftBase) || resultsUpLeft.Length == 1) {
 				nextUpLeftBase = hit;
 				currentUpLeftBase = new RaycastHit2D();
 				minUpLeftBaseDistance = hit.distance;
@@ -2057,13 +2269,17 @@ public class PlayerController : TopDownBehavior {
 			RaycastHit2D hit = new RaycastHit2D();
 			for (int i = 0; i < resultsDownLeft.Length; i++) {
 				hit = resultsDownLeft[i];
-				Debug.Log("checking <v base...: " + hit.transform.name);
+				//Debug.Log("checking <v base...: " + hit.transform.name);
 				if (currentDownLeftBase.collider != null) {
 					//Debug.Log("current upright isnt null");
 					// If this hit isnt the same as the current one, and its distance is smaller,
 					// 		Set the nextBase
 					if (hit.transform != currentDownLeftBase.transform && hit.distance < minDownLeftBaseDistance) {
 						nextDownLeftBase = hit;
+						minDownLeftBaseDistance = hit.distance;
+					} else if (hit.transform == currentDownLeftBase.transform && hit.distance >= minDownLeftBaseDistance) {
+						// Base is the same base. update its distance
+						nextDownLeftBase = hit;  // TODO: may not solve issue of when inside a bblock
 						minDownLeftBaseDistance = hit.distance;
 					}
 				} else {
@@ -2074,30 +2290,36 @@ public class PlayerController : TopDownBehavior {
 					break;
 				}
 			}
-			if (currentDownLeftBase.collider != null && !Contains(resultsDownLeft, currentDownLeftBase)) {
+			// Update
+			if (currentDownLeftBase.collider != null && !Contains(resultsDownLeft, currentDownLeftBase) || resultsDownLeft.Length == 1) {
+				Debug.Log("Update down left....");
 				nextDownLeftBase = hit;
 				currentDownLeftBase = new RaycastHit2D();
 				minDownLeftBaseDistance = hit.distance;
 			}
-			//Debug.Log("next ur base: " + (nextUpRightBase.collider != null ? nextUpRightBase.transform.name : "no next ur base"));
+			//if(resultsDownLeft.Length == 1) {
+			//	nextDownLeftBase = hit;
+			//	minDownLeftBaseDistance = hit.distance;
+			//}
+			Debug.Log("next dl base: " + (nextDownLeftBase.collider != null ? nextDownLeftBase.transform.name : "no next dl base"));
 			Debug.DrawRay(targetRb2d.transform.position,
 				Vector3.ClampMagnitude(new Vector3(-nextDownLeftBase.distance, -nextDownLeftBase.distance, 0), nextDownLeftBase.distance)
 				, Color.red);
 			// If hit isnt null and reached the bound, check if bblocked by height
 			if (nextDownLeftBase.collider != null && Mathf.Abs(nextDownLeftBase.distance) < diagonalBoundCorrection && CheckIfBlockPlayerByHeight(nextDownLeftBase)
 				&& fallingDirection != Direction.DownLeft && !isOnPlatform) {
-				//Debug.Log("blocking upright...");
+				Debug.Log("blocking down left...");
 				blockSide();
 				//} else if (nextDownLeftBase.collider != null) {
 			} else {
-				//Debug.Log("unblocking upright...");
+				Debug.Log("unblocking down left...");
 				unblockSide();
 			} 
 			//else {
 			//	Debug.Log("null hit");
 			//}
 		} else {
-			//Debug.Log("No base detected ^>");
+			Debug.Log("No base detected <^");
 			clearSide();
 			isDirectionBlocked[(int)Direction.DownLeft] = false;
 			isDirectionBlocked[(int)Direction.UpRight] = false;
@@ -2121,6 +2343,10 @@ public class PlayerController : TopDownBehavior {
 					if (hit.transform != currentDownRightBase.transform && hit.distance < minDownRightBaseDistance) {
 						nextDownRightBase = hit;
 						minDownRightBaseDistance = hit.distance;
+					} else if (hit.transform == currentDownRightBase.transform && hit.distance >= minDownRightBaseDistance) {
+						// Base is the same base. update its distance
+						nextDownRightBase = hit;  // TODO: may not solve issue of when inside a bblock
+						minDownRightBaseDistance = hit.distance;
 					}
 				} else {
 					//Debug.Log("current upright is null");
@@ -2130,7 +2356,7 @@ public class PlayerController : TopDownBehavior {
 					break;
 				}
 			}
-			if (currentDownRightBase.collider != null && !Contains(resultsDownRight, currentDownRightBase)) {
+			if (currentDownRightBase.collider != null && !Contains(resultsDownRight, currentDownRightBase) || resultsDownRight.Length == 1) {
 				nextDownRightBase = hit;
 				currentDownRightBase = new RaycastHit2D();
 				minDownRightBaseDistance = hit.distance;
@@ -2159,8 +2385,11 @@ public class PlayerController : TopDownBehavior {
 	}
 
 	private bool Contains(RaycastHit2D[] hits, RaycastHit2D current) {
+		if(hits == null) {
+			return false;
+		}
 		for (int i = 0; i < hits.Length; i++) {
-			//Debug.Log("current: " + current.collider.name + " checking: " + hits[i].collider.name);
+			Debug.Log("current: " + current.collider.name + " checking: " + hits[i].collider.name);
 			//if(Mathf.Abs(hits[i].distance - current.distance) < Mathf.Epsilon) {
 			if (hits[i].transform.Equals(current.transform)) {
 				return true;
