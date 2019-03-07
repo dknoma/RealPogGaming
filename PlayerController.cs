@@ -31,7 +31,7 @@ public class PlayerController : TopDownBehavior {
 	public int platformMask;
 
 	// Constants
-	private const float boundCorrection = 1f;
+	private const float boundCorrection = 1.625f;
 
 	// Game Objects
 	private Camera cam;
@@ -1752,7 +1752,7 @@ public class PlayerController : TopDownBehavior {
 					},
 					// try unblock up right
 					() => {
-						Debug.Log("unblocking down left...");
+						//Debug.Log("unblocking down left...");
 						isDirectionBlocked[(int)facingDirection] = false;
 						if (nextDownLeftBase.collider != null) {
 							isDirectionBlocked[(int)Direction.Down] = false;
@@ -1764,6 +1764,7 @@ public class PlayerController : TopDownBehavior {
 					},
 					// try clear sides
 					() => {
+						Debug.Log("clearing dl and down");
 						currentDownLeftBase = new RaycastHit2D();
 						currentDownBase = new RaycastHit2D();
 						minDownLeftBaseDistance = Mathf.Infinity;
@@ -1782,6 +1783,7 @@ public class PlayerController : TopDownBehavior {
 						minUpBaseDistance = Mathf.Infinity;   // Reset distance
 															  // Only unblock the diagonal if not blocked my multiple things
 						if (!isDirectionBlocked[(int)Direction.Left]) {
+							Debug.Log("LEFT IS NOT BEING BLOCKED");
 							isDirectionBlocked[(int)facingDirection] = false;
 						}
 						isDirectionBlocked[(int)Direction.Down] = false;
@@ -1802,7 +1804,6 @@ public class PlayerController : TopDownBehavior {
 						isDirectionBlocked[(int)Direction.Left] = true;
 					},
 					() => {
-						Debug.Log("LEFT IS NOT BEING BLOCKED");
 						currentRightBase = new RaycastHit2D();
 						minRightBaseDistance = Mathf.Infinity;   // Reset distance
 																 // Only unblock the diagonal if not blocked my multiple things
@@ -1932,7 +1933,7 @@ public class PlayerController : TopDownBehavior {
 		if (resultsUp.Length > 0) {
 			//Debug.Log(string.Format("[0]: {0}, [1]:{1}", resultsLeft[0].distance, resultsLeft.Length > 1 ? resultsLeft[1].distance : 0));
 			// ...
-			if ((currentUpBase.collider != null && !Contains(resultsUp, currentUpBase)) || resultsUp.Length == 1) {
+			if (resultsUp.Length == 1 || (currentUpBase.collider != null && !Contains(resultsUp, currentUpBase))) {
 				nextUpBase = resultsUp[0];
 				currentUpBase = new RaycastHit2D();
 				minUpBaseDistance = nextUpBase.distance;
@@ -1985,10 +1986,10 @@ public class PlayerController : TopDownBehavior {
 		if (resultsDown.Length > 0) {
 			//Debug.Log(string.Format("[0]: {0}, [1]:{1}", resultsLeft[0].distance, resultsLeft.Length > 1 ? resultsLeft[1].distance : 0));
 			// ...
-			if (currentDownBase.collider != null && !Contains(resultsDown, currentDownBase) || resultsDown.Length == 1) {
-				nextDownRightBase = resultsDown[0];
+			if (resultsDown.Length == 1 || (currentDownBase.collider != null && !Contains(resultsDown, currentDownBase))) {
+				nextDownBase = resultsDown[0];
 				currentDownBase = new RaycastHit2D();
-				minDownBaseDistance = nextDownRightBase.distance;
+				minDownBaseDistance = nextDownBase.distance;
 			} else {
 				for (int i = 0; i < resultsDown.Length; i++) {
 					RaycastHit2D hit = resultsDown[i];
@@ -2038,32 +2039,32 @@ public class PlayerController : TopDownBehavior {
 		if (resultsRight.Length > 0) {
 			//Debug.Log(string.Format("[0]: {0}, [1]:{1}", resultsLeft[0].distance, resultsLeft.Length > 1 ? resultsLeft[1].distance : 0));
 			// ...
-			RaycastHit2D hit = new RaycastHit2D();
-			for (int i = 0; i < resultsRight.Length; i++) {
-				hit = resultsRight[i];
-				//Debug.Log("checking > base...: " + hit.transform.name);
-				if (currentRightBase.collider != null) {
-					//Debug.Log("current right isnt null");
-					// If this hit isnt the same as the current one, and its distance is smaller,
-					// 		Set the nextBase
-					if (hit.transform != currentRightBase.transform && hit.distance < minRightBaseDistance) {
+			if (resultsRight.Length == 1  || (currentRightBase.collider != null && !Contains(resultsRight, currentRightBase))) {
+				Debug.Log("CURRENT ISNT IN LIST. REMOVE IT.");
+				nextRightBase = resultsRight[0];
+				currentUpBase = new RaycastHit2D();
+				minRightBaseDistance = nextRightBase.distance;
+			} else {
+				for (int i = 0; i < resultsRight.Length; i++) {
+					RaycastHit2D hit = resultsRight[i];
+					//Debug.Log("checking > base...: " + hit.transform.name);
+					if (currentRightBase.collider != null) {
+						//Debug.Log("current right isnt null");
+						// If this hit isnt the same as the current one, and its distance is smaller,
+						// 		Set the nextBase
+						if (hit.transform != currentRightBase.transform && hit.distance < minRightBaseDistance) {
+							nextRightBase = hit;
+							minRightBaseDistance = hit.distance;
+							//break;
+						}
+					} else {
+						//Debug.Log("current right is null. set next to be the check");
+						// If current is null, nextbase is the closest one
 						nextRightBase = hit;
 						minRightBaseDistance = hit.distance;
-						//break;
+						break;
 					}
-				} else {
-					//Debug.Log("current right is null. set next to be the check");
-					// If current is null, nextbase is the closest one
-					nextRightBase = hit;
-					minRightBaseDistance = hit.distance;
-					break;
 				}
-			}
-			if (currentRightBase.collider != null && !Contains(resultsRight, currentRightBase) || resultsRight.Length == 1) {
-				Debug.Log("CURRENT ISNT IN LIST. REMOVE IT.");
-				nextRightBase = hit;
-				currentUpBase = new RaycastHit2D();
-				minRightBaseDistance = hit.distance;
 			}
 			//Debug.Log("next right base: " + (nextRightBase.collider != null ? nextRightBase.transform.name : "no next right base"));
 			Debug.DrawRay(targetRb2d.transform.position, new Vector3(nextRightBase.distance, 0, 0), Color.red);
@@ -2092,7 +2093,7 @@ public class PlayerController : TopDownBehavior {
 		if (resultsLeft.Length > 0) {
 			//Debug.Log(string.Format("[0]: {0}, [1]:{1}", resultsLeft[0].distance, resultsLeft.Length > 1 ? resultsLeft[1].distance : 0));
 			// ...
-			if (currentLeftBase.collider != null && !Contains(resultsLeft, currentLeftBase) || resultsLeft.Length == 1) {
+			if (resultsLeft.Length == 1 || (currentLeftBase.collider != null && !Contains(resultsLeft, currentLeftBase))) {
 				//Debug.Log("CURRENT ISNT IN LIST. REMOVE IT.");
 				nextLeftBase = resultsLeft[0];
 				currentLeftBase = new RaycastHit2D();
@@ -2186,7 +2187,7 @@ public class PlayerController : TopDownBehavior {
 				Vector3.ClampMagnitude(new Vector3(nextUpRightBase.distance, nextUpRightBase.distance, 0), nextUpRightBase.distance)
 				, Color.red);
 			//Debug.Log("is distance in bound: " + (Mathf.Abs(nextUpRightBase.distance) < diagonalBoundCorrection));
-			if (nextUpRightBase.collider != null && Mathf.Abs(nextUpRightBase.distance) < diagonalBoundCorrection && CheckIfBlockPlayerByHeight(nextUpRightBase)
+			if (nextUpRightBase.collider != null && Mathf.Abs(nextUpRightBase.distance) <= diagonalBoundCorrection && CheckIfBlockPlayerByHeight(nextUpRightBase)
 				&& fallingDirection != Direction.UpRight && !isOnPlatform) {
 				//Debug.Log("blocking upright...");
 				blockSide();
@@ -2314,15 +2315,15 @@ public class PlayerController : TopDownBehavior {
 				Vector3.ClampMagnitude(new Vector3(-nextDownLeftBase.distance, -nextDownLeftBase.distance, 0), nextDownLeftBase.distance)
 				, Color.red);
 			// If hit isnt null and reached the bound, check if bblocked by height
-			if (nextDownLeftBase.collider != null && Mathf.Abs(nextDownLeftBase.distance) < diagonalBoundCorrection && CheckIfBlockPlayerByHeight(nextDownLeftBase)
+			if (nextDownLeftBase.collider != null && Mathf.Abs(nextDownLeftBase.distance) <= diagonalBoundCorrection && CheckIfBlockPlayerByHeight(nextDownLeftBase)
 				&& fallingDirection != Direction.DownLeft && !isOnPlatform) {
 				Debug.Log("blocking down left...");
 				blockSide();
 				//} else if (nextDownLeftBase.collider != null) {
-			} else if (nextDownLeftBase.collider != null
-				&& ((nextDownBase.collider == null && nextLeftBase.collider == null && Mathf.Abs(nextDownLeftBase.distance) < diagonalBoundCorrection)
-				|| (nextDownLeftBase.distance < nextDownBase.distance
-				&& nextDownLeftBase.distance < nextLeftBase.distance && Mathf.Abs(nextDownLeftBase.distance) < diagonalBoundCorrection))) {
+			} else if (nextDownLeftBase.collider != null) {
+			//&& ((nextDownBase.collider == null && nextLeftBase.collider == null && Mathf.Abs(nextDownLeftBase.distance) < diagonalBoundCorrection)
+			//|| (nextDownLeftBase.distance < nextDownBase.distance
+			//&& nextDownLeftBase.distance < nextLeftBase.distance && Mathf.Abs(nextDownLeftBase.distance) < diagonalBoundCorrection))) {
 				Debug.Log("unblocking down left...");
 				unblockSide();
 			} else {
@@ -2343,6 +2344,7 @@ public class PlayerController : TopDownBehavior {
 			//Debug.Log(string.Format("[0]: {0}, [1]:{1}", resultsLeft[0].distance, resultsLeft.Length > 1 ? resultsLeft[1].distance : 0));
 			// If only hitting a single object, this object is our next/current base; or update the current objects length
 			if (resultsDownRight.Length == 1 || (currentDownRightBase.collider != null && !Contains(resultsDownRight, currentDownRightBase))) {
+				Debug.Log("One down right base.");
 				nextDownRightBase = resultsDownRight[0];
 				currentDownRightBase = new RaycastHit2D();
 				minDownRightBaseDistance = nextDownRightBase.distance;
@@ -2375,15 +2377,15 @@ public class PlayerController : TopDownBehavior {
 			Debug.DrawRay(targetRb2d.transform.position,
 				Vector3.ClampMagnitude(new Vector3(nextDownRightBase.distance, -nextDownRightBase.distance, 0), nextDownRightBase.distance)
 				, Color.red);
-			if (nextDownRightBase.collider != null && Mathf.Abs(nextDownRightBase.distance) < diagonalBoundCorrection && CheckIfBlockPlayerByHeight(nextDownRightBase)
+			if (nextDownRightBase.collider != null && Mathf.Abs(nextDownRightBase.distance) <= diagonalBoundCorrection && CheckIfBlockPlayerByHeight(nextDownRightBase)
 				&& fallingDirection != Direction.DownRight && !isOnPlatform) {
 				//Debug.Log("blocking upright...");
 				blockSide();
-			} else if (nextDownRightBase.collider != null
-				&& ((nextDownBase.collider == null && nextRightBase.collider == null && Mathf.Abs(nextDownRightBase.distance) < diagonalBoundCorrection)
-				|| (nextDownRightBase.distance < nextDownBase.distance
-				&& nextDownRightBase.distance < nextRightBase.distance && Mathf.Abs(nextDownRightBase.distance) < diagonalBoundCorrection))) {
-				//Debug.Log("unblocking upright...");
+			} else if (nextDownRightBase.collider != null) {
+			//&& ((nextDownBase.collider == null && nextRightBase.collider == null && Mathf.Abs(nextDownRightBase.distance) < diagonalBoundCorrection)
+			//|| (nextDownRightBase.distance < nextDownBase.distance
+			//&& nextDownRightBase.distance < nextRightBase.distance && Mathf.Abs(nextDownRightBase.distance) < diagonalBoundCorrection))) {
+			//Debug.Log("unblocking upright...");
 				unblockSide();
 			} else {
 				Debug.Log("null down right hit");
