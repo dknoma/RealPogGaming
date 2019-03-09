@@ -2,14 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[ExecuteInEditMode]
+[RequireComponent(typeof(PlayerController))]
 public class TopDownPlayerOrder : MonoBehaviour {
-// Update is called once per frame
+
+	private PlayerController character;
+	private int platformSortOrder;
+
+	private void OnEnable() {
+		character = GetComponentInParent<PlayerController>();
+	}
+
 	void Update() {
-		// Get object height object from parent
-		// Update the objects sorting order depending on if want to determine
-		// order w/ height
-		PlayerController character = GetComponentInParent<PlayerController>();
-		gameObject.GetComponent<Renderer>().sortingOrder = (int)(transform.position.y * -10
-		+ ((character != null  ? character.currentHeight * 1.5f : 0) * 10));
+		// Players sort oder cannot go any lower than the current platform's
+		platformSortOrder = (int) (character.GetCurrentPlatform() != null ? character.GetCurrentPlatform().sortingOrder : -Mathf.Infinity);
+		gameObject.GetComponent<Renderer>().sortingOrder = (int) Mathf.Clamp(transform.position.y * -10 + (character.currentHeight * 10), 
+			platformSortOrder+1, Mathf.Infinity);
 	}
 }
