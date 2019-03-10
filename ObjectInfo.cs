@@ -19,10 +19,10 @@ public class ObjectInfo : MonoBehaviour {
 	public float rightBound;
 	public float leftBound;
 	public int sortingOrder;
-	
-	[Header("Debug Settings")]
 	public bool checkUpCollider;
 	public bool startRayAboveEdge;
+	
+	[Header("Debug Settings")]
 	public bool debugLines = true;
 	public float debugRayPos;
 	public Color upColor;
@@ -41,8 +41,10 @@ public class ObjectInfo : MonoBehaviour {
 	private Renderer childRenderer;
 
 	private void OnEnable() {
-		child = transform.GetChild(0).gameObject;
-		childRenderer = child.GetComponent<Renderer>();
+		if (transform.childCount > 0) {
+			child = transform.GetChild(0).gameObject;
+			childRenderer = child.GetComponent<Renderer>();
+		}
 		// If platform doesn't have a fixed height, calculate the height from the bottom of the platform
 		if (!fixedHeight) {
 			objectContactFilter.SetLayerMask(objectMaskToCheck);
