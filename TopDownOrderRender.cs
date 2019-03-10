@@ -16,8 +16,8 @@ public class TopDownOrderRender : MonoBehaviour {
 		// Get object height object from parent
 		// Update the objects sorting order depending on if want to determine
 		// order w/ height
-		ObjectHeight objHeight = GetComponentInParent<ObjectHeight>();
+		ObjectInfo objInfo = GetComponentInParent<ObjectInfo>();
 		gameObject.GetComponent<Renderer>().sortingOrder = (int)(transform.position.y * -10 
-		+ ((objHeight != null && objHeight.determinePriortyWithHeight ? objHeight.height : 0) * 10));
+		+ ((objInfo != null && objInfo.determinePriortyWithHeight ? objInfo.height : 0) * 10));
 	}
 }

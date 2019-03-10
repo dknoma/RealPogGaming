@@ -31,7 +31,7 @@ public class PlatformHeight : MonoBehaviour {
 		if (!fixedHeight) {
 			groundContactFilter.SetLayerMask(LayerMask.GetMask("Ground"));
 			coll = GetComponent<CompositeCollider2D>();
-			GameObject dummyObj = GetComponentInChildren<ObjectPosition>().gameObject;
+			GameObject dummyObj = GetComponentInChildren<Objecto>().gameObject;
 			platformPosition = dummyObj.transform.position;
 			Debug.Log(string.Format("{0} pos: {1}", name, platformPosition));
 			if(!checkUpCollider) {

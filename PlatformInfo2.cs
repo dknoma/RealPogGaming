@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//[RequireComponent(typeof(ObjectInfo))]
-//[ExecuteInEditMode]
-public class ColliderTD : MonoBehaviour {
+[RequireComponent(typeof(ObjectInfo))]
+[ExecuteInEditMode]
+public class PlatformInfo : MonoBehaviour {
 
 //	public Vector3 position;
 //	public float height;
@@ -17,7 +17,7 @@ public class ColliderTD : MonoBehaviour {
 //	public int sortingOrder;
 //
 //	private void OnEnable() {
-//		position = GetComponentInChildren<ObjectPosition>().transform.position;
+//		position = GetComponentInChildren<Objecto>().transform.position;
 //		h = GetComponent<CompositeCollider2D>().bounds.extents.y * 2;
 //		w = GetComponent<CompositeCollider2D>().bounds.extents.x * 2;
 //		height = GetComponent<ObjectInfo>().height;
@@ -29,7 +29,7 @@ public class ColliderTD : MonoBehaviour {
 //	}
 //
 //	private void OnValidate() {
-//		ObjectPosition objectPosition = GetComponentInChildren<ObjectPosition>();
+//		Objecto objectPosition = GetComponentInChildren<Objecto>();
 //		if (objectPosition == null) {
 //			Debug.LogError("Component ObjectPosition could not be located. Please make sure to include the child object to make this script run correctly.", objectPosition);
 //		}

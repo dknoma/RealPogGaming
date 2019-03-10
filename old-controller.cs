@@ -146,7 +146,7 @@
 //				// Block all upward directions to prevent sliding into walls
 //				//Debug.Log(string.Format("thing: {0}", pResultsUp[0].distance));
 //				if (Mathf.Abs(pResultsUp[0].distance) < 4.5f && !isOnPlatform && jumping) {
-//					int platHeight = (int)pResultsUp[0].collider.gameObject.GetComponent<ObjectHeight>().height;
+//					int platHeight = (int)pResultsUp[0].collider.gameObject.GetComponent<ObjectInfo>().height;
 //					if (jumpingHeight + totalHeight >= platHeight) {
 //						Debug.Log("Trying to jump on platform");
 //						baseContactFilter.ClearLayerMask();
@@ -201,7 +201,7 @@
 //		Debug.Log(string.Format("Touching platform {0}, bounds(<,^,v,>): ({1},{2},{3},{4})", coll.gameObject.name,
 //		currentPlatform.leftBound, currentPlatform.topBound, currentPlatform.bottomBound, currentPlatform.rightBound));
 
-//		int platHeight = (int) coll.gameObject.GetComponent<ObjectHeight>().height;
+//		int platHeight = (int) coll.gameObject.GetComponent<ObjectInfo>().height;
 //		if (!isOnPlatform && jumpingHeight + totalHeight >= platHeight) {
 //			Debug.Log(string.Format("Jump onto {0}, h: {1}", coll.gameObject.name, platHeight));
 //			//baseContactFilter.ClearLayerMask();
@@ -218,10 +218,10 @@
 //		Debug.Log(string.Format("Exiting platform {0}", coll.gameObject.name));
 //		if (isOnPlatform) {
 //			Debug.Log("\t\t\tExiting: Falling...");
-//			//if (currentHeight + totalHeight > coll.gameObject.GetComponent<ObjectHeight>().height) {
+//			//if (currentHeight + totalHeight > coll.gameObject.GetComponent<ObjectInfo>().height) {
 //			//wallContactFilter.ClearLayerMask();
 //			isFalling = true;
-//			//totalHeight -= (int)coll.gameObject.GetComponent<ObjectHeight>().height;
+//			//totalHeight -= (int)coll.gameObject.GetComponent<ObjectInfo>().height;
 //			//wallContactFilter.SetLayerMask(LayerMask.GetMask("Wall"));
 //			//isOnPlatform = false;
 //			//ClearBlocks();
@@ -518,8 +518,8 @@
 	//			// Correct position if hit a corner
 	//			if (upHit > 00 && rightHit > 00 && Mathf.Abs(resultsUp[0].distance) < Mathf.Epsilon
 	//			&& Mathf.Abs(resultsRight[0].distance) < Mathf.Epsilon
-	//				&& currentHeight <= resultsUp[0].transform.GetComponent<ObjectHeight>().height
-	//				&& currentHeight <= resultsRight[0].transform.GetComponent<ObjectHeight>().height) {
+	//				&& currentHeight <= resultsUp[0].transform.GetComponent<ObjectInfo>().height
+	//				&& currentHeight <= resultsRight[0].transform.GetComponent<ObjectInfo>().height) {
 	//				Debug.Log("\t\tMoving down...");
 	//				MoveInDirection(Direction.Down, 0.2f);
 	//			}
@@ -640,8 +640,8 @@
 				//Debug.Log("u, r: " + nextUpBase.distance + ", " + nextRightBase.distance);
 				//if (resultsUp.Length > 0 && resultsRight.Length > 0
 				//	//&& isDirectionBlocked[(int)Direction.Up] && isDirectionBlocked[(int)Direction.Right]
-				//	&& currentHeight <= nextUpBase.transform.GetComponent<ObjectHeight>().height
-				//	&& currentHeight <= nextRightBase.transform.GetComponent<ObjectHeight>().height) {
+				//	&& currentHeight <= nextUpBase.transform.GetComponent<ObjectInfo>().height
+				//	&& currentHeight <= nextRightBase.transform.GetComponent<ObjectInfo>().height) {
 				//	Debug.Log("\t\tMoving down...");
 				//	isDirectionBlocked[(int)Direction.Up] = true;
 				//	//MoveInDirection(Direction.Down, 0.1f);
@@ -649,13 +649,13 @@
 
 				//if (resultsUp.Length > 0 && resultsRight.Length > 0 && Mathf.Abs(nextUpBase.distance) < Mathf.Epsilon
 				//&& Mathf.Abs(nextRightBase.distance) < Mathf.Epsilon
-				//&& currentHeight <= nextUpBase.transform.GetComponent<ObjectHeight>().height
-				//&& currentHeight <= nextRightBase.transform.GetComponent<ObjectHeight>().height) {
+				//&& currentHeight <= nextUpBase.transform.GetComponent<ObjectInfo>().height
+				//&& currentHeight <= nextRightBase.transform.GetComponent<ObjectInfo>().height) {
 				//Debug.Log("???: " + (Math.Abs(nextUpBase.distance - nextRightBase.distance) < Mathf.Epsilon));
 				//if (resultsUp.Length > 0 && resultsRight.Length > 0
 				//&& Math.Abs(nextUpBase.distance - nextRightBase.distance) < Mathf.Epsilon 
-				//&& currentHeight <= nextUpBase.transform.GetComponent<ObjectHeight>().height
-				//&& currentHeight <= nextRightBase.transform.GetComponent<ObjectHeight>().height) {
+				//&& currentHeight <= nextUpBase.transform.GetComponent<ObjectInfo>().height
+				//&& currentHeight <= nextRightBase.transform.GetComponent<ObjectInfo>().height) {
 				//if (resultsUp.Length > 0) {
 				//	//Debug.Log(string.Format("[0]: {0}, [1]:{1}", resultsLeft[0].distance, resultsLeft.Length > 1 ? resultsLeft[1].distance : 0));
 				//	// ...
@@ -793,8 +793,8 @@
 				// Correct position if hit a corner
 				//if(upHit > 0 && rightHit > 0 && Mathf.Abs(resultsUp[0].distance) < Mathf.Epsilon 
 				//&& Mathf.Abs(resultsRight[0].distance) < Mathf.Epsilon 
-				//	&& currentHeight <= resultsUp[0].transform.GetComponent<ObjectHeight>().height
-				//	&& currentHeight <= resultsRight[0].transform.GetComponent<ObjectHeight>().height) {
+				//	&& currentHeight <= resultsUp[0].transform.GetComponent<ObjectInfo>().height
+				//	&& currentHeight <= resultsRight[0].transform.GetComponent<ObjectInfo>().height) {
 				//	Debug.Log("\t\tMoving down...");
 				//	MoveInDirection(Direction.Down, 0.2f);
 				//}
