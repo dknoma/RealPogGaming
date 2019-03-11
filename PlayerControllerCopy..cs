@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public enum Direction { 
+public enum DirectionCopy { 
 	Null,
 	Down, 
 	DownRight, 
@@ -21,8 +21,9 @@ public enum Direction {
  *		- if falling and is inside the collider, push them back in the other direction
  * 		- Fix jumping from the top while facing down
  * 		- If slow, make Dictionaries that hold components (platform info, etc) and get from ids
+ * 3-10-2019
 */			 
-public class PlayerController : TopDownBehavior {
+public class PlayerControllerCopy : TopDownBehavior {
 
 	[Header("Direction Variables")]
 	public Direction facingDirection = Direction.Down;
@@ -2419,10 +2420,8 @@ public class PlayerController : TopDownBehavior {
 			clearSide();
 			currentRightBase = new RaycastHit2D();
 			nextRightBase = new RaycastHit2D();
-			minRightBaseDistance = Mathf.Infinity; // Reset distance
 			currentLeftBase = new RaycastHit2D();
 			nextLeftBase = new RaycastHit2D();
-			minLeftBaseDistance = Mathf.Infinity; // Reset distance
 			isDirectionBlocked[(int)Direction.Right] = false;
 			isDirectionBlocked[(int)Direction.Left] = false;
 			//isDirectionBlocked[(int)Direction.Down] = false;
@@ -2508,7 +2507,7 @@ public class PlayerController : TopDownBehavior {
 				nextLeftBase = currentLeftBase;
 				minLeftBaseDistance = currentLeftBase.distance;
 			}
-			Debug.Log("next left base: " + (nextLeftBase.collider != null ? nextLeftBase.transform.name : "no next left base"));
+//			Debug.Log("next left base: " + (nextLeftBase.collider != null ? nextLeftBase.transform.name : "no next left base"));
 			Debug.DrawRay(targetRb2d.transform.position, new Vector3(-nextLeftBase.distance, 0, 0), Color.red);
 			if (nextLeftBase.collider != null) {
 				var obj = nextLeftBase.transform.GetComponent<ObjectInfo>();
@@ -2532,10 +2531,8 @@ public class PlayerController : TopDownBehavior {
 			clearSide();
 			currentLeftBase = new RaycastHit2D();
 			nextLeftBase = new RaycastHit2D();
-			minLeftBaseDistance = Mathf.Infinity; // Reset distance
 			currentRightBase = new RaycastHit2D();
 			nextRightBase = new RaycastHit2D();
-			minRightBaseDistance = Mathf.Infinity; // Reset distance
 			isDirectionBlocked[(int)Direction.Right] = false;
 			isDirectionBlocked[(int)Direction.Left] = false;
 			//ClearBlocks();
