@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public static class Helper {
 
@@ -20,5 +21,17 @@ public static class Helper {
             }
         }
         return null;
+    }
+
+    public static bool IsNull<T>(this T obj )where T:Component {
+        return EqualityComparer<T>.Default.Equals(obj,default(T));
+    }
+    
+    public static bool IsObjectNull<T>(T obj )  {
+        return EqualityComparer<T>.Default.Equals(obj,default(T));
+    }
+
+    public static bool IsReallyNull<T>(this T obj) {
+        return ReferenceEquals(obj, null);
     }
 }
