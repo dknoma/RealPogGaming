@@ -18,7 +18,7 @@ public class CameraMovement : MonoBehaviour {
 		cam = Camera.main;
 		player = GameObject.FindWithTag("Player").GetComponent<PlayerController>();    // Get the main player character
 		fallingSpeed = player.jumpSpeed;
-		var playerPos = player.transform.position;
+		Vector3 playerPos = player.transform.position;
 		if (cam != null) { // Start the camera at the current players location each load
 			transform.position = new Vector3(playerPos.x, playerPos.y, cam.transform.position.z); 
 		}
@@ -29,7 +29,7 @@ public class CameraMovement : MonoBehaviour {
 //		if (player.jumping) {
 //			
 //		} else {
-			var playerPos = player.transform.position;
+			Vector3 playerPos = player.transform.position;
 
 			// Up right
 			if (playerPos.x >= transform.position.x + MOVEMENT_WINDOW

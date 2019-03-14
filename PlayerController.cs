@@ -30,9 +30,9 @@ public class PlayerController : TopDownBehavior {
 	public bool isWalking;
 
 	[Header("Physics Variables")]
-	public float jumpSpeed = 30.0f;
+	public float jumpSpeed = 5.0f;
 	public float overworldSpeed = 0.35f;
-
+	public float gravityModifier = 5;
 
 	private int platformMask;
 	private int baseMask; // base filter
@@ -125,6 +125,11 @@ public class PlayerController : TopDownBehavior {
 	private bool grounded = true;
 	private bool rising;
 	
+	private Vector2 velocity;
+	private Vector2 targetVelocity;
+	private Vector2 groundNormal;
+	private Vector2 move;
+	
 	[HideInInspector]
 	public bool jumping;
 	public float currentHeight;
@@ -193,14 +198,159 @@ public class PlayerController : TopDownBehavior {
 		Jump();
 		MovePlayer();
 		CheckPlatformCollision();
-		groundPosition = shadow.transform.position;
+//		ComputeVelocity();
 		//groundHeight = shadow.totalHeight;
 		//Debug.Log("player pos: " + transform.position);
 	}
 
-//	private void FixedUpdate() {
-//	}
+	private void FixedUpdate() {
+		groundPosition = shadow.transform.position;
+		velocity += gravityModifier * Physics2D.gravity * Time.deltaTime;
+		
+		
+//		Vector2 deltaPosition = velocity * Time.deltaTime;
+//		Vector2 moveAlongGround = new Vector2 (groundNormal.y, -groundNormal.x);
+//
+//		Vector2 moving = moveAlongGround * deltaPosition.x;
+//		
+//		Debug.Log("moveAlongGround " + moveAlongGround);
+//
+//		float distance = moving.magnitude;
+//
+//		if (distance > 0) {
+//			Vector2 currentNormal = transform.position.normalized;
 
+//		Debug.Log("height " + currentHeight);
+//		Debug.Log("velocity " + velocity);
+		if (!grounded) {
+			transform.position += (Vector3)velocity;
+			currentHeight = transform.position.y - groundPosition.y
+			                + (currentPlatform != null ? currentPlatform.height : 0);
+			if (!(transform.position.y - shadow.transform.position.y < 0.0001)) return;
+			Debug.Log("is grounded.");
+			grounded = true;
+			isFalling = false;
+			transform.position = shadow.transform.position;
+			currentHeight = transform.position.y - groundPosition.y
+			                + (currentPlatform != null ? currentPlatform.height : 0);
+//				currentHeight = (float)Math.Round(currentHeight);
+//				groundNormal = currentNormal;
+//				currentNormal.x = 0;
+		} else {
+			transform.position = shadow.transform.position;
+			velocity = Vector2.zero;
+		}
+//		if (Mathf.Abs(transform.position.y - shadow.transform.position.y) < 0.0001) {
+//			Debug.Log("is grounded.");
+//			grounded = true;
+////			transform.position = shadow.transform.position;
+////				groundNormal = currentNormal;
+////				currentNormal.x = 0;
+//		} else {
+////				rb2d.position += velocity;
+//			Debug.Log("is NOT grounded.");
+//			grounded = false;
+//		}
+//		rb2d.position += velocity;
+
+//		if (velocity.y > 0) {
+//			rb2d.position += velocity;
+//		}
+
+//
+//			float projection = Vector2.Dot(velocity, currentNormal);
+//			if (projection < 0) {
+//				velocity = velocity - projection * currentNormal;
+//			}
+//
+//			distance = transform.position.y - shadow.transform.position.y;
+//		}
+//
+//		if (velocity.y < 0 && !grounded) { //If have y movement and not grounded, character is falling
+//			isFalling = true;
+//		} else{
+//			isFalling = false;
+//		}
+//		rb2d.position = rb2d.position + moving.normalized * distance;
+	}
+
+	private void Jump() {
+		if (Input.GetButtonDown("Jump") && grounded) { //if jump button is pressed and is grounded
+			Debug.Log("jumping");
+			grounded = false;
+			jumping = true;
+			velocity.y = jumpSpeed;
+		}
+	}
+
+//	private void Jump() {
+////		Debug.Log("falling? " + isFalling);
+////		if (Input.GetButtonDown("Jump") && !isFalling) {
+////			//groundHeight += 4;
+////			if (grounded) {
+////				//groundPosition = transform.position;
+////				rising = true;
+////				jumping = true;
+////				jumpingRoutine = StartCoroutine(Jumping());
+////			}
+////			grounded = transform.position == groundPosition;
+////		}
+//		if (Input.GetButtonDown("Jump") && grounded) { //if jump button is pressed and is grounded
+//			Debug.Log("jumping");
+//			grounded = false;
+//			jumping = true;
+//			velocity.y = jumpSpeed;
+////			rb2d.position += velocity;
+//		}
+//	}
+//	private IEnumerator Jumping() {
+//		float previousHeight = currentHeight;
+//		while (rising) {
+//			if (transform.position.y >= jumpHeight.position.y) {
+//				rising = false;
+////				isFalling = true;
+//			}
+//			if (rising) {
+//				//transform.Translate(Vector3.up * jumpSpeed * Time.smoothDeltaTime);
+//				//Vector3 maxHeight = new Vector3(groundPosition.x, groundPosition.y + maxJumpHeight, groundPosition.z);
+//				transform.position = Vector3.MoveTowards(transform.position, jumpHeight.position,
+//						jumpSpeed * Time.deltaTime);
+//				// Calculate current height when jumping
+//				//jumpingHeight = transform.position.y - groundPosition.y;
+//				//Vector3.Distance(transform.position, groundPosition);
+//				currentHeight = previousHeight + transform.position.y - groundPosition.y;
+//			}
+//			yield return new WaitForEndOfFrame();
+//		}
+//		//yield return new WaitForSeconds(0.05f);
+//		float beforeFallHeight = currentHeight;
+//		//Debug.Log("Before height: " + beforeFallHeight);
+//		while (!rising) {
+//			//newCurrentHeight = currentHeight;
+//			//yield return new WaitForSeconds(0.01f);
+//			transform.position = Vector3.MoveTowards(transform.position, groundPosition,
+//				jumpSpeed * Time.deltaTime);
+//			//jumpingHeight = transform.position.y - groundPosition.y;
+//			//Debug.Log(string.Format("\tcurr plat: {0}", currentPlatform != null ? currentPlatform.name : "no plat..."));
+//			currentHeight = beforeFallHeight - (beforeFallHeight - (transform.position.y - groundPosition.y))
+//			+ (currentPlatform != null ? currentPlatform.height : 0);
+//			//Debug.Log(string.Format("curr : {0}", currentHeight));
+//			//currentHeight = 0;
+//			//Debug.Log("Calc falling from jump...");
+//			//Debug.Log(string.Format("dist: {0}", (transform.position.y - groundPosition.y)));
+//			if (transform.position == groundPosition) {
+//				//Debug.Log("Finished jumping!");
+//				grounded = true;
+//				isFalling = false;
+//				//StopCoroutine(jumpingRoutine);
+//				break;
+//			}
+//			yield return new WaitForEndOfFrame();
+//		}
+//		jumping = false;
+//		//currentHeight -= newCurrentHeight;
+//	}
+	
 	public float GetJumpingHeight() {
 		return jumpingHeight;
 	}
@@ -264,7 +414,7 @@ public class PlayerController : TopDownBehavior {
 				shadow.transform.position += new Vector3(0, currentPlatform.height, 0);
 				groundPosition += new Vector3(0, currentPlatform.height, 0);
 //				Debug.Log("jh b4: " + jumpHeight.position);
-				yield return new WaitUntil(() => grounded);
+				yield return new WaitUntil(() => !rising);
 //				Debug.Log("jh: " + jumpHeight.position);
 				jumpHeight.position += new Vector3(0, currentPlatform.height, 0);
 				break;
@@ -326,18 +476,108 @@ public class PlayerController : TopDownBehavior {
 		//Debug.Log("shadow after: " + shadow.transform.position);
 	}
 
-	// Check the height of the floor that the player is trying to fall down to
-	private void CheckForLowerPlatforms() {
-		if (shadow.GetComponent<Collider2D>().Raycast(Vector2.down, floorContactFilter, floorHits, Mathf.Infinity) > 0) {
-			fallingHeight = fallingHeight - floorHits[0].transform.GetComponent<ObjectInfo>().height;
-		}
-	}
 
-	IEnumerator Fall() {
+
+//	IEnumerator Fall() {
+//		Debug.Log(string.Format("Falling {0}h", fallingHeight));
+//		isFalling = true;
+//		nextPlatform = null;
+//		CheckForLowerPlatforms();
+//		fallingOffPlatform = true;
+//		//shadow.transform.position = new Vector3(shadow.transform.position.x, shadow.transform.position.y - fallingHeight,
+//		//shadow.transform.position.z);
+//		// Check which way to pad landing to prevent getting stuck
+//		switch (fallingDirection) {
+//			case Direction.Up:
+//				shadow.transform.position += new Vector3(0, -fallingHeight + 0.5f, 0);
+//				groundPosition += new Vector3(0, -fallingHeight + 0.5f, 0);
+//				yield return new WaitUntil(() => grounded);
+//				jumpHeight.position += new Vector3(0, -fallingHeight + 0.5f, 0);
+//				//shadow.transform.position += new Vector3(0, -fallingHeight + (boundCorrection), 0);
+//				//jumpHeight.transform.position += new Vector3(0, -fallingHeight + (boundCorrection), 0);
+//				//groundPosition += new Vector3(0, -fallingHeight + (boundCorrection), 0);
+//				break;
+//			case Direction.Down:
+//				if (!jumping) {
+//					//Debug.Log("shadow bb4: " + shadow.transform.position);
+//					shadow.transform.position += new Vector3(0, -fallingHeight - (boundCorrection * 2), 0);
+//					//Debug.Log("shadow after: " + shadow.transform.position);
+//					jumpHeight.position += new Vector3(0, -fallingHeight - (boundCorrection * 2), 0);
+//					groundPosition += new Vector3(0, -fallingHeight - (boundCorrection * 2), 0);
+//				}
+//				//Debug.Log("Jumping:\tshadow pos: " + shadow.transform.position);
+//				//shadow.transform.position += new Vector3(0, currentHeight-fallingHeight - (boundCorrection * 2), 0);
+//				//Debug.Log("\tshadow after: " + shadow.transform.position);
+//				//groundPosition += new Vector3(0, currentHeight-fallingHeight - (boundCorrection * 2), 0);
+//				//yield return new WaitUntil(() => grounded);
+//				//jumpHeight.transform.position += new Vector3(0, -fallingHeight - (boundCorrection * 2), 0);
+//				break;
+//			case Direction.Left:
+//				shadow.transform.position += new Vector3(-(boundCorrection * 2), -fallingHeight, 0);
+//				jumpHeight.position += new Vector3(-(boundCorrection * 2), -fallingHeight, 0);
+//				groundPosition += new Vector3(-(boundCorrection * 2), -fallingHeight, 0);
+//				break;
+//			case Direction.Right:
+//				shadow.transform.position += new Vector3(boundCorrection * 2, -fallingHeight, 0);
+//				jumpHeight.position += new Vector3(boundCorrection * 2, -fallingHeight, 0);
+//				groundPosition += new Vector3(boundCorrection * 2, -fallingHeight, 0);
+//				break;
+//			case Direction.UpLeft:
+//				shadow.transform.position += new Vector3(-(boundCorrection * 2), -fallingHeight + (boundCorrection * 2), 0);
+//				jumpHeight.position += new Vector3(-(boundCorrection * 2), -fallingHeight + (boundCorrection * 2), 0);
+//				groundPosition += new Vector3(-(boundCorrection * 2), -fallingHeight + (boundCorrection * 2), 0);
+//				break;
+//			case Direction.UpRight:
+//				shadow.transform.position += new Vector3(boundCorrection * 2, -fallingHeight + (boundCorrection * 2), 0);
+//				jumpHeight.position += new Vector3(boundCorrection * 2, -fallingHeight + (boundCorrection * 2), 0);
+//				groundPosition += new Vector3(boundCorrection * 2, -fallingHeight + (boundCorrection * 2), 0);
+//				break;
+//			case Direction.DownLeft:
+//				shadow.transform.position += new Vector3(-(boundCorrection * 2), -fallingHeight - (boundCorrection * 2), 0);
+//				jumpHeight.position += new Vector3(-(boundCorrection * 2), -fallingHeight - (boundCorrection * 2), 0);
+//				groundPosition += new Vector3(-(boundCorrection * 2), -fallingHeight - (boundCorrection * 2), 0);
+//				break;
+//			case Direction.DownRight:
+//				shadow.transform.position += new Vector3(boundCorrection * 2 - fallingHeight - (boundCorrection * 2), 0);
+//				jumpHeight.position += new Vector3(boundCorrection * 2, -fallingHeight - (boundCorrection * 2), 0);
+//				groundPosition += new Vector3(boundCorrection * 2, -fallingHeight - (boundCorrection * 2), 0);
+//				break;
+//		}
+//		//Vector3 jumpHeightPos = jumpHeight.transform.position + new Vector3(0,-fallingHeight,0);
+//		//Vector3 newPlayerPos = new Vector3(shadow.transform.position.x, shadow.transform.position.y + 2,
+//		//shadow.transform.position.z);
+//		//Fall to the shadows position
+//
+//		//Debug.Log("perparing for fall");
+//		float beforeFallHeight = currentHeight;
+//		while (true) {
+//			transform.position = Vector3.MoveTowards(transform.position, groundPosition, jumpSpeed * Time.deltaTime);
+//			//Mathf.Lerp(currentHeight, currentHeight - fallingHeight, jumpSpeed / 1.5f * Time.deltaTime);
+//			currentHeight = beforeFallHeight - (beforeFallHeight - (transform.position.y - groundPosition.y));
+//			//+ (currentPlatform != null ? currentPlatform.height : 0);
+//			if (transform.position == groundPosition) {
+//				currentHeight = beforeFallHeight - (beforeFallHeight - (transform.position.y - groundPosition.y));
+//				//Debug.Log("finished fall.");
+//				grounded = true;
+//				isFalling = false;
+//				if (fallingRoutine != null) {
+//					fallingDirection = new Direction();
+//					fallingOffPlatform = false;
+//					StopCoroutine(fallingRoutine);
+//				} else {
+//					break;
+//				}
+//			}
+//			yield return new WaitForEndOfFrame();
+//		}
+//		yield return new WaitForEndOfFrame();
+//	}
+
+	private void Fall() {
 		Debug.Log(string.Format("Falling {0}h", fallingHeight));
+		grounded = false;
 		isFalling = true;
 		nextPlatform = null;
-		CheckForLowerPlatforms();
 		fallingOffPlatform = true;
 		//shadow.transform.position = new Vector3(shadow.transform.position.x, shadow.transform.position.y - fallingHeight,
 		//shadow.transform.position.z);
@@ -346,8 +586,6 @@ public class PlayerController : TopDownBehavior {
 			case Direction.Up:
 				shadow.transform.position += new Vector3(0, -fallingHeight + 0.5f, 0);
 				groundPosition += new Vector3(0, -fallingHeight + 0.5f, 0);
-				yield return new WaitUntil(() => grounded);
-				jumpHeight.position += new Vector3(0, -fallingHeight + 0.5f, 0);
 				//shadow.transform.position += new Vector3(0, -fallingHeight + (boundCorrection), 0);
 				//jumpHeight.transform.position += new Vector3(0, -fallingHeight + (boundCorrection), 0);
 				//groundPosition += new Vector3(0, -fallingHeight + (boundCorrection), 0);
@@ -357,7 +595,6 @@ public class PlayerController : TopDownBehavior {
 					//Debug.Log("shadow bb4: " + shadow.transform.position);
 					shadow.transform.position += new Vector3(0, -fallingHeight - (boundCorrection * 2), 0);
 					//Debug.Log("shadow after: " + shadow.transform.position);
-					jumpHeight.position += new Vector3(0, -fallingHeight - (boundCorrection * 2), 0);
 					groundPosition += new Vector3(0, -fallingHeight - (boundCorrection * 2), 0);
 				}
 				//Debug.Log("Jumping:\tshadow pos: " + shadow.transform.position);
@@ -369,149 +606,35 @@ public class PlayerController : TopDownBehavior {
 				break;
 			case Direction.Left:
 				shadow.transform.position += new Vector3(-(boundCorrection * 2), -fallingHeight, 0);
-				jumpHeight.position += new Vector3(-(boundCorrection * 2), -fallingHeight, 0);
 				groundPosition += new Vector3(-(boundCorrection * 2), -fallingHeight, 0);
 				break;
 			case Direction.Right:
 				shadow.transform.position += new Vector3(boundCorrection * 2, -fallingHeight, 0);
-				jumpHeight.position += new Vector3(boundCorrection * 2, -fallingHeight, 0);
 				groundPosition += new Vector3(boundCorrection * 2, -fallingHeight, 0);
 				break;
 			case Direction.UpLeft:
 				shadow.transform.position += new Vector3(-(boundCorrection * 2), -fallingHeight + (boundCorrection * 2), 0);
-				jumpHeight.position += new Vector3(-(boundCorrection * 2), -fallingHeight + (boundCorrection * 2), 0);
 				groundPosition += new Vector3(-(boundCorrection * 2), -fallingHeight + (boundCorrection * 2), 0);
 				break;
 			case Direction.UpRight:
 				shadow.transform.position += new Vector3(boundCorrection * 2, -fallingHeight + (boundCorrection * 2), 0);
-				jumpHeight.position += new Vector3(boundCorrection * 2, -fallingHeight + (boundCorrection * 2), 0);
 				groundPosition += new Vector3(boundCorrection * 2, -fallingHeight + (boundCorrection * 2), 0);
 				break;
 			case Direction.DownLeft:
 				shadow.transform.position += new Vector3(-(boundCorrection * 2), -fallingHeight - (boundCorrection * 2), 0);
-				jumpHeight.position += new Vector3(-(boundCorrection * 2), -fallingHeight - (boundCorrection * 2), 0);
 				groundPosition += new Vector3(-(boundCorrection * 2), -fallingHeight - (boundCorrection * 2), 0);
 				break;
 			case Direction.DownRight:
 				shadow.transform.position += new Vector3(boundCorrection * 2 - fallingHeight - (boundCorrection * 2), 0);
-				jumpHeight.position += new Vector3(boundCorrection * 2, -fallingHeight - (boundCorrection * 2), 0);
 				groundPosition += new Vector3(boundCorrection * 2, -fallingHeight - (boundCorrection * 2), 0);
 				break;
+			case Direction.Null:
+				break;
+			default:
+				throw new ArgumentOutOfRangeException();
 		}
-		//Vector3 jumpHeightPos = jumpHeight.transform.position + new Vector3(0,-fallingHeight,0);
-		//Vector3 newPlayerPos = new Vector3(shadow.transform.position.x, shadow.transform.position.y + 2,
-		//shadow.transform.position.z);
-		//Fall to the shadows position
+	}
 
-		//Debug.Log("perparing for fall");
-		float beforeFallHeight = currentHeight;
-		while (true) {
-			transform.position = Vector3.MoveTowards(transform.position, groundPosition, jumpSpeed * Time.deltaTime);
-			//Mathf.Lerp(currentHeight, currentHeight - fallingHeight, jumpSpeed / 1.5f * Time.deltaTime);
-			currentHeight = beforeFallHeight - (beforeFallHeight - (transform.position.y - groundPosition.y));
-			//+ (currentPlatform != null ? currentPlatform.height : 0);
-			if (transform.position == groundPosition) {
-				currentHeight = beforeFallHeight - (beforeFallHeight - (transform.position.y - groundPosition.y));
-				//Debug.Log("finished fall.");
-				grounded = true;
-				isFalling = false;
-				if (fallingRoutine != null) {
-					fallingDirection = new Direction();
-					fallingOffPlatform = false;
-					StopCoroutine(fallingRoutine);
-				} else {
-					break;
-				}
-			}
-			yield return new WaitForEndOfFrame();
-		}
-		yield return new WaitForEndOfFrame();
-	}
-	
-	private void CastUpPlatCheck(Rigidbody2D targetRb2d, Action doAfterHits, Action noHits) {
-		var hits = Physics2D.RaycastNonAlloc(targetRb2d.transform.position, Vector2.up, pResultsUp, Mathf.Infinity, platformMask);
-		currentPlatformHit = Physics2D.Raycast(targetRb2d.transform.position, Vector2.up, Mathf.Infinity, platformMask);
-		
-		if (hits > 0) {
-			if (hits > 1) {
-				if (currentPlatformHit.collider != null) {
-					Debug.Log("up isnt null");
-//					Debug.Log("Inside 0: " + CheckIfInCollider(transform.position, resultsUp[0].transform.GetComponent<ObjectInfo>()));
-//					Debug.Log("Inside 1: " + CheckIfInCollider(transform.position, resultsUp[1].transform.GetComponent<ObjectInfo>()));
-					if (pResultsUp[1].transform != currentPlatformHit.transform && pResultsUp[1].distance <= minPlatformDistance) {
-						Debug.Log("1 normal: " + resultsUp[1].point);
-						nextPlatformHit = pResultsUp[1];
-						minPlatformDistance = nextPlatformHit.distance;
-					} else {
-						Debug.Log("0 normal: " + resultsUp[0].point);
-						nextPlatformHit = pResultsUp[0];
-						minPlatformDistance = nextPlatformHit.distance;
-					}
-				} else {
-					// If current is null, nextbase is the closest one
-					Debug.Log("null normal: " + resultsUp[0].point);
-//					currentPlatformHit = pResultsUp[0];
-					nextPlatformHit = currentPlatformHit;
-					minPlatformDistance = nextPlatformHit.distance;
-				}
-			} else {
-				Debug.Log("1== normal: " + resultsUp[0].point);
-//				currentPlatformHit = pResultsUp[0];
-				nextPlatformHit = currentPlatformHit;
-				minPlatformDistance = nextPlatformHit.distance;
-			}
-			doAfterHits();
-		} else 	{
-//			Debug.Log("No platform detected ^");
-			currentPlatformHit = new RaycastHit2D();
-			currentPlatform = null;
-			minPlatformDistance = Mathf.Infinity;
-			noHits();
-		}
-		
-//		if(hits > 0) {
-//			//Debug.Log(string.Format("next: {0}, {1}", pResultsUp[0].distance, pResultsUp[0].transform.name));
-//			//Debug.Log(string.Format("current p hit: {0}, {1}", currentPlatformHit.transform.name, currentPlatformHit.distance));
-//			// ...
-//			if(hits == 1 || (currentPlatformHit.collider != null && !Contains(pResultsUp, currentPlatformHit))) {
-//				//Debug.Log("1 plat...: " + currentPlatformHit.transform.name);
-//				nextPlatformHit = pResultsUp[0];
-//				currentPlatformHit = new RaycastHit2D();
-//				minPlatformDistance = nextPlatformHit.distance;
-//			} else {
-//				for(int i = 0; i < pResultsUp.Length; i++) {
-//					RaycastHit2D hit = pResultsUp[i];
-//					//Debug.Log("checking ^ plat...: " + hit.transform.name);
-//					if(currentPlatformHit.collider != null) {
-//						//Debug.Log("current up isnt null");
-//						// If this hit isnt the same as the current one, and its distance is smaller,
-//						// 		Set the nextBase
-//						if(hit.transform != currentPlatformHit.transform && hit.distance < minPlatformDistance) {
-//							nextPlatformHit = hit;
-//							minPlatformDistance = hit.distance;
-//							//break;
-//						} else {
-//							//Debug.Log("hit and current are same maybe.");
-//							nextPlatformHit = currentPlatformHit;
-//							minPlatformDistance = currentPlatformHit.distance;
-//						}
-//					} else {
-//						//Debug.Log("current up is null. set next to be the check");
-//						// If current is null, nextbase is the closest one
-//						nextPlatformHit = hit;
-//						minPlatformDistance = hit.distance;
-//						break;
-//					}
-//				}
-//			}
-//			//Debug.Log(string.Format("next: {0}, {1}", nextPlatformHit.distance, nextPlatformHit.transform.name));
-//		} else {
-//			currentPlatformHit = new RaycastHit2D();
-//			currentPlatform = null;
-//			minPlatformDistance = Mathf.Infinity;
-//			noHits();
-//		}
-	}
 
 //	private void OnCollisionEnter2D(Collision2D coll) {
 //		if (coll.gameObject.CompareTag("Platform")) {
@@ -519,6 +642,17 @@ public class PlayerController : TopDownBehavior {
 //			
 //		}
 //	}
+
+	/// <summary>
+	///	Check the height of the floor that the player is trying to fall down to
+	/// </summary>
+	/// <returns>Height to displace current height by</returns>
+	private float CheckForLowerPlatforms() {
+		if (shadow.GetComponent<Collider2D>().Raycast(Vector2.down, floorContactFilter, floorHits, Mathf.Infinity) > 0) {
+			return previousPlatform.height - floorHits[0].transform.GetComponent<ObjectInfo>().height;
+		}
+		return previousPlatform.height;
+	}
 
 //	if(nextPlatform != null && CheckIfInCollider(transform.position, nextPlatform) && isWalking
 //	&& HigherThanPlatform(nextPlatform) && currentPlatform != nextPlatform) {
@@ -529,34 +663,40 @@ public class PlayerController : TopDownBehavior {
 		switch (facingDirection) {
 			case Direction.Up:
 				if (!transitionToCurrentPlatform) {
-					var upHits = Physics2D.RaycastNonAlloc(rb2d.transform.position, Vector2.up, pResultsUp, Mathf.Infinity, platformMask);
-					currentPlatformHit = Physics2D.Raycast(rb2d.transform.position, Vector2.up, Mathf.Infinity, platformMask);
+					var upHits = Physics2D.RaycastNonAlloc(rb2d.transform.position, Vector2.up, pResultsUp,
+					                                       Mathf.Infinity, platformMask);
+					currentPlatformHit =
+						Physics2D.Raycast(rb2d.transform.position, Vector2.up, Mathf.Infinity, platformMask);
 					if (upHits > 0) {
 						if (upHits > 1) {
 							if (currentPlatformHit.collider != null) {
-								Debug.Log("up isnt null");								
-								if (pResultsUp[1].transform != currentPlatformHit.transform && pResultsUp[1].distance <= minPlatformDistance) {
-									Debug.Log("1 normal: " + resultsUp[1].point);
+//								Debug.Log("up isnt null");								
+								if (pResultsUp[1].transform != currentPlatformHit.transform &&
+								    pResultsUp[1].distance <= minPlatformDistance) {
+//									Debug.Log("1 normal: " + resultsUp[1].point);
 									nextPlatformHit = pResultsUp[1];
 									minPlatformDistance = nextPlatformHit.distance;
 								} else {
-									Debug.Log("0 normal: " + resultsUp[0].point);
+//									Debug.Log("0 normal: " + resultsUp[0].point);
 									nextPlatformHit = pResultsUp[0];
 									minPlatformDistance = nextPlatformHit.distance;
 								}
+
+								previousPlatform = currentPlatform;
 							} else {
 								// If current is null, nextbase is the closest one
-								Debug.Log("null normal: " + resultsUp[0].point);
+//								Debug.Log("null normal: " + resultsUp[0].point);
 //					currentPlatformHit = pResultsUp[0];
 								nextPlatformHit = currentPlatformHit;
 								minPlatformDistance = nextPlatformHit.distance;
 							}
 						} else {
-							Debug.Log("1== normal: " + resultsUp[0].point);
+//							Debug.Log("1== normal: " + resultsUp[0].point);
 //				currentPlatformHit = pResultsUp[0];
 							nextPlatformHit = currentPlatformHit;
 							minPlatformDistance = nextPlatformHit.distance;
-						} 
+						}
+
 						// Checks the values from the next platform
 						//Debug.Log("bnext " + nextPlatformHit.transform.name);
 						nextPlatform = nextPlatformHit.transform.GetComponent<ObjectInfo>();
@@ -580,62 +720,23 @@ public class PlayerController : TopDownBehavior {
 							leftCurrentPlatform = false;
 							landingRoutine = StartCoroutine(RaisePlayerObjects()); // happens multiple times?
 						}
+
 //						Debug.Log(string.Format("prev {0}", previousPlatform.name));
-					} else 	{
+					} else {
 						currentPlatformHit = new RaycastHit2D();
 						currentPlatform = null;
 //						previousPlatform = null;
 						minPlatformDistance = Mathf.Infinity;
 						Debug.Log("No platforms. Reset.");
 					}
-					
-					
-//					CastUpPlatCheck(rb2d,
-//						// Hitting closest platform
-//						() => {
-//		                // Checks the values from the next platform
-//		                //Debug.Log("bnext " + nextPlatformHit.transform.name);
-//		                nextPlatform = nextPlatformHit.transform.GetComponent<ObjectInfo>();
-//		                // If player is inside the platform, is moving into it, is higher than the platform, and the platform isnt what we're on
-//		                // Transition to the new platform
-//		                // Return if something is null
-////						if (nextPlatform == null || !CheckIfInCollider(transform.position, nextPlatform) ||
-////						    !isWalking || !HigherThanPlatform(nextPlatform) || currentPlatform == nextPlatform) return;
-//		                if (nextPlatform != null && CheckIfInCollider(transform.position, nextPlatform) && isWalking
-//		                    && HigherThanPlatform(nextPlatform) && currentPlatform != nextPlatform) {
-//			                Debug.Log(string.Format("Inside {0}", nextPlatform.name));
-//			                //currentPlatformHit = nextPlatformHit;
-//			                currentPlatform = currentPlatformHit.transform.GetComponent<ObjectInfo>();
-//			                previousPlatform = currentPlatform;
-//			                //StopCoroutine(jumpingRoutine);
-//			                //grounded = true;
-//			                //isFalling = false;
-//			                //Debug.Log("c h: " + currentHeight);
-//			                isOnPlatform = true;
-//			                leftCurrentPlatform = false;
-//			                landingRoutine = StartCoroutine(RaisePlayerObjects()); // happens multiple times?
-//		                }
-//	                },
-//	                // Hitting no platforms
-//	                () => { Debug.Log("No platforms. Reset."); }
-//					);
 				}
 //				Debug.Log("c h: " + currentHeight);
-//				Debug.Log(string.Format("prev {0}", previousPlatform.name));
-				// Only drop down if there is no other platform connected
-//				if (previousPlatform == null
-//				    || Mathf.RoundToInt(nextPlatform.bottomBound) == Mathf.RoundToInt(previousPlatform.topBound)) {
-//					return;
-//				}
-				
-				
-				//Debug.Log("c h: " + currentHeight);
-				var downHits = Physics2D.RaycastNonAlloc(shadow.GetComponent<Rigidbody2D>().transform.position,
+				int downHits = Physics2D.RaycastNonAlloc(shadow.GetComponent<Rigidbody2D>().transform.position,
 				                                         Vector2.down, pResultsDown, Mathf.Infinity, platformMask);
 				// Check for falling when facing up
 				//if(shadow.GetComponent<Rigidbody2D>().Cast(Vector2.down, platformContactFilter, pResultsDown, Mathf.Infinity) > 0) {
 				if (downHits > 0) {
-					Debug.Log(string.Format("next, prev: {0}, {1}", nextPlatform.bottomBound, previousPlatform.topBound));
+//					Debug.Log(string.Format("next, prev: {0}, {1}", nextPlatform.bottomBound, previousPlatform.topBound));
 					
 					//Debug.Log("p res down from shadow");
 					//Debug.Log("prev " + previousPlatform.transform.name);
@@ -643,22 +744,23 @@ public class PlayerController : TopDownBehavior {
 					//Debug.Log(string.Format("Touching platform {0}, bounds(<,^,v,>): ({1},{2},{3},{4})", pResultsUp[0].transform.name,
 					//currentPlatform.leftBound, currentPlatform.topBound, currentPlatform.bottomBound, currentPlatform.rightBound));
 					if (previousPlatform != null
-					    && !CheckIfInCollider(shadow.GetComponent<Rigidbody2D>().transform.position,
-					                       previousPlatform) && isWalking && HigherThanPlatform(previousPlatform)) {
+					    && !CheckIfInCollider(shadow.GetComponent<Rigidbody2D>().transform.position,  previousPlatform) 
+					    && isWalking && HigherThanPlatform(previousPlatform)
+					    && Mathf.RoundToInt(nextPlatform.bottomBound) != Mathf.RoundToInt(previousPlatform.topBound) ) {
+						Debug.Log(string.Format("next, prev: {0}, {1}", nextPlatform.bottomBound, previousPlatform.topBound));
 						//if(previousPlatform != null && !CheckIfInCollider(transform.position, previousPlatform) && isWalking && HigherThanPlatform(previousPlatform)) {
 						//&& (currentPlatform == nextPlatform || currentPlatform == null)) {
 						//Debug.Log(string.Format("Leaving {0} while facing {1}", currentPlatform.name, facingDirection));
 						//currentPlatform = null;
 						isOnPlatform = false;
-						fallingHeight = previousPlatform.height;
 						if (!leftCurrentPlatform) {
+							fallingHeight = CheckForLowerPlatforms();
 							transitionToCurrentPlatform = false;
 							leftCurrentPlatform = true;
 //							currentPlatform = null;
 							//Debug.Log("Leaving...");
-							//LowerHeight(fallingHeight);
 							fallingDirection = Direction.Up;
-							fallingRoutine = StartCoroutine(Fall());
+							Fall();
 						}
 					}
 				}
@@ -1006,67 +1108,6 @@ public class PlayerController : TopDownBehavior {
 	//	}
 	//}
 
-	// Jumping routines
-	private void Jump() {
-		if (Input.GetButtonDown("Jump") && !isFalling) {
-			//groundHeight += 4;
-			if (grounded) {
-				//groundPosition = transform.position;
-				rising = true;
-				jumping = true;
-				jumpingRoutine = StartCoroutine(Jumping());
-			}
-			grounded = transform.position == groundPosition;
-		}
-	}
-
-	IEnumerator Jumping() {
-		float previousHeight = currentHeight;
-		while (rising) {
-			if (transform.position.y >= jumpHeight.position.y) {
-				rising = false;
-//				isFalling = true;
-			}
-			if (rising) {
-				//transform.Translate(Vector3.up * jumpSpeed * Time.smoothDeltaTime);
-				//Vector3 maxHeight = new Vector3(groundPosition.x, groundPosition.y + maxJumpHeight, groundPosition.z);
-				transform.position = Vector3.MoveTowards(transform.position, jumpHeight.position,
-						jumpSpeed * Time.deltaTime);
-				// Calculate current height when jumping
-				//jumpingHeight = transform.position.y - groundPosition.y;
-				//Vector3.Distance(transform.position, groundPosition);
-				currentHeight = previousHeight + transform.position.y - groundPosition.y;
-			}
-			yield return new WaitForEndOfFrame();
-		}
-		//yield return new WaitForSeconds(0.05f);
-		float beforeFallHeight = currentHeight;
-		//Debug.Log("Before height: " + beforeFallHeight);
-		while (!rising) {
-			//newCurrentHeight = currentHeight;
-			//yield return new WaitForSeconds(0.01f);
-			transform.position = Vector3.MoveTowards(transform.position, groundPosition,
-				jumpSpeed * Time.deltaTime);
-			//jumpingHeight = transform.position.y - groundPosition.y;
-			//Debug.Log(string.Format("\tcurr plat: {0}", currentPlatform != null ? currentPlatform.name : "no plat..."));
-			currentHeight = beforeFallHeight - (beforeFallHeight - (transform.position.y - groundPosition.y))
-			+ (currentPlatform != null ? currentPlatform.height : 0);
-			//Debug.Log(string.Format("curr : {0}", currentHeight));
-			//currentHeight = 0;
-			//Debug.Log("Calc falling from jump...");
-			//Debug.Log(string.Format("dist: {0}", (transform.position.y - groundPosition.y)));
-			if (transform.position == groundPosition) {
-				//Debug.Log("Finished jumping!");
-				grounded = true;
-//				isFalling = false;
-				//StopCoroutine(jumpingRoutine);
-				break;
-			}
-			yield return new WaitForEndOfFrame();
-		}
-		jumping = false;
-		//currentHeight -= newCurrentHeight;
-	}
 
 	//IEnumerator Falling() {
 	//	// Start falling when finished jumping
@@ -2053,46 +2094,63 @@ public class PlayerController : TopDownBehavior {
 				transform.Translate(0, speed, 0);
 				shadow.transform.Translate(0, speed, 0);
 				jumpHeight.Translate(0, speed, 0);
+				move.x = 0;
+				move.y = speed;
 				break;
 			case Direction.Down:
 				transform.Translate(0, -speed, 0);
 				shadow.transform.Translate(0, -speed, 0);
 				jumpHeight.Translate(0, -speed, 0);
+				move.x = 0;
+				move.y = -speed;
 				break;
 			case Direction.Left:
 				transform.Translate(-speed, 0, 0);
 				shadow.transform.Translate(-speed, 0, 0);
 				jumpHeight.Translate(-speed, 0, 0);
+				move.x = -speed;
+				move.y = 0;
 				break;
 			case Direction.Right:
 				transform.Translate(speed, 0, 0);
 				shadow.transform.Translate(speed, 0, 0);
 				jumpHeight.Translate(speed, 0, 0);
+				move.x = speed;
+				move.y = 0;
 				break;
 			case Direction.UpRight:
 				transform.Translate(speed, speed, 0);
 				shadow.transform.Translate(speed, speed, 0);
 				jumpHeight.Translate(speed, speed, 0);
+				move.x = speed;
+				move.y = speed;
 				break;
 			case Direction.UpLeft:
 				transform.Translate(-speed, speed, 0);
 				shadow.transform.Translate(-speed, speed, 0);
 				jumpHeight.Translate(-speed, speed, 0);
+				move.x = -speed;
+				move.y = speed;
 				break;
 			case Direction.DownRight:
 				transform.Translate(speed, -speed, 0);
 				shadow.transform.Translate(speed, -speed, 0);
 				jumpHeight.Translate(speed, -speed, 0);
+				move.x = speed;
+				move.y = -speed;
 				break;
 			case Direction.DownLeft:
 				transform.Translate(-speed, -speed, 0);
 				shadow.transform.Translate(-speed, -speed, 0);
 				jumpHeight.Translate(-speed, -speed, 0);
+				move.x = -speed;
+				move.y = -speed;
 				break;
 			default:
 				transform.Translate(0, 0, 0);
 				shadow.transform.Translate(0, 0, 0);
 				jumpHeight.Translate(0, 0, 0);
+				move = Vector2.zero;
 				break;
 		}
 	}
