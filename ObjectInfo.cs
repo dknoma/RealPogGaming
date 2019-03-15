@@ -17,6 +17,8 @@ public class ObjectInfo : MonoBehaviour {
 	[DisableInspectorEdit] public float rightBound;
 	[DisableInspectorEdit] public float leftBound;
 	[DisableInspectorEdit] public int sortingOrder;
+	[DisableInspectorEdit] public ObjectValues values;
+	
 
 	private CompositeCollider2D coll;
 	private ContactFilter2D objectContactFilter;
@@ -50,14 +52,15 @@ public class ObjectInfo : MonoBehaviour {
 		rightBound = position.x + w / 2;
 		leftBound = position.x - w / 2;
 		sortingOrder = childRenderer.sortingOrder;
+		values = new ObjectValues(position, h, w, height, sortingOrder, name);
 	}
 
 	// Draw debug ray to show where the raycast is originating from
 	// Red line means the cast is down; yellow is up
 	private void Update() {
 		// Set sort order to platform positions sorting order
-		if (!fixedSorting && childRenderer != null) {
-			myRenderer.sortingOrder = childRenderer.sortingOrder;
-		}
+		if (fixedSorting || childRenderer == null) return;
+		myRenderer.sortingOrder = childRenderer.sortingOrder;
+		values.sortingOrder = myRenderer.sortingOrder;
 	}
 }
