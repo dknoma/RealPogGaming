@@ -401,13 +401,13 @@ public class PlayerController : TopDownBehavior {
 				break;
 			case Direction.Up:
 				if(previousPlatform != null && nextPlatform != null 
-				                            && Mathf.Abs(shadow.transform.position.y - nextPlatform.bottomBound) < 8) {
+				                            && Mathf.Abs(previousPlatform.topBound - nextPlatform.bottomBound) < 8) {
 					return previousPlatform.height - nextPlatform.height;
 				}
 				break;
 			case Direction.Down:
 				if(previousPlatform != null && nextPlatform != null 
-				    && Mathf.Abs(shadow.transform.position.y - nextPlatform.topBound) <= 4) {
+				    && Mathf.Abs(previousPlatform.bottomBound - nextPlatform.topBound) <= 4) {
 					return previousPlatform.height - nextPlatform.height;
 				}
 				break;
