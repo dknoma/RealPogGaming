@@ -14,6 +14,7 @@ public class ObjectValues {
     public float bottomBound;
     public float rightBound;
     public float leftBound;
+//    public float distance;
     public int sortingOrder;
 
     public ObjectValues(Vector3 pos, float h, float w, float height, int order, string name) {

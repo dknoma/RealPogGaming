@@ -344,8 +344,8 @@ public class PlayerController : TopDownBehavior {
 				break;
 			case Direction.Down:
 //				if (!jumping) {
-				shadow.transform.position += new Vector3(0, -fallingHeight - BOUND_CORRECTION, 0);
-				groundPosition += new Vector3(0, -fallingHeight - BOUND_CORRECTION, 0);
+				shadow.transform.position += new Vector3(0, -fallingHeight, 0);
+				groundPosition += new Vector3(0, -fallingHeight, 0);
 //				}
 				break;
 			case Direction.Left:
@@ -391,10 +391,40 @@ public class PlayerController : TopDownBehavior {
 	///	Check the height of the floor that the player is trying to fall down to
 	/// </summary>
 	/// <returns>Height to displace current height by</returns>
-	private float CheckForLowerPlatforms() {
-		if (previousPlatform != null 
-		    && shadow.GetComponent<Collider2D>().Raycast(Vector2.down, floorContactFilter, floorHits, Mathf.Infinity) > 0) {
-			return previousPlatform.height - floorHits[0].transform.GetComponent<ObjectInfo>().height;
+	private float CalculateFallingHeight(Direction direction) {
+//		if (previousPlatform != null 
+//		    && shadow.GetComponent<Collider2D>().Raycast(Vector2.down, floorContactFilter, floorHits, Mathf.Infinity) > 0) {
+//			return previousPlatform.height - floorHits[0].transform.GetComponent<ObjectInfo>().height;
+//		}
+		switch (direction) {
+			case Direction.Null:
+				break;
+			case Direction.Up:
+				if(previousPlatform != null && nextPlatform != null 
+				                            && Mathf.Abs(shadow.transform.position.y - nextPlatform.bottomBound) < 8) {
+					return previousPlatform.height - nextPlatform.height;
+				}
+				break;
+			case Direction.Down:
+				if(previousPlatform != null && nextPlatform != null 
+				    && Mathf.Abs(shadow.transform.position.y - nextPlatform.topBound) <= 4) {
+					return previousPlatform.height - nextPlatform.height;
+				}
+				break;
+			case Direction.Left:
+				break;
+			case Direction.Right:
+				break;
+			case Direction.UpRight:
+				break;
+			case Direction.UpLeft:
+				break;
+			case Direction.DownRight:
+				break;
+			case Direction.DownLeft:
+				break;
+			default:
+				throw new ArgumentOutOfRangeException("direction", direction, null);
 		}
 		return previousPlatform != null ? previousPlatform.height : currentHeight;
 	}
@@ -504,11 +534,11 @@ public class PlayerController : TopDownBehavior {
 						&& isWalking) {
 						if (!leftCurrentPlatform) {
 							Debug.Log("UP: null falling...");
+							fallingDirection = Direction.Up;
 							isOnPlatform = false;
-							fallingHeight = CheckForLowerPlatforms();
+							fallingHeight = CalculateFallingHeight(fallingDirection);
 							transitionToCurrentPlatform = false;
 							leftCurrentPlatform = true;
-							fallingDirection = Direction.Up;
 							Fall();
 						}
 					} else if (previousPlatform != null && nextPlatform != null
@@ -520,13 +550,13 @@ public class PlayerController : TopDownBehavior {
 					    && isWalking) {
 						if (!leftCurrentPlatform) {
 							Debug.Log("UP: normal falling...");
+							fallingDirection = Direction.Up;
 							isOnPlatform = false;
-							fallingHeight = CheckForLowerPlatforms();
+							fallingHeight = CalculateFallingHeight(fallingDirection);
 							transitionToCurrentPlatform = false;
 							leftCurrentPlatform = true;
 //							currentPlatform = null;
 							//Debug.Log("Leaving...");
-							fallingDirection = Direction.Up;
 							Fall();
 						}
 					}
@@ -601,6 +631,7 @@ public class PlayerController : TopDownBehavior {
 					} else {
 						currentPlatformHit = new RaycastHit2D();
 						currentPlatform = null;
+//						nextPlatform = null;
 						minPlatformDistance = Mathf.Infinity;
 						Debug.Log("Down: No platforms. Reset.");
 					}
@@ -633,11 +664,12 @@ public class PlayerController : TopDownBehavior {
 //						Debug.Log("null down falling");
 						if (!leftCurrentPlatform) {
 							Debug.Log("null down falling");
+							fallingDirection = Direction.Down;
 							isOnPlatform = false;
-							fallingHeight = CheckForLowerPlatforms();
+							fallingHeight = CalculateFallingHeight(fallingDirection);
+							Debug.Log("\tfalling down -" + fallingHeight + "- units.");
 							transitionToCurrentPlatform = false;
 							leftCurrentPlatform = true;
-							fallingDirection = Direction.Down;
 							Fall();
 						}
 					} else if (previousPlatform != null && nextPlatform != null
@@ -649,26 +681,33 @@ public class PlayerController : TopDownBehavior {
 					    && isWalking) {
 						Debug.Log("normal down falling");
 						if (!leftCurrentPlatform) {
+							fallingDirection = Direction.Down;
 							isOnPlatform = false;
-							fallingHeight = CheckForLowerPlatforms();
+							fallingHeight = CalculateFallingHeight(fallingDirection);
+							Debug.Log("\tfalling down -" + fallingHeight + "- units.");
 							transitionToCurrentPlatform = false;
 							leftCurrentPlatform = true;
 //							currentPlatform = null;
 							Debug.Log("Facing down: falling...");
-							fallingDirection = Direction.Down;
 							Fall();
 						}
 					} else {
-						if (!leftCurrentPlatform 
+						Debug.Log("ELSE: Facing down: trying to fall... next=" + (nextPlatform == null));
+						if (
+//							!leftCurrentPlatform 
+//						    && 
+							!isFalling &&
+							previousPlatform != null
 						    && HigherThanPlatform(previousPlatform)
 						    && !CheckIfInCollider(shadow.transform.position, previousPlatform) 
 						    && isWalking) {
 							Debug.Log("ELSE: Facing down: falling...");
+							fallingDirection = Direction.Down;
 							isOnPlatform = false;
-							fallingHeight = CheckForLowerPlatforms();
+							fallingHeight = CalculateFallingHeight(fallingDirection);
+							Debug.Log("\tfalling down -" + fallingHeight + "- units.");
 							transitionToCurrentPlatform = false;
 							leftCurrentPlatform = true;
-							fallingDirection = Direction.Down;
 							Fall();
 						}
 					}
@@ -813,11 +852,11 @@ public class PlayerController : TopDownBehavior {
 						&& !CheckIfInCollider(shadow.transform.position, previousPlatform) 
 						&& isWalking) {
 						if (!leftCurrentPlatform) {
+							fallingDirection = Direction.Right;
 							isOnPlatform = false;
-							fallingHeight = CheckForLowerPlatforms();
+							fallingHeight = CalculateFallingHeight(fallingDirection);
 							transitionToCurrentPlatform = false;
 							leftCurrentPlatform = true;
-							fallingDirection = Direction.Right;
 							Fall();
 						}
 					} else if (previousPlatform != null && nextPlatform != null
@@ -828,12 +867,12 @@ public class PlayerController : TopDownBehavior {
 					    && isWalking) {
 						isOnPlatform = false;
 						if (!leftCurrentPlatform) {
-							fallingHeight = CheckForLowerPlatforms();
+							fallingDirection = Direction.Right;
+							fallingHeight = CalculateFallingHeight(fallingDirection);
 							transitionToCurrentPlatform = false;
 							leftCurrentPlatform = true;
 //							currentPlatform = null;
 							Debug.Log("Facing down: falling...");
-							fallingDirection = Direction.Right;
 							Fall();
 						}
 					}
@@ -1284,28 +1323,42 @@ public class PlayerController : TopDownBehavior {
 		} else if (Input.GetAxisRaw("Vertical") > 0 && Input.GetAxisRaw("Horizontal") < 0) {
 			// TODO: Facing up-left
 			StartDirection(Direction.UpLeft);
-			//if (grounded) {
-			//	TryBlockDirections(rb2d);
-			//} else {
-				TryBlockDirections(shadow.transform);
-			//}
-			if (!isDirectionBlocked[(int)Direction.UpLeft]
-				&& !isDirectionBlocked[(int)Direction.Up]
-				&& !isDirectionBlocked[(int)Direction.Left]) {
-//				Debug.Log("UL: up left");
+			TryBlockDirections(shadow.transform);
+			if (!isDirectionBlocked[(int)Direction.UpLeft]) {
+				Debug.Log("UL: up left");
 				MoveInDirection(Direction.UpLeft, diagonalMovementSpeed);
-			} else if (isDirectionBlocked[(int)Direction.UpLeft]
-			           && isDirectionBlocked[(int)Direction.Up]
+			} else if (isDirectionBlocked[(int)Direction.Up]
 			           && !isDirectionBlocked[(int)Direction.Left]) {
 				Debug.Log("UL: left");
 				CorrectMovement(nextUpLeftBase, Direction.DownLeft);
 				MoveInDirection(Direction.Left, overworldSpeed);
-			} else if (isDirectionBlocked[(int)Direction.UpLeft]
-					   && !isDirectionBlocked[(int)Direction.Up]
-					   && isDirectionBlocked[(int)Direction.Left]) {
+			} else if (isDirectionBlocked[(int)Direction.Left]) {
+				Debug.Log("UL: up");
 				CorrectMovement(nextUpLeftBase, Direction.UpRight);
 				MoveInDirection(Direction.Up, overworldSpeed);
+			} else {
+				Debug.Log("UL: NO MOVE");
 			}
+//			if (!isDirectionBlocked[(int)Direction.UpLeft]
+//				&& !isDirectionBlocked[(int)Direction.Up]
+//				&& !isDirectionBlocked[(int)Direction.Left]) {
+//				Debug.Log("UL: up left");
+//				MoveInDirection(Direction.UpLeft, diagonalMovementSpeed);
+//			} else if (isDirectionBlocked[(int)Direction.UpLeft]
+//			           && isDirectionBlocked[(int)Direction.Up]
+//			           && !isDirectionBlocked[(int)Direction.Left]) {
+//				Debug.Log("UL: left");
+//				CorrectMovement(nextUpLeftBase, Direction.DownLeft);
+//				MoveInDirection(Direction.Left, overworldSpeed);
+//			} else if (isDirectionBlocked[(int)Direction.UpLeft]
+//					   && !isDirectionBlocked[(int)Direction.Up]
+//					   && isDirectionBlocked[(int)Direction.Left]) {
+//				Debug.Log("UL: up");
+//				CorrectMovement(nextUpLeftBase, Direction.UpRight);
+//				MoveInDirection(Direction.Up, overworldSpeed);
+//			} else {
+//				Debug.Log("UL: NO MOVE");
+//			}
 		} else if (Input.GetAxisRaw("Vertical") < 0 && Input.GetAxisRaw("Horizontal") < 0) {
 			// Facing down-left
 			StartDirection(Direction.DownLeft);
