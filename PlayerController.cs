@@ -57,6 +57,7 @@ public class PlayerController : TopDownBehavior {
 	private ObjectValues nextPlatform;
 	private ObjectValues currentPlatform;
 	private ObjectValues previousPlatform;
+	private ObjectValues ground;
 
 	// Physics stuff
 	public bool[] isDirectionBlocked = new bool[(int)Direction.DownLeft + 1];
@@ -182,10 +183,13 @@ public class PlayerController : TopDownBehavior {
 		diagonalBoundCorrection = Mathf.Sqrt(2 * (BOUND_CORRECTION*BOUND_CORRECTION));
 		blockingCorrectionSpeed = overworldSpeed;
 		previousPlatform = null;
+		ground = new ObjectValues(Vector3.zero, Mathf.Infinity, Mathf.Infinity, 0, 0, "ground");
 		//Debug.Log("diag bound: " + diagonalBoundCorrection);
 	}
 
-	// Reset animation settings when main player is changed
+	/// <summary>
+	/// Reset animation settings when main player is changed
+	/// </summary>
 	public void ChangeCharacter() {
 		animator = GetComponentInChildren<Animator>();
 		animator.ResetTrigger("changeDirection");
@@ -212,7 +216,8 @@ public class PlayerController : TopDownBehavior {
 		if (!grounded) {
 			transform.position += (Vector3)velocity;
 			currentHeight = transform.position.y - shadow.transform.position.y
-			                + (currentPlatform != null ? currentPlatform.height : 0);
+			                + (currentPlatform != null
+				            ? currentPlatform.height : 0);
 			if (!(transform.position.y - shadow.transform.position.y < 0.0001)) return;
 			Debug.Log("is grounded.");
 			fallingDirection = Direction.Null;					// Reset falling direction
@@ -223,6 +228,7 @@ public class PlayerController : TopDownBehavior {
 			                + (currentPlatform != null ? currentPlatform.height : 0);
 		} else {
 			transform.position = shadow.transform.position;
+			currentPlatform = Math.Abs(currentHeight) < Mathf.Epsilon ? ground : currentPlatform;
 			velocity = Vector2.zero;
 		}
 	}
@@ -286,38 +292,38 @@ public class PlayerController : TopDownBehavior {
 		switch (facingDirection) {
 			case Direction.Up:
 				shadow.transform.position += new Vector3(0, raiseHeight, 0);
-				groundPosition += new Vector3(0, raiseHeight, 0);
+//				groundPosition += new Vector3(0, raiseHeight, 0);
 				break;
 			case Direction.Down:
 				Debug.Log("Raising facing Down");
 				shadow.transform.position += new Vector3(0, raiseHeight-BOUND_CORRECTION, 0);
-				groundPosition += new Vector3(0, raiseHeight-BOUND_CORRECTION, 0);
+//				groundPosition += new Vector3(0, raiseHeight-BOUND_CORRECTION, 0);
 //				shadow.transform.position = new Vector3(shadPos.x, raiseHeight, shadPos.z);
 //				groundPosition = new Vector3(shadPos.x, raiseHeight, shadPos.z);
 				break;
 			case Direction.Left:
 				shadow.transform.position += new Vector3(0, raiseHeight, 0);
-				groundPosition += new Vector3(0, raiseHeight, 0);
+//				groundPosition += new Vector3(0, raiseHeight, 0);
 				break;
 			case Direction.Right:
 				shadow.transform.position += new Vector3(0, raiseHeight, 0);
-				groundPosition += new Vector3(0, raiseHeight, 0);
+//				groundPosition += new Vector3(0, raiseHeight, 0);
 				break;
 			case Direction.UpLeft:
 				shadow.transform.position += new Vector3(-(BOUND_CORRECTION * 2), nextPlatform.height + (BOUND_CORRECTION * 2), 0);
-				groundPosition += new Vector3(-(BOUND_CORRECTION * 2), nextPlatform.height + (BOUND_CORRECTION * 2), 0);
+//				groundPosition += new Vector3(-(BOUND_CORRECTION * 2), nextPlatform.height + (BOUND_CORRECTION * 2), 0);
 				break;
 			case Direction.UpRight:
 				shadow.transform.position += new Vector3(BOUND_CORRECTION * 2, nextPlatform.height + (BOUND_CORRECTION * 2), 0);
-				groundPosition += new Vector3(BOUND_CORRECTION * 2, nextPlatform.height + (BOUND_CORRECTION * 2), 0);
+//				groundPosition += new Vector3(BOUND_CORRECTION * 2, nextPlatform.height + (BOUND_CORRECTION * 2), 0);
 				break;
 			case Direction.DownLeft:
 				shadow.transform.position += new Vector3(-(BOUND_CORRECTION * 2), nextPlatform.height - (BOUND_CORRECTION * 2), 0);
-				groundPosition += new Vector3(-(BOUND_CORRECTION * 2), nextPlatform.height - (BOUND_CORRECTION * 2), 0);
+//				groundPosition += new Vector3(-(BOUND_CORRECTION * 2), nextPlatform.height - (BOUND_CORRECTION * 2), 0);
 				break;
 			case Direction.DownRight:
 				shadow.transform.position += new Vector3(BOUND_CORRECTION * 2, nextPlatform.height - (BOUND_CORRECTION * 2), 0);
-				groundPosition += new Vector3(BOUND_CORRECTION * 2, nextPlatform.height - (BOUND_CORRECTION * 2), 0);
+//				groundPosition += new Vector3(BOUND_CORRECTION * 2, nextPlatform.height - (BOUND_CORRECTION * 2), 0);
 				break;
 			case Direction.Null:
 				break;
@@ -337,35 +343,35 @@ public class PlayerController : TopDownBehavior {
 		switch (fallingDirection) {
 			case Direction.Up:
 				shadow.transform.position += new Vector3(0, -fallingHeight + 0.5f, 0);
-				groundPosition += new Vector3(0, -fallingHeight + 0.5f, 0);
+//				groundPosition += new Vector3(0, -fallingHeight + 0.5f, 0);
 				break;
 			case Direction.Down:
 				shadow.transform.position += new Vector3(0, -fallingHeight, 0);
-				groundPosition += new Vector3(0, -fallingHeight, 0);
+//				groundPosition += new Vector3(0, -fallingHeight, 0);
 				break;
 			case Direction.Left:
 				shadow.transform.position += new Vector3(0, -fallingHeight, 0);
-				groundPosition += new Vector3(0, -fallingHeight, 0);
+//				groundPosition += new Vector3(0, -fallingHeight, 0);
 				break;
 			case Direction.Right:
 				shadow.transform.position += new Vector3(0, -fallingHeight, 0);
-				groundPosition += new Vector3(0, -fallingHeight, 0);
+//				groundPosition += new Vector3(0, -fallingHeight, 0);
 				break;
 			case Direction.UpLeft:
 				shadow.transform.position += new Vector3(-BOUND_CORRECTION, -fallingHeight + (BOUND_CORRECTION * 2), 0);
-				groundPosition += new Vector3(-BOUND_CORRECTION, -fallingHeight + (BOUND_CORRECTION * 2), 0);
+//				groundPosition += new Vector3(-BOUND_CORRECTION, -fallingHeight + (BOUND_CORRECTION * 2), 0);
 				break;
 			case Direction.UpRight:
 				shadow.transform.position += new Vector3(BOUND_CORRECTION, -fallingHeight + (BOUND_CORRECTION * 2), 0);
-				groundPosition += new Vector3(BOUND_CORRECTION, -fallingHeight + (BOUND_CORRECTION * 2), 0);
+//				groundPosition += new Vector3(BOUND_CORRECTION, -fallingHeight + (BOUND_CORRECTION * 2), 0);
 				break;
 			case Direction.DownLeft:
 				shadow.transform.position += new Vector3(-BOUND_CORRECTION, -fallingHeight - (BOUND_CORRECTION * 2), 0);
-				groundPosition += new Vector3(-BOUND_CORRECTION, -fallingHeight - (BOUND_CORRECTION * 2), 0);
+//				groundPosition += new Vector3(-BOUND_CORRECTION, -fallingHeight - (BOUND_CORRECTION * 2), 0);
 				break;
 			case Direction.DownRight:
 				shadow.transform.position += new Vector3(BOUND_CORRECTION - fallingHeight - (BOUND_CORRECTION * 2), 0);
-				groundPosition += new Vector3(BOUND_CORRECTION, -fallingHeight - (BOUND_CORRECTION * 2), 0);
+//				groundPosition += new Vector3(BOUND_CORRECTION, -fallingHeight - (BOUND_CORRECTION * 2), 0);
 				break;
 			case Direction.Null:
 				break;
@@ -421,6 +427,7 @@ public class PlayerController : TopDownBehavior {
 			default:
 				throw new ArgumentOutOfRangeException("direction", direction, null);
 		}
+		// else return default heights
 		return previousPlatform != null ? previousPlatform.height : currentHeight;
 	}
 
@@ -440,15 +447,15 @@ public class PlayerController : TopDownBehavior {
 					Vector3 myPos = transform.position;
 					upHits = Physics2D.RaycastNonAlloc(myPos, Vector2.up, pResultsUp,
 					                                   Mathf.Infinity, platformMask);
-					Vector3 grey = new Vector3(myPos.x+0.5f, myPos.y, myPos.z);
 					currentPlatformHit =
 						Physics2D.Raycast(rb2d.transform.position, Vector2.up, Mathf.Infinity, platformMask);
-					Debug.DrawRay(grey, new Vector3(0, currentPlatformHit.distance, 0), Color.grey);
-					
-					Vector3 zero = new Vector3(myPos.x+1, myPos.y, myPos.z);
-					Vector3 one = new Vector3(myPos.x-1, myPos.y, myPos.z);
-					Debug.DrawRay(zero, new Vector3(0, pResultsUp[0].distance, 0), Color.yellow);
-					Debug.DrawRay(one, new Vector3(0, pResultsUp[1].distance, 0), Color.blue);
+//					Vector3 grey = new Vector3(myPos.x+0.5f, myPos.y, myPos.z);
+//					Debug.DrawRay(grey, new Vector3(0, currentPlatformHit.distance, 0), Color.grey);
+//					
+//					Vector3 zero = new Vector3(myPos.x+1, myPos.y, myPos.z);
+//					Vector3 one = new Vector3(myPos.x-1, myPos.y, myPos.z);
+//					Debug.DrawRay(zero, new Vector3(0, pResultsUp[0].distance, 0), Color.yellow);
+//					Debug.DrawRay(one, new Vector3(0, pResultsUp[1].distance, 0), Color.blue);
 					if (upHits > 0) {
 						if (upHits > 1) {
 							ObjectValues plat0 = pResultsUp[0].collider.GetComponent<ObjectInfo>().values;
@@ -473,8 +480,8 @@ public class PlayerController : TopDownBehavior {
 
 //						Debug.Log(string.Format("currentPlatform {0}", currentPlatform.name));
 						// Checks the values from the next platform
-						Vector3 white = new Vector3(transform.position.x-0.5f, myPos.y, myPos.z);
-						Debug.DrawRay(white, new Vector3(0, nextPlatformHit.distance, 0), Color.white);
+//						Vector3 white = new Vector3(transform.position.x-0.5f, myPos.y, myPos.z);
+//						Debug.DrawRay(white, new Vector3(0, nextPlatformHit.distance, 0), Color.white);
 //						Debug.Log("next " + nextPlatformHit.transform.name);
 						nextPlatform = nextPlatformHit.transform.GetComponent<ObjectInfo>().values;
 						// If player is inside the platform, is moving into it, is higher than the platform, and the platform isnt what we're on
@@ -505,10 +512,10 @@ public class PlayerController : TopDownBehavior {
 				int downHits = Physics2D.RaycastNonAlloc(shadow.transform.transform.position,
 				                                         Vector2.down, pResultsDown, Mathf.Infinity, platformMask);
 				
-				Vector3 prev0 = new Vector3(transform.position.x+1f, transform.position.y, transform.position.z);
-				Vector3 prev1 = new Vector3(transform.position.x-1f, transform.position.y, transform.position.z);
-				Debug.DrawRay(prev0, new Vector3(0, -pResultsDown[0].distance, 0), Color.green);
-				Debug.DrawRay(prev1, new Vector3(0, -pResultsDown[1].distance, 0), Color.magenta);
+//				Vector3 prev0 = new Vector3(transform.position.x+1f, transform.position.y, transform.position.z);
+//				Vector3 prev1 = new Vector3(transform.position.x-1f, transform.position.y, transform.position.z);
+//				Debug.DrawRay(prev0, new Vector3(0, -pResultsDown[0].distance, 0), Color.green);
+//				Debug.DrawRay(prev1, new Vector3(0, -pResultsDown[1].distance, 0), Color.magenta);
 				
 				if (currentPlatform != null) Debug.Log(string.Format("currentPlatform {0}", currentPlatform.name));
 				if (previousPlatform != null) Debug.Log(string.Format("previousPlatform {0}", previousPlatform.name));
@@ -567,15 +574,15 @@ public class PlayerController : TopDownBehavior {
 					Vector3 myPos = transform.position;
 					downHits = Physics2D.RaycastNonAlloc(myPos, Vector2.down, pResultsDown,
 					                                       Mathf.Infinity, platformMask);
-					Vector3 grey = new Vector3(myPos.x+0.5f, myPos.y, myPos.z);
 					currentPlatformHit =
 						Physics2D.Raycast(rb2d.transform.position, Vector2.down, Mathf.Infinity, platformMask);
-					Debug.DrawRay(grey, new Vector3(0, -currentPlatformHit.distance, 0), Color.grey);
-					
-					Vector3 zero = new Vector3(myPos.x+1, myPos.y, myPos.z);
-					Vector3 one = new Vector3(myPos.x-1, myPos.y, myPos.z);
-					Debug.DrawRay(zero, new Vector3(0, -pResultsDown[0].distance, 0), Color.yellow);
-					Debug.DrawRay(one, new Vector3(0, -pResultsDown[1].distance, 0), Color.blue);
+//					Vector3 grey = new Vector3(myPos.x+0.5f, myPos.y, myPos.z);
+//					Debug.DrawRay(grey, new Vector3(0, -currentPlatformHit.distance, 0), Color.grey);
+//					
+//					Vector3 zero = new Vector3(myPos.x+1, myPos.y, myPos.z);
+//					Vector3 one = new Vector3(myPos.x-1, myPos.y, myPos.z);
+//					Debug.DrawRay(zero, new Vector3(0, -pResultsDown[0].distance, 0), Color.yellow);
+//					Debug.DrawRay(one, new Vector3(0, -pResultsDown[1].distance, 0), Color.blue);
 					if (downHits > 0) {
 						if (downHits > 1) {
 							ObjectValues plat0 = pResultsDown[0].collider.GetComponent<ObjectInfo>().values;
@@ -601,8 +608,8 @@ public class PlayerController : TopDownBehavior {
 
 //						Debug.Log(string.Format("currentPlatform {0}", currentPlatform.name));
 						// Checks the values from the next platform
-						Vector3 white = new Vector3(transform.position.x-0.5f, myPos.y, myPos.z);
-						Debug.DrawRay(white, new Vector3(0, -nextPlatformHit.distance, 0), Color.white);
+//						Vector3 white = new Vector3(transform.position.x-0.5f, myPos.y, myPos.z);
+//						Debug.DrawRay(white, new Vector3(0, -nextPlatformHit.distance, 0), Color.white);
 //						Debug.Log("next " + nextPlatformHit.transform.name);
 						nextPlatform = nextPlatformHit.transform.GetComponent<ObjectInfo>().values;
 						// If player is inside the platform, is moving into it, is higher than the platform, and the platform isnt what we're on
@@ -620,7 +627,7 @@ public class PlayerController : TopDownBehavior {
 //							previousPlatform = currentPlatform;
 							isOnPlatform = true;
 							leftCurrentPlatform = false;
-							RaisePlayerObjects(); // happens multiple times?
+							RaisePlayerObjects();
 						}
 //						Debug.Log(string.Format("prev {0}", previousPlatform.name));
 					} else {
@@ -634,9 +641,9 @@ public class PlayerController : TopDownBehavior {
 				upHits = Physics2D.RaycastNonAlloc(shadow.transform.position, Vector2.up, pResultsUp, 
 				                                   Mathf.Infinity, platformMask);
 				
-				if (currentPlatform != null) Debug.Log(string.Format("currentPlatform {0}", currentPlatform.name));
-				if (previousPlatform != null) Debug.Log(string.Format("previousPlatform {0}", previousPlatform.name));
-				if (nextPlatform != null) Debug.Log(string.Format("nextPlatform {0}", nextPlatform.name));
+//				if (currentPlatform != null) Debug.Log(string.Format("currentPlatform {0}", currentPlatform.name));
+//				if (previousPlatform != null) Debug.Log(string.Format("previousPlatform {0}", previousPlatform.name));
+//				if (nextPlatform != null) Debug.Log(string.Format("nextPlatform {0}", nextPlatform.name));
 				
 //				prev0 = new Vector3(transform.position.x+1f, transform.position.y, transform.position.z);
 //				prev1 = new Vector3(transform.position.x-1f, transform.position.y, transform.position.z);
@@ -1156,65 +1163,22 @@ public class PlayerController : TopDownBehavior {
 				//break;
 		}
 	}
-
-
-
 	private void ClearBlocks() {
 		for (int i = 0; i < isDirectionBlocked.Length; i++) {
 			isDirectionBlocked[i] = false;
 		}
 	}
-
-	//private void UpdateShadowPosition() {
-	//	if(currentHeight > shadow.transform.position.y) {
-	//		shadow.transform.Translate(transform.position);
-	//	}
-	//}
-
-
-	//IEnumerator Falling() {
-	//	// Start falling when finished jumping
-	//	yield return new WaitUntil(() => isFalling);
-	//	float beforeFallHeight = currentHeight;
-	//	float newCurrentHeight = currentHeight;
-	//	while (!jumping) {
-	//		newCurrentHeight = currentHeight;
-	//		//yield return new WaitForSeconds(0.01f);
-	//		//transform.position = Vector3.MoveTowards(transform.position, groundPosition,
-	//		//jumpSpeed * Time.deltaTime);
-	//		//jumpingHeight = transform.position.y - groundPosition.y;
-	//		transform.position = Vector3.MoveTowards(jumpHeight.transform.position, groundPosition,
-	//			jumpSpeed * Time.deltaTime);
-	//		currentHeight = beforeFallHeight - (beforeFallHeight - transform.position.y - groundPosition.y);
-	//		//Debug.Log(string.Format("curr h: {0}", jumpingHeight));
-	//		if (transform.position == groundPosition) {
-	//			grounded = true;
-	//			//StopCoroutine(jumpingRoutine);
-	//			break;
-	//		}
-	//		yield return new WaitForEndOfFrame();
-	//	}
-	//	//currentHeight -= newCurrentHeight;
-	//}
-
 	private void CorrectMovement(RaycastHit2D hit, Direction direction) {
 		if (!(hit.distance < diagonalBoundCorrection - 0.25f)) return;
 		Debug.Log("correcting going side a corner.");
 		MoveInDirection(direction, blockingCorrectionSpeed);
 	}
-
 	// TODO: MovePlayer()
 	private void MovePlayer() {
 		//Debug.Log(string.Format("v: {0}, h {1}", Input.GetAxisRaw("Vertical"), Input.GetAxisRaw("Horizontal")));
 		if (Input.GetAxisRaw("Vertical") > 0 && Mathf.Abs(Input.GetAxisRaw("Horizontal")) < Mathf.Epsilon) {
-//			CheckPlatformCollision();
 			// Facing up
 			StartDirection(Direction.Up);
-			//if (grounded) {
-			//	TryBlockDirections(rb2d);
-			//} else {
-				//Debug.Log("\trying to block with shadow...");
-			//}
 			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.Up] 
 				&& !isDirectionBlocked[(int)Direction.UpLeft] 
@@ -1233,11 +1197,7 @@ public class PlayerController : TopDownBehavior {
 		} else if (Input.GetAxisRaw("Vertical") < 0 && Mathf.Abs(Input.GetAxisRaw("Horizontal")) < Mathf.Epsilon) {
 			// Facing down
 			StartDirection(Direction.Down);
-			//if (grounded) {
-			//	TryBlockDirections(rb2d);
-			//} else {
-				TryBlockDirections(shadow.transform);
-			//}
+			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.Down]
 				&& !isDirectionBlocked[(int)Direction.DownLeft]
 				&& !isDirectionBlocked[(int)Direction.DownRight]) {
@@ -1256,11 +1216,7 @@ public class PlayerController : TopDownBehavior {
 		} else if (Input.GetAxisRaw("Horizontal") > 0 && Mathf.Abs(Input.GetAxisRaw("Vertical")) < Mathf.Epsilon) {
 			// Facing right
 			StartDirection(Direction.Right);
-			//if (grounded) {
-			//	TryBlockDirections(rb2d);
-			//} else {
-				TryBlockDirections(shadow.transform);
-			//}
+			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.Right]
 				&& !isDirectionBlocked[(int)Direction.UpRight]
 				&& !isDirectionBlocked[(int)Direction.DownRight]) { 
@@ -1277,11 +1233,7 @@ public class PlayerController : TopDownBehavior {
 		} else if (Input.GetAxisRaw("Horizontal") < 0 && Mathf.Abs(Input.GetAxisRaw("Vertical")) < Mathf.Epsilon) {
 			// Facing left
 			StartDirection(Direction.Left);
-			//if (grounded) {
-			//	TryBlockDirections(rb2d);
-			//} else {
-				TryBlockDirections(shadow.transform);
-			//}
+			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.Left]
 				&& !isDirectionBlocked[(int)Direction.UpLeft]
 				&& !isDirectionBlocked[(int)Direction.DownLeft]) {
@@ -1300,11 +1252,7 @@ public class PlayerController : TopDownBehavior {
 		} else if (Input.GetAxisRaw("Vertical") > 0 && Input.GetAxisRaw("Horizontal") > 0) {
 			// TODO: Facing up-right
 			StartDirection(Direction.UpRight);
-			//if (grounded && !isFalling) {
-			//	TryBlockDirections(rb2d);
-			//} else {
-				TryBlockDirections(shadow.transform);
-			//}
+			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.UpRight]) {
 				//Debug.Log("Moving up right...");
 				MoveInDirection(Direction.UpRight, diagonalMovementSpeed);
@@ -1334,34 +1282,10 @@ public class PlayerController : TopDownBehavior {
 			} else {
 				Debug.Log("UL: NO MOVE");
 			}
-//			if (!isDirectionBlocked[(int)Direction.UpLeft]
-//				&& !isDirectionBlocked[(int)Direction.Up]
-//				&& !isDirectionBlocked[(int)Direction.Left]) {
-//				Debug.Log("UL: up left");
-//				MoveInDirection(Direction.UpLeft, diagonalMovementSpeed);
-//			} else if (isDirectionBlocked[(int)Direction.UpLeft]
-//			           && isDirectionBlocked[(int)Direction.Up]
-//			           && !isDirectionBlocked[(int)Direction.Left]) {
-//				Debug.Log("UL: left");
-//				CorrectMovement(nextUpLeftBase, Direction.DownLeft);
-//				MoveInDirection(Direction.Left, overworldSpeed);
-//			} else if (isDirectionBlocked[(int)Direction.UpLeft]
-//					   && !isDirectionBlocked[(int)Direction.Up]
-//					   && isDirectionBlocked[(int)Direction.Left]) {
-//				Debug.Log("UL: up");
-//				CorrectMovement(nextUpLeftBase, Direction.UpRight);
-//				MoveInDirection(Direction.Up, overworldSpeed);
-//			} else {
-//				Debug.Log("UL: NO MOVE");
-//			}
 		} else if (Input.GetAxisRaw("Vertical") < 0 && Input.GetAxisRaw("Horizontal") < 0) {
 			// Facing down-left
 			StartDirection(Direction.DownLeft);
-			//if (grounded) {
-			//	TryBlockDirections(rb2d);
-			//} else {
-				TryBlockDirections(shadow.transform);
-			//}
+			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.DownLeft]) {
 				//transform.Translate(-0.35f, -0.35f, 0);
 				MoveInDirection(Direction.DownLeft, diagonalMovementSpeed);
@@ -1375,11 +1299,7 @@ public class PlayerController : TopDownBehavior {
 		} else if (Input.GetAxisRaw("Vertical") < 0 && Input.GetAxisRaw("Horizontal") > 0) {
 			// Facing down-right
 			StartDirection(Direction.DownRight);
-			//if (grounded) {
-			//	TryBlockDirections(rb2d);
-			//} else {
-				TryBlockDirections(shadow.transform);
-			//}
+			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.DownRight]) {
 				//transform.Translate(0.35f, -0.35f, 0);
 				MoveInDirection(Direction.DownRight, diagonalMovementSpeed);
@@ -1391,7 +1311,7 @@ public class PlayerController : TopDownBehavior {
 				MoveInDirection(Direction.Down, overworldSpeed);
 			}
 		} else {
-			animator.SetBool("isWalking", false);
+			animator.SetBool(IsWalkingAni, false);
 			isWalking = false;
 		}
 	}
@@ -2179,10 +2099,10 @@ public class PlayerController : TopDownBehavior {
 				transform.Translate(-speed, -speed, 0);
 				shadow.transform.Translate(-speed, -speed, 0);
 				break;
-			default:
-				transform.Translate(0, 0, 0);
-				shadow.transform.Translate(0, 0, 0);
+			case Direction.Null:
 				break;
+			default:
+				throw new ArgumentOutOfRangeException("direction", direction, null);
 		}
 	}
 
@@ -2564,7 +2484,7 @@ public class PlayerController : TopDownBehavior {
 	//			Debug.Log("next left base: " + (nextLeftBase.collider != null ? nextLeftBase.transform.name : "no next left base"));
 			Debug.DrawRay(targetTransform.transform.position, new Vector3(nextRightBase.distance, 0, 0), Color.red);
 			if (nextRightBase.collider != null) {
-				var obj = nextRightBase.transform.GetComponent<ObjectInfo>();
+				ObjectInfo obj = nextRightBase.transform.GetComponent<ObjectInfo>();
 				// Check if current pos is next to the next wall, taking height into account.
 				if (Mathf.Abs(targetTransform.position.x - obj.leftBound) < BOUND_CORRECTION && CheckIfBlockPlayerByHeight(nextRightBase) &&
 				    fallingDirection != Direction.Right) {
@@ -2647,7 +2567,7 @@ public class PlayerController : TopDownBehavior {
 
 	// ReSharper disable once InconsistentNaming
 	private void CastLeft(Transform targetTransform, int layermask, Action blockSide, Action unblockSide, Action clearSide) {
-		var hits = Physics2D.RaycastNonAlloc(targetTransform.transform.position, Vector2.left,  resultsLeft,
+		int hits = Physics2D.RaycastNonAlloc(targetTransform.transform.position, Vector2.left,  resultsLeft,
 		                                     Mathf.Infinity, layermask);
 		if (hits > 0) {
 			if (hits > 1) {
@@ -2677,7 +2597,7 @@ public class PlayerController : TopDownBehavior {
 			Debug.Log("next left base: " + (nextLeftBase.collider != null ? nextLeftBase.transform.name : "no next left base"));
 			Debug.DrawRay(targetTransform.transform.position, new Vector3(-nextLeftBase.distance, 0, 0), Color.red);
 			if (nextLeftBase.collider != null) {
-				var obj = nextLeftBase.transform.GetComponent<ObjectInfo>();
+				ObjectInfo obj = nextLeftBase.transform.GetComponent<ObjectInfo>();
 				// Check if current pos is next to the next wall, taking height into account.
 				if (Mathf.Abs(targetTransform.position.x - obj.rightBound) < BOUND_CORRECTION && CheckIfBlockPlayerByHeight(nextLeftBase) &&
 				    fallingDirection != Direction.UpLeft) {
@@ -2745,11 +2665,14 @@ public class PlayerController : TopDownBehavior {
 			              Vector3.ClampMagnitude(new Vector3(nextUpRightBase.distance, nextUpRightBase.distance, 0), nextUpRightBase.distance)
 			              , Color.red);
 			if (nextUpRightBase.collider != null) {
-				var obj = nextUpRightBase.transform.GetComponent<ObjectInfo>();
+				ObjectInfo obj = nextUpRightBase.transform.GetComponent<ObjectInfo>();
 				// Check if current pos is next to the next wall, taking height into account.
+//				if (Mathf.Abs(targetTransform.position.y - obj.bottomBound - (currentPlatform != null ? currentPlatform.height : 0)) < BOUND_CORRECTION 
+//				    && CheckIfBlockPlayerByHeight(nextUpBase) &&
+//				    fallingDirection != Direction.Up) {
 				if ((
 				    targetTransform.position.x <= obj.rightBound && targetTransform.position.x >= obj.leftBound 
-				    && Mathf.Abs(targetTransform.position.y - obj.bottomBound - currentHeight) < BOUND_CORRECTION
+				    && Mathf.Abs(targetTransform.position.y - obj.bottomBound - (currentPlatform != null ? currentPlatform.height : 0)) < BOUND_CORRECTION
 				    || 
 				    targetTransform.position.y <= obj.topBound && targetTransform.position.y >= obj.bottomBound + currentHeight
 				    && Mathf.Abs(targetTransform.position.x - obj.leftBound) < BOUND_CORRECTION
@@ -2882,7 +2805,7 @@ public class PlayerController : TopDownBehavior {
 				// Check if current pos is next to the next wall, taking height into account.
 				if ((
 					targetTransform.position.x <= obj.rightBound && targetTransform.position.x >= obj.leftBound 
-					&& Mathf.Abs(targetTransform.position.y - obj.bottomBound - currentHeight) < BOUND_CORRECTION
+					&& Mathf.Abs(targetTransform.position.y - obj.bottomBound - (currentPlatform != null ? currentPlatform.height : 0)) < BOUND_CORRECTION
 					|| 
 					targetTransform.position.y <= obj.topBound && targetTransform.position.y >= obj.bottomBound + currentHeight
 					&& Mathf.Abs(targetTransform.position.x - obj.rightBound) < BOUND_CORRECTION
@@ -3015,7 +2938,7 @@ public class PlayerController : TopDownBehavior {
 			              Vector3.ClampMagnitude(new Vector3(-nextDownLeftBase.distance, -nextDownLeftBase.distance, 0), nextDownLeftBase.distance)
 			              , Color.red);
 			if (nextDownLeftBase.collider != null) {
-				var obj = nextDownLeftBase.transform.GetComponent<ObjectInfo>();
+				ObjectInfo obj = nextDownLeftBase.transform.GetComponent<ObjectInfo>();
 				// Check if current pos is next to the next wall, taking height into account.
 				if ((
 				    targetTransform.position.x <= obj.rightBound && targetTransform.position.x >= obj.leftBound 
