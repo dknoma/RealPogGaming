@@ -205,13 +205,13 @@ public class PlayerController : TopDownBehavior {
 	}
 
 	private void FixedUpdate() {
-		groundPosition = shadow.transform.position;
+//		groundPosition = shadow.transform.position;
 		velocity += gravityModifier * Physics2D.gravity * Time.deltaTime;
 //		Debug.Log("height " + currentHeight);
 //		Debug.Log("velocity " + velocity);
 		if (!grounded) {
 			transform.position += (Vector3)velocity;
-			currentHeight = transform.position.y - groundPosition.y
+			currentHeight = transform.position.y - shadow.transform.position.y
 			                + (currentPlatform != null ? currentPlatform.height : 0);
 			if (!(transform.position.y - shadow.transform.position.y < 0.0001)) return;
 			Debug.Log("is grounded.");
@@ -219,11 +219,8 @@ public class PlayerController : TopDownBehavior {
 			grounded = true;									// Player is grounded
 			isFalling = false;									// Player is not falling
 			transform.position = shadow.transform.position;		// Make sure player doesnt go lower than allowed
-			currentHeight = transform.position.y - groundPosition.y
+			currentHeight = transform.position.y - shadow.transform.position.y
 			                + (currentPlatform != null ? currentPlatform.height : 0);
-//				currentHeight = (float)Math.Round(currentHeight);
-//				groundNormal = currentNormal;
-//				currentNormal.x = 0;
 		} else {
 			transform.position = shadow.transform.position;
 			velocity = Vector2.zero;
@@ -343,10 +340,8 @@ public class PlayerController : TopDownBehavior {
 				groundPosition += new Vector3(0, -fallingHeight + 0.5f, 0);
 				break;
 			case Direction.Down:
-//				if (!jumping) {
 				shadow.transform.position += new Vector3(0, -fallingHeight, 0);
 				groundPosition += new Vector3(0, -fallingHeight, 0);
-//				}
 				break;
 			case Direction.Left:
 				shadow.transform.position += new Vector3(0, -fallingHeight, 0);
@@ -401,13 +396,13 @@ public class PlayerController : TopDownBehavior {
 				break;
 			case Direction.Up:
 				if(previousPlatform != null && nextPlatform != null 
-				                            && Mathf.Abs(previousPlatform.topBound - nextPlatform.bottomBound) < 8) {
+				                            && Mathf.Abs(previousPlatform.baseTopBound - nextPlatform.baseBottomBound) < Mathf.Epsilon) {
 					return previousPlatform.height - nextPlatform.height;
 				}
 				break;
 			case Direction.Down:
 				if(previousPlatform != null && nextPlatform != null 
-				    && Mathf.Abs(previousPlatform.bottomBound - nextPlatform.topBound) <= 4) {
+				    && Mathf.Abs(previousPlatform.baseBottomBound - nextPlatform.baseTopBound) < Mathf.Epsilon) {
 					return previousPlatform.height - nextPlatform.height;
 				}
 				break;
@@ -2298,7 +2293,8 @@ public class PlayerController : TopDownBehavior {
 //				Debug.Log("y: " + targetTransform.position.y);
 //				Debug.Log("bot: " + obj.bottomBound);
 //				Debug.Log("upupuppup: " + (Mathf.Abs(shadow.transform.position.y - obj.bottomBound - currentHeight) < boundCorrection));
-				if (Mathf.Abs(targetTransform.position.y - obj.bottomBound - currentHeight) < BOUND_CORRECTION 
+//				if (Mathf.Abs(targetTransform.position.y - obj.bottomBound - currentHeight) < BOUND_CORRECTION 
+				if (Mathf.Abs(targetTransform.position.y - obj.bottomBound - (currentPlatform != null ? currentPlatform.height : 0)) < BOUND_CORRECTION 
 				    && CheckIfBlockPlayerByHeight(nextUpBase) &&
 				    fallingDirection != Direction.Up) {
 					Debug.Log("normal blocking up...");

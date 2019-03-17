@@ -13,10 +13,11 @@ public class TopDownPlayerOrder : MonoBehaviour {
 		character = GetComponentInParent<PlayerController>();
 	}
 
-	void Update() {
+	private void Update() {
 		// Players sort oder cannot go any lower than the current platform's
-		platformSortOrder = (int) (character.GetCurrentPlatform() != null ? character.GetCurrentPlatform().sortingOrder : -Mathf.Infinity);
-		gameObject.GetComponent<Renderer>().sortingOrder = (int) Mathf.Clamp(transform.position.y * -10 + (character.currentHeight * 10), 
+		platformSortOrder = (int) (character.GetCurrentPlatform() != null && character.currentHeight >= character.GetCurrentPlatform().height 
+			? character.GetCurrentPlatform().sortingOrder : -Mathf.Infinity);
+		gameObject.GetComponent<Renderer>().sortingOrder = (int) Mathf.Clamp(transform.position.y * -10 + character.currentHeight * 10, 
 			platformSortOrder+1, Mathf.Infinity);
 	}
 }

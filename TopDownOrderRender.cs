@@ -6,12 +6,12 @@ public class TopDownOrderRender : MonoBehaviour {
 	private Renderer myRenderer;
 	private ObjectInfo objInfo;
 	
-	private void OnValidate() {
-		objInfo = GetComponentInParent<ObjectInfo>();
+	private void Awake() {
 		myRenderer = GetComponent<Renderer>();
 		if (myRenderer == null) {
 			Debug.LogError("Parent did not have a Renderer attached to it. Cannot change sorting order.", this);
 		}
+		objInfo = GetComponentInParent<ObjectInfo>();
 	}
 
 	private void Update() {

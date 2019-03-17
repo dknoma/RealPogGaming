@@ -14,6 +14,10 @@ public class ObjectValues {
     public float bottomBound;
     public float rightBound;
     public float leftBound;
+    public float baseTopBound;
+    public float baseBottomBound;
+    public float baseRightBound;
+    public float baseLeftBound;
 //    public float distance;
     public int sortingOrder;
 
@@ -28,5 +32,9 @@ public class ObjectValues {
         leftBound = position.x - w / 2;
         sortingOrder = order;
         this.name = name;
+        baseTopBound = topBound - height;
+        baseBottomBound = bottomBound - height;
+        baseRightBound = rightBound;
+        baseLeftBound = leftBound;
     }
 }
