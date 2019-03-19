@@ -185,7 +185,7 @@ public class PlayerController : TopDownBehavior {
 		blockingCorrectionSpeed = overworldSpeed;
 		previousPlatform = null;
 		ground = new ObjectValues(Vector3.zero, Mathf.Infinity, Mathf.Infinity, 0, 0, "ground");
-		//Debug.Log("diag bound: " + diagonalBoundCorrection);
+		InitPlatform();
 	}
 
 	/// <summary>
@@ -199,10 +199,9 @@ public class PlayerController : TopDownBehavior {
 	private void Update() {
 		//Debug.Log("curr h: " + currentHeight);
 		//Debug.Log("fall direction: " + fallingDirection);
-		//Debug.Log("shad pos: " + shadow.transform.position);
+//		Debug.Log("shad pos: " + shadow.transform.position);
 
 		Jump();
-		MovePlayer();
 		CheckPlatformCollision();
 //		ComputeVelocity();
 		//groundHeight = shadow.totalHeight;
@@ -210,6 +209,7 @@ public class PlayerController : TopDownBehavior {
 	}
 
 	private void FixedUpdate() {
+		MovePlayer();
 //		groundPosition = shadow.transform.position;
 		velocity += gravityModifier * Physics2D.gravity * Time.deltaTime;
 //		Debug.Log("height " + currentHeight);
@@ -220,6 +220,7 @@ public class PlayerController : TopDownBehavior {
 			currentHeight = transform.position.y - shadow.transform.position.y
 			                + (currentPlatform != null
 				            ? currentPlatform.height : 0);
+//			Debug.Log("p height " + currentPlatform.height);
 			if (!(transform.position.y - shadow.transform.position.y < 0.0001)) return;
 			Debug.Log("is grounded.");
 			fallingDirection = Direction.Null;					// Reset falling direction
@@ -229,7 +230,9 @@ public class PlayerController : TopDownBehavior {
 			currentHeight = transform.position.y - shadow.transform.position.y
 			                + (currentPlatform != null ? currentPlatform.height : 0);
 		} else {
+			jumping = false;
 			transform.position = shadow.transform.position;
+			currentHeight = currentPlatform != null ? currentPlatform.height : 0;
 			currentPlatform = Math.Abs(currentHeight) < Mathf.Epsilon ? ground : currentPlatform;
 			velocity = Vector2.zero;
 			transitionToCurrentPlatform = false;
@@ -243,10 +246,12 @@ public class PlayerController : TopDownBehavior {
 	}
 	
 	private void UpdateCurrentPlatform(ObjectValues values) {
+		Debug.Log("??? " + (currentHeight >= values.height));
 //		if(currentPlatform != null) Debug.Log("in current=" + CheckIfInCollider(shadow.transform.position, currentPlatform) + ", " + currentPlatform.name);
 		if (currentPlatform != null && !CheckIfInCollider(shadow.transform.position, currentPlatform)) {
 			currentPlatform = ground;
-		} else if(isWalking) {
+		} else if(currentPlatform == null || CheckIfInCollider(shadow.transform.position, currentPlatform) 
+		                                  || isWalking && currentHeight >= values.height) {
 			currentPlatform = values;
 		}
 	}
@@ -257,6 +262,7 @@ public class PlayerController : TopDownBehavior {
 		grounded = false;
 		jumping = true;
 		velocity.y = jumpSpeed;
+		leftCurrentPlatform = false;
 	}
 
 	public float GetCurrentHeight() {
@@ -293,9 +299,10 @@ public class PlayerController : TopDownBehavior {
 	//}
 
 	private bool CheckIfInCollider(Vector3 myPosition, ObjectValues platform) {
-		return myPosition.x >= platform.leftBound && myPosition.x <= platform.rightBound 
-		       && myPosition.y >= platform.bottomBound && myPosition.y <= platform.topBound
-		       && currentHeight >= platform.height;
+//		Debug.Log("h=" +currentHeight + ", " + platform.height + ": higher=" + (currentHeight >= platform.height));
+		return currentHeight >= platform.height 
+		       && myPosition.x >= platform.leftBound && myPosition.x <= platform.rightBound
+		       && myPosition.y >= platform.bottomBound && myPosition.y <= platform.topBound;
 	}
 
 	public ObjectValues GetCurrentPlatform() {
@@ -473,40 +480,77 @@ public class PlayerController : TopDownBehavior {
 //					Debug.DrawRay(zero, new Vector3(0, pResultsUp[0].distance, 0), Color.yellow);
 //					Debug.DrawRay(one, new Vector3(0, pResultsUp[1].distance, 0), Color.blue);
 					if (upHits > 0) {
+						ObjectValues plat0 = pResultsUp[0].collider.GetComponent<ObjectInfo>().values;
 						if (upHits > 1) {
-							ObjectValues plat0 = pResultsUp[0].collider.GetComponent<ObjectInfo>().values;
 							ObjectValues plat1 = pResultsUp[1].collider.GetComponent<ObjectInfo>().values;
 
-							if (CheckIfInCollider(shadow.transform.position, plat0)) {
+							if (CheckIfInCollider(transform.position, plat0)) {
+								Debug.Log("up: in plat0");
 								currentPlatform = plat0;
-							} else if (CheckIfInCollider(shadow.transform.position, plat1)) {
+								nextPlatformHit = pResultsUp[1];
+								nextPlatform = Mathf.RoundToInt(plat1.baseBottomBound) == Mathf.RoundToInt(plat0.baseTopBound) ? plat1 : ground;
+//								nextPlatform = plat1;
+//								nextPlatform = Mathf.Abs(plat1.baseBottomBound - plat0.baseTopBound) < Mathf.Epsilon ? plat1 : ground;
+							} else if (CheckIfInCollider(transform.position, plat1)) {
+								Debug.Log("up: in plat1 " + (Mathf.RoundToInt(plat0.baseBottomBound) == Mathf.RoundToInt(plat1.baseTopBound)));
 								currentPlatform = plat1;
+								nextPlatformHit = pResultsUp[0];
+								nextPlatform = Mathf.RoundToInt(plat0.baseBottomBound) == Mathf.RoundToInt(plat1.baseTopBound) ? plat0 : ground;
+//								nextPlatform = plat0;
+//								nextPlatform = Mathf.Abs(plat0.baseBottomBound - plat1.baseTopBound) < Mathf.Epsilon ? plat0 : ground;
+							} 
+							// TODO: jumping from plat to plat when ground is in between
+							// Need to consider when jumping from plat to a higher plat
+							// How to know when next will be ground rather than an actual platform
+							else {
+								Debug.Log("up: else");
+//								currentPlatform = ground;
+								nextPlatformHit = pResultsUp[0];
+								nextPlatform = plat0;
 							}
 							// The next platform should be the one player isnt currently inside of
-							nextPlatformHit = Mathf.RoundToInt(plat0.bottomBound) < Mathf.RoundToInt(plat1.bottomBound) ?
-								pResultsUp[1] : pResultsUp[0];
+//							nextPlatformHit = Mathf.RoundToInt(plat0.bottomBound) < Mathf.RoundToInt(plat1.bottomBound) ?
+//								pResultsUp[1] : pResultsUp[0];
 							minPlatformDistance = nextPlatformHit.distance;
+//							nextPlatform = nextPlatformHit.transform.GetComponent<ObjectInfo>().values;
 						} else {
-//							Debug.Log("1== normal: " + resultsUp[0].point);
-//							currentPlatform = currentPlatformHit.transform.GetComponent<ObjectInfo>();
-							nextPlatformHit = currentPlatformHit;
+							ObjectValues singlePlat = currentPlatformHit.transform.GetComponent<ObjectInfo>().values;
+							Debug.Log("up 1 - normal: " + singlePlat.name);
+							currentPlatform = CheckIfInCollider(shadow.transform.position, singlePlat)
+								? singlePlat
+								: ground;
+//								: currentPlatform;
+							nextPlatform = CheckIfInCollider(shadow.transform.position, singlePlat) && grounded
+								? ground
+								: singlePlat;
+//							currentPlatform = currentHeight >= plat0.height ? plat0 : currentPlatform;
+//							nextPlatform = ground;
+//							nextPlatformHit = currentPlatformHit;
 							minPlatformDistance = nextPlatformHit.distance;
 						}
 						previousPlatform = currentPlatform;
 
-//						Debug.Log(string.Format("currentPlatform {0}", currentPlatform.name));
+						Debug.Log(string.Format("inside current={0}", CheckIfInCollider(transform.position, nextPlatform)));
+						Debug.Log(string.Format("higher current={0}", HigherThanPlatform(nextPlatform) ));
 						// Checks the values from the next platform
 //						Vector3 white = new Vector3(transform.position.x-0.5f, myPos.y, myPos.z);
 //						Debug.DrawRay(white, new Vector3(0, nextPlatformHit.distance, 0), Color.white);
 //						Debug.Log("next " + nextPlatformHit.transform.name);
-						nextPlatform = nextPlatformHit.transform.GetComponent<ObjectInfo>().values;
+
+//						nextPlatform = nextPlatformHit.transform.GetComponent<ObjectInfo>().values;
+						
 						// If player is inside the platform, is moving into it, is higher than the platform, and the platform isnt what we're on
 						// Transition to the new platform
 						// Return if something is null
 //						if (nextPlatform == null || !CheckIfInCollider(transform.position, nextPlatform) ||
 //						    !isWalking || !HigherThanPlatform(nextPlatform) || currentPlatform == nextPlatform) return;
-						if (nextPlatform != null && CheckIfInCollider(transform.position, nextPlatform) && isWalking
-						    && HigherThanPlatform(nextPlatform) && currentPlatform != nextPlatform) {
+						if (nextPlatform != null
+						    && CheckIfInCollider(transform.position, nextPlatform) 
+						    && isWalking
+						    && HigherThanPlatform(nextPlatform) 
+						    && currentPlatform != nextPlatform) {
+							Debug.Log("UP: trying to jump onto plat");
+							if (nextPlatform == ground) return;
 							Debug.Log(string.Format("Inside {0}", nextPlatform.name));
 							//currentPlatformHit = nextPlatformHit;
 							currentPlatform = nextPlatform;
@@ -518,8 +562,8 @@ public class PlayerController : TopDownBehavior {
 //						Debug.Log(string.Format("prev {0}", previousPlatform.name));
 					} else {
 						currentPlatformHit = new RaycastHit2D();
-						currentPlatform = null;
-						nextPlatform = null;
+						currentPlatform = ground;
+						nextPlatform = ground; 
 						minPlatformDistance = Mathf.Infinity;
 						Debug.Log("UP: No platforms. Reset.");
 					}
@@ -544,30 +588,49 @@ public class PlayerController : TopDownBehavior {
 					//Debug.Log("p res down from shadow");
 					//Debug.Log("prev " + previousPlatform.transform.name);
 					// Block all upward directions to prevent sliding into walls
-					//Debug.Log(string.Format("Touching platform {0}, bounds(<,^,v,>): ({1},{2},{3},{4})", pResultsUp[0].transform.name,
+					//Debug.Log(string.Fo rmat("Touching platform {0}, bounds(<,^,v,>): ({1},{2},{3},{4})", pResultsUp[0].transform.name,
 					//currentPlatform.leftBound, currentPlatform.topBound, currentPlatform.bottomBound, currentPlatform.rightBound));
-					if (nextPlatform == null && previousPlatform != null
-                        && HigherThanPlatform(previousPlatform)
-                        && !CheckIfInCollider(shadow.transform.position, previousPlatform) 
-						&& isWalking) {
-						if (!leftCurrentPlatform) {
-							Debug.Log("UP: null falling...");
+//					if (nextPlatform == null && previousPlatform != null
+//                        && HigherThanPlatform(previousPlatform)
+//                        && !CheckIfInCollider(shadow.transform.position, previousPlatform) 
+//						&& isWalking) {
+//						if (!leftCurrentPlatform) {
+//							Debug.Log("UP: null falling...");
+//							fallingDirection = Direction.Up;
+//							isOnPlatform = false;
+//							fallingHeight = CalculateFallingHeight(fallingDirection);
+//							transitionToCurrentPlatform = false;
+//							leftCurrentPlatform = true;
+//							Fall();
+//						}
+//					} else 
+//					Debug.Log(string.Format("comparing = {0},{1}", Mathf.RoundToInt(nextPlatform.baseBottomBound), Mathf.RoundToInt(previousPlatform.baseTopBound)));
+//					Debug.Log(string.Format("falling = {0},{1},{2},{3}",
+//					                        Mathf.RoundToInt(nextPlatform.bottomBound) != Mathf.RoundToInt(previousPlatform.topBound),
+//					                        Mathf.Round(nextPlatform.height) < Mathf.Round(previousPlatform.height),
+//					                        CheckIfInCollider(shadow.transform.position, previousPlatform),
+//					                        isWalking));
+					
+					if (previousPlatform != null && nextPlatform != null) {
+						// If platform isnt next to you, falling onto the ground
+						if (nextPlatform != ground
+								&& Mathf.RoundToInt(nextPlatform.baseBottomBound) != Mathf.RoundToInt(previousPlatform.baseTopBound)
+								&& Mathf.Round(nextPlatform.height) < Mathf.Round(previousPlatform.height)
+								&& !CheckIfInCollider(shadow.transform.position, previousPlatform)
+								&& isWalking && !leftCurrentPlatform) {
+							Debug.Log("UP: ground beetween plats - " + previousPlatform.name + " to " + nextPlatform.name);
 							fallingDirection = Direction.Up;
 							isOnPlatform = false;
-							fallingHeight = CalculateFallingHeight(fallingDirection);
+							fallingHeight = previousPlatform.height;
 							transitionToCurrentPlatform = false;
 							leftCurrentPlatform = true;
 							Fall();
-						}
-					} else if (previousPlatform != null && nextPlatform != null
-					    && Mathf.RoundToInt(nextPlatform.bottomBound) != Mathf.RoundToInt(previousPlatform.topBound)
-					    && Mathf.Round(nextPlatform.height) < Mathf.Round( previousPlatform.height)
-//					    && Mathf.RoundToInt(nextPlatform.bottomBound - previousPlatform.topBound) < 4
-					    && HigherThanPlatform(previousPlatform)
-					    && !CheckIfInCollider(shadow.transform.position, previousPlatform) 
-					    && isWalking) {
-						if (!leftCurrentPlatform) {
-							Debug.Log("UP: normal falling...");
+						} else if (Mathf.RoundToInt(nextPlatform.bottomBound) != Mathf.RoundToInt(previousPlatform.topBound)
+								&& Mathf.Round(nextPlatform.height) < Mathf.Round(previousPlatform.height)
+	//					    	&& Mathf.RoundToInt(nextPlatform.bottomBound - previousPlatform.topBound) < 4
+								&& !CheckIfInCollider(shadow.transform.position, previousPlatform)
+								&& isWalking && !leftCurrentPlatform) {
+							Debug.Log("UP: normal falling - " + previousPlatform.name + " to " + nextPlatform.name);
 							fallingDirection = Direction.Up;
 							isOnPlatform = false;
 							fallingHeight = CalculateFallingHeight(fallingDirection);
@@ -579,7 +642,7 @@ public class PlayerController : TopDownBehavior {
 						}
 					}
 				} else {
-					previousPlatform = null;
+					previousPlatform = grounded ? null : previousPlatform;
 				}
 
 				break;
@@ -600,8 +663,8 @@ public class PlayerController : TopDownBehavior {
 //					Debug.DrawRay(zero, new Vector3(0, -pResultsDown[0].distance, 0), Color.yellow);
 //					Debug.DrawRay(one, new Vector3(0, -pResultsDown[1].distance, 0), Color.blue);
 					if (downHits > 0) {
+						ObjectValues plat0 = pResultsDown[0].collider.GetComponent<ObjectInfo>().values;
 						if (downHits > 1) {
-							ObjectValues plat0 = pResultsDown[0].collider.GetComponent<ObjectInfo>().values;
 							ObjectValues plat1 = pResultsDown[1].collider.GetComponent<ObjectInfo>().values;
 
 							if (CheckIfInCollider(shadow.transform.position, plat0)) {
@@ -617,21 +680,21 @@ public class PlayerController : TopDownBehavior {
 							minPlatformDistance = nextPlatformHit.distance;
 						} else {
 //							Debug.Log("1== normal: " + resultsUp[0].point);
-//							currentPlatform = currentPlatformHit.transform.GetComponent<ObjectInfo>().values;
-							UpdateCurrentPlatform(currentPlatformHit.transform.GetComponent<ObjectInfo>().values);
+//							UpdateCurrentPlatform(currentPlatformHit.transform.GetComponent<ObjectInfo>().values);
+							currentPlatform = currentHeight >= plat0.height ? plat0 : currentPlatform;
 							nextPlatformHit = currentPlatformHit;
 							minPlatformDistance = nextPlatformHit.distance;
 						}
 						
+						Debug.Log(string.Format("currentPlatform {0}", currentPlatform.name));
 						previousPlatform = currentPlatform;
-//						UpdateCurrentPlatform();
+						UpdateCurrentPlatform();
 
-//						Debug.Log(string.Format("currentPlatform {0}", currentPlatform.name));
 						// Checks the values from the next platform
 //						Vector3 white = new Vector3(transform.position.x-0.5f, myPos.y, myPos.z);
 //						Debug.DrawRay(white, new Vector3(0, -nextPlatformHit.distance, 0), Color.white);
 						nextPlatform = nextPlatformHit.transform.GetComponent<ObjectInfo>().values;
-						Debug.Log("next " + nextPlatform.name);
+						Debug.Log("next " + nextPlatform.name + ", " + nextPlatform.height);
 						// If player is inside the platform, is moving into it, is higher than the platform, and the platform isnt what we're on
 						// Transition to the new platform
 						// Return if something is null
@@ -640,9 +703,11 @@ public class PlayerController : TopDownBehavior {
 //						if (nextPlatform != null && CheckIfInCollider(transform.position, nextPlatform) && isWalking
 //						    && HigherThanPlatform(nextPlatform)) {
 //						    && currentPlatform != nextPlatform
-						if (nextPlatform != null && !isOnPlatform
-//						    && HigherThanPlatform(nextPlatform)
-						    && CheckIfInCollider(shadow.transform.position, nextPlatform)) {
+//						if (nextPlatform != null && CheckIfInCollider(transform.position, nextPlatform) && isWalking
+//						    && HigherThanPlatform(nextPlatform) && currentPlatform != nextPlatform) {
+						if (nextPlatform != null && isWalking
+						    && CheckIfInCollider(shadow.transform.position, nextPlatform)
+						    && !isOnPlatform) {
 							Debug.Log(string.Format("Inside {0}", nextPlatform.name));
 							//currentPlatformHit = nextPlatformHit;
 //							currentPlatform = nextPlatform;
@@ -655,7 +720,8 @@ public class PlayerController : TopDownBehavior {
 //						Debug.Log(string.Format("prev {0}", previousPlatform.name));
 					} else {
 						currentPlatformHit = new RaycastHit2D();
-						currentPlatform = null;
+						currentPlatform = ground;
+//						currentPlatform = null;
 //						nextPlatform = null;
 						minPlatformDistance = Mathf.Infinity;
 						Debug.Log("Down: No platforms. Reset.");
@@ -804,8 +870,8 @@ public class PlayerController : TopDownBehavior {
 //					Debug.DrawRay(zero, new Vector3(0, -pResultsDown[0].distance, 0), Color.yellow);
 //					Debug.DrawRay(one, new Vector3(0, -pResultsDown[1].distance, 0), Color.blue);
 					if (rightHits > 0) {
+						ObjectValues plat0 = pResultsRight[0].collider.GetComponent<ObjectInfo>().values;
 						if (rightHits > 1) {
-							ObjectValues plat0 = pResultsRight[0].collider.GetComponent<ObjectInfo>().values;
 							ObjectValues plat1 = pResultsRight[1].collider.GetComponent<ObjectInfo>().values;
 
 							if (CheckIfInCollider(shadow.transform.position, plat0)) {
@@ -818,6 +884,7 @@ public class PlayerController : TopDownBehavior {
 								pResultsRight[1] : pResultsRight[0];
 							minPlatformDistance = nextPlatformHit.distance;
 						} else {
+							currentPlatform = currentHeight >= plat0.height ? plat0 : currentPlatform;
 							nextPlatformHit = currentPlatformHit;
 							minPlatformDistance = nextPlatformHit.distance;
 						}
@@ -846,7 +913,7 @@ public class PlayerController : TopDownBehavior {
 //						Debug.Log(string.Format("prev {0}", previousPlatform.name));
 					} else {
 						currentPlatformHit = new RaycastHit2D();
-						currentPlatform = null;
+						currentPlatform = ground;
 						nextPlatform = null;
 						minPlatformDistance = Mathf.Infinity;
 						Debug.Log("No platforms. Reset.");
@@ -1189,11 +1256,220 @@ public class PlayerController : TopDownBehavior {
 				//break;
 		}
 	}
-	private void ClearBlocks() {
-		for (int i = 0; i < isDirectionBlocked.Length; i++) {
-			isDirectionBlocked[i] = false;
+	
+	/// <summary>
+	/// Initialize the current platform when entering a room.
+	/// </summary>
+	/// <exception cref="ArgumentOutOfRangeException"></exception>
+	private void InitPlatform() {
+		switch (facingDirection) {
+			case Direction.Null:
+				break;
+			case Direction.Up:
+				int hits = Physics2D.RaycastNonAlloc(transform.position, Vector2.up, pResultsUp,
+				                          Mathf.Infinity, platformMask);
+				if (hits > 0) {
+					ObjectValues plat0 = pResultsUp[0].collider.GetComponent<ObjectInfo>().values;
+					if (hits > 1) {
+						ObjectValues plat1 = pResultsUp[1].collider.GetComponent<ObjectInfo>().values;
+						if (CheckIfInCollider(transform.position, plat0)) {
+							currentPlatform = plat0;
+						} else if (CheckIfInCollider(transform.position, plat1)) {
+							currentPlatform = plat1;
+						}
+					} else {
+						ObjectValues singlePlat = currentPlatformHit.transform.GetComponent<ObjectInfo>().values;
+						currentPlatform = CheckIfInCollider(shadow.transform.position, singlePlat)
+							? singlePlat
+							: currentPlatform;
+					}
+				} else {
+					currentPlatformHit = new RaycastHit2D();
+					currentPlatform = ground;
+					nextPlatform = ground; 
+					minPlatformDistance = Mathf.Infinity;
+				}
+				break;
+			case Direction.Down:
+				hits = Physics2D.RaycastNonAlloc(transform.position, Vector2.down, pResultsDown,
+				                                     Mathf.Infinity, platformMask);
+				if (hits > 0) {
+					ObjectValues plat0 = pResultsDown[0].collider.GetComponent<ObjectInfo>().values;
+					if (hits > 1) {
+						ObjectValues plat1 = pResultsDown[1].collider.GetComponent<ObjectInfo>().values;
+						if (CheckIfInCollider(transform.position, plat0)) {
+							currentPlatform = plat0;
+						} else if (CheckIfInCollider(transform.position, plat1)) {
+							currentPlatform = plat1;
+						}
+					} else {
+						ObjectValues singlePlat = currentPlatformHit.transform.GetComponent<ObjectInfo>().values;
+						currentPlatform = CheckIfInCollider(shadow.transform.position, singlePlat)
+							? singlePlat
+							: currentPlatform;
+					}
+				} else {
+					currentPlatformHit = new RaycastHit2D();
+					currentPlatform = ground;
+					nextPlatform = ground; 
+					minPlatformDistance = Mathf.Infinity;
+				}
+				break;
+			case Direction.Right:
+				hits = Physics2D.RaycastNonAlloc(transform.position, Vector2.right, pResultsRight,
+				                                 Mathf.Infinity, platformMask);
+				if (hits > 0) {
+					ObjectValues plat0 = pResultsRight[0].collider.GetComponent<ObjectInfo>().values;
+					if (hits > 1) {
+						ObjectValues plat1 = pResultsRight[1].collider.GetComponent<ObjectInfo>().values;
+						if (CheckIfInCollider(transform.position, plat0)) {
+							currentPlatform = plat0;
+						} else if (CheckIfInCollider(transform.position, plat1)) {
+							currentPlatform = plat1;
+						}
+					} else {
+						ObjectValues singlePlat = currentPlatformHit.transform.GetComponent<ObjectInfo>().values;
+						currentPlatform = CheckIfInCollider(shadow.transform.position, singlePlat)
+							? singlePlat
+							: currentPlatform;
+					}
+				} else {
+					currentPlatformHit = new RaycastHit2D();
+					currentPlatform = ground;
+					nextPlatform = ground; 
+					minPlatformDistance = Mathf.Infinity;
+				}
+				break;
+			case Direction.Left:
+				hits = Physics2D.RaycastNonAlloc(transform.position, Vector2.left, pResultsLeft,
+				                                 Mathf.Infinity, platformMask);
+				if (hits > 0) {
+					ObjectValues plat0 = pResultsLeft[0].collider.GetComponent<ObjectInfo>().values;
+					if (hits > 1) {
+						ObjectValues plat1 = pResultsLeft[1].collider.GetComponent<ObjectInfo>().values;
+						if (CheckIfInCollider(transform.position, plat0)) {
+							currentPlatform = plat0;
+						} else if (CheckIfInCollider(transform.position, plat1)) {
+							currentPlatform = plat1;
+						}
+					} else {
+						ObjectValues singlePlat = currentPlatformHit.transform.GetComponent<ObjectInfo>().values;
+						currentPlatform = CheckIfInCollider(shadow.transform.position, singlePlat)
+							? singlePlat
+							: currentPlatform;
+					}
+				} else {
+					currentPlatformHit = new RaycastHit2D();
+					currentPlatform = ground;
+					nextPlatform = ground; 
+					minPlatformDistance = Mathf.Infinity;
+				}
+				break;
+			case Direction.UpRight:
+				hits = Physics2D.RaycastNonAlloc(transform.position, new Vector2(1,1) , pResultsUpRight,
+				                                 Mathf.Infinity, platformMask);
+				if (hits > 0) {
+					ObjectValues plat0 = pResultsUpRight[0].collider.GetComponent<ObjectInfo>().values;
+					if (hits > 1) {
+						ObjectValues plat1 = pResultsUpRight[1].collider.GetComponent<ObjectInfo>().values;
+						if (CheckIfInCollider(transform.position, plat0)) {
+							currentPlatform = plat0;
+						} else if (CheckIfInCollider(transform.position, plat1)) {
+							currentPlatform = plat1;
+						}
+					} else {
+						ObjectValues singlePlat = currentPlatformHit.transform.GetComponent<ObjectInfo>().values;
+						currentPlatform = CheckIfInCollider(shadow.transform.position, singlePlat)
+							? singlePlat
+							: currentPlatform;
+					}
+				} else {
+					currentPlatformHit = new RaycastHit2D();
+					currentPlatform = ground;
+					nextPlatform = ground; 
+					minPlatformDistance = Mathf.Infinity;
+				}
+				break;
+			case Direction.UpLeft:
+				hits = Physics2D.RaycastNonAlloc(transform.position, new Vector2(-1,1) , pResultsUpLeft,
+				                                 Mathf.Infinity, platformMask);
+				if (hits > 0) {
+					ObjectValues plat0 = pResultsUpLeft[0].collider.GetComponent<ObjectInfo>().values;
+					if (hits > 1) {
+						ObjectValues plat1 = pResultsUpLeft[1].collider.GetComponent<ObjectInfo>().values;
+						if (CheckIfInCollider(transform.position, plat0)) {
+							currentPlatform = plat0;
+						} else if (CheckIfInCollider(transform.position, plat1)) {
+							currentPlatform = plat1;
+						}
+					} else {
+						ObjectValues singlePlat = currentPlatformHit.transform.GetComponent<ObjectInfo>().values;
+						currentPlatform = CheckIfInCollider(shadow.transform.position, singlePlat)
+							? singlePlat
+							: currentPlatform;
+					}
+				} else {
+					currentPlatformHit = new RaycastHit2D();
+					currentPlatform = ground;
+					nextPlatform = ground; 
+					minPlatformDistance = Mathf.Infinity;
+				}
+				break;
+			case Direction.DownRight:
+				hits = Physics2D.RaycastNonAlloc(transform.position, new Vector2(1,-1) , pResultsDownRight,
+				                                 Mathf.Infinity, platformMask);
+				if (hits > 0) {
+					ObjectValues plat0 = pResultsDownRight[0].collider.GetComponent<ObjectInfo>().values;
+					if (hits > 1) {
+						ObjectValues plat1 = pResultsDownRight[1].collider.GetComponent<ObjectInfo>().values;
+						if (CheckIfInCollider(transform.position, plat0)) {
+							currentPlatform = plat0;
+						} else if (CheckIfInCollider(transform.position, plat1)) {
+							currentPlatform = plat1;
+						}
+					} else {
+						ObjectValues singlePlat = currentPlatformHit.transform.GetComponent<ObjectInfo>().values;
+						currentPlatform = CheckIfInCollider(shadow.transform.position, singlePlat)
+							? singlePlat
+							: currentPlatform;
+					}
+				} else {
+					currentPlatformHit = new RaycastHit2D();
+					currentPlatform = ground;
+					nextPlatform = ground; 
+					minPlatformDistance = Mathf.Infinity;
+				}
+				break;
+			case Direction.DownLeft:
+				hits = Physics2D.RaycastNonAlloc(transform.position, new Vector2(-1,-1) , resultsDownLeft,
+				                                 Mathf.Infinity, platformMask);
+				if (hits > 0) {
+					ObjectValues plat0 = resultsDownLeft[0].collider.GetComponent<ObjectInfo>().values;
+					if (hits > 1) {
+						ObjectValues plat1 = resultsDownLeft[1].collider.GetComponent<ObjectInfo>().values;
+						if (CheckIfInCollider(transform.position, plat0)) {
+							currentPlatform = plat0;
+						} else if (CheckIfInCollider(transform.position, plat1)) {
+							currentPlatform = plat1;
+						}
+					} else {
+						ObjectValues singlePlat = currentPlatformHit.transform.GetComponent<ObjectInfo>().values;
+						currentPlatform = CheckIfInCollider(shadow.transform.position, singlePlat)
+							? singlePlat
+							: currentPlatform;
+					}
+				} else {
+					currentPlatformHit = new RaycastHit2D();
+					currentPlatform = ground;
+					nextPlatform = ground; 
+					minPlatformDistance = Mathf.Infinity;
+				}
+				break;
+			default:
+				throw new ArgumentOutOfRangeException();
 		}
 	}
+
 	private void CorrectMovement(RaycastHit2D hit, Direction direction) {
 		if (!(hit.distance < diagonalBoundCorrection - 0.25f)) return;
 		Debug.Log("correcting going side a corner.");
@@ -2083,8 +2359,8 @@ public class PlayerController : TopDownBehavior {
 		//hit.transform.GetComponent<CompositeCollider2D>().OverlapCollider(wallContactFilter, wallChecks);
 		//Vector3 collPos = hit.transform.GetComponent<Collider2D>().GetComponent<ObjectPosition>().transform.position;
 		//Physics2D.Raycast(collPos, Vector2.up, platformContactFilter, wallHits, Mathf.Infinity);
-		//Debug.Log("height: " + hit.transform.GetComponent<ObjectInfo>().height);
-		return currentHeight < hit.transform.GetComponent<ObjectInfo>().height;
+//		Debug.Log("height: " + currentHeight + ", " + hit.transform.GetComponent<ObjectInfo>().height);
+		return currentHeight < hit.transform.GetComponent<ObjectInfo>().values.height;
 		//+ wallHits[0].collider.GetComponent<ObjectInfo>().height;
 		//+ wallChecks[0].GetComponent<ObjectInfo>().height && !isFalling;
 	}
@@ -2093,36 +2369,52 @@ public class PlayerController : TopDownBehavior {
 	private void MoveInDirection(Direction direction, float speed) {
 		switch (direction) {
 			case Direction.Up:
-				transform.Translate(0, speed, 0);
-				shadow.transform.Translate(0, speed, 0);
+				transform.position += new Vector3(0, speed, 0) * Time.fixedDeltaTime;
+				shadow.transform.position += new Vector3(0, speed, 0) * Time.fixedDeltaTime;
+//				transform.Translate(0, speed, 0);
+//				shadow.transform.Translate(0, speed, 0);
 				break;
 			case Direction.Down:
-				transform.Translate(0, -speed, 0);
-				shadow.transform.Translate(0, -speed, 0);
+				transform.position += new Vector3(0, -speed, 0) * Time.fixedDeltaTime;
+				shadow.transform.position += new Vector3(0, -speed, 0) * Time.fixedDeltaTime;
+//				transform.Translate(0, -speed, 0);
+//				shadow.transform.Translate(0, -speed, 0);
 				break;
 			case Direction.Left:
-				transform.Translate(-speed, 0, 0);
-				shadow.transform.Translate(-speed, 0, 0);
+				transform.position += new Vector3(-speed,0, 0) * Time.fixedDeltaTime;
+				shadow.transform.position += new Vector3(-speed,0, 0) * Time.fixedDeltaTime;
+//				transform.Translate(-speed, 0, 0);
+//				shadow.transform.Translate(-speed, 0, 0);
 				break;
 			case Direction.Right:
-				transform.Translate(speed, 0, 0);
-				shadow.transform.Translate(speed, 0, 0);
+				transform.position += new Vector3(speed,0, 0) * Time.fixedDeltaTime;
+				shadow.transform.position += new Vector3(speed,0, 0) * Time.fixedDeltaTime;
+//				transform.Translate(speed, 0, 0);
+//				shadow.transform.Translate(speed, 0, 0);
 				break;
 			case Direction.UpRight:
-				transform.Translate(speed, speed, 0);
-				shadow.transform.Translate(speed, speed, 0);
+				transform.position += new Vector3(speed,speed, 0) * Time.fixedDeltaTime;
+				shadow.transform.position += new Vector3(speed,speed, 0) * Time.fixedDeltaTime;
+//				transform.Translate(speed, speed, 0);
+//				shadow.transform.Translate(speed, speed, 0);
 				break;
 			case Direction.UpLeft:
-				transform.Translate(-speed, speed, 0);
-				shadow.transform.Translate(-speed, speed, 0);
+				transform.position += new Vector3(-speed,speed, 0) * Time.fixedDeltaTime;
+				shadow.transform.position += new Vector3(-speed,speed, 0) * Time.fixedDeltaTime;
+//				transform.Translate(-speed, speed, 0);
+//				shadow.transform.Translate(-speed, speed, 0);
 				break;
 			case Direction.DownRight:
-				transform.Translate(speed, -speed, 0);
-				shadow.transform.Translate(speed, -speed, 0);
+				transform.position += new Vector3(speed,-speed, 0) * Time.fixedDeltaTime;
+				shadow.transform.position += new Vector3(speed,-speed, 0) * Time.fixedDeltaTime;
+//				transform.Translate(speed, -speed, 0);
+//				shadow.transform.Translate(speed, -speed, 0);
 				break;
 			case Direction.DownLeft:
-				transform.Translate(-speed, -speed, 0);
-				shadow.transform.Translate(-speed, -speed, 0);
+				transform.position += new Vector3(-speed,-speed, 0) * Time.fixedDeltaTime;
+				shadow.transform.position += new Vector3(-speed,-speed, 0) * Time.fixedDeltaTime;
+//				transform.Translate(-speed, -speed, 0);
+//				shadow.transform.Translate(-speed, -speed, 0);
 				break;
 			case Direction.Null:
 				break;
@@ -2347,19 +2639,22 @@ public class PlayerController : TopDownBehavior {
 				nextDownBase = currentDownBase;
 				minDownBaseDistance = nextDownBase.distance;
 			}
-//			Debug.Log("next down base: " + nextDownBase.transform.name + ". curr p height=" + currentHeight);
-			Debug.DrawRay(targetTransform.transform.position, new Vector3(0, -nextDownBase.distance, 0), Color.red);
+//			Debug.Log("next down base: " + nextDownBase.transform.name + ". curr p height=" + nextDownBase.transform.GetComponent<ObjectInfo>().values.height);
+			Debug.DrawRay(targetTransform.position, new Vector3(0, -nextDownBase.distance, 0), Color.red);
 //			if (nextUpBase.collider != null && Mathf.Abs(nextUpBase.distance + currentHeight) < boundCorrection && CheckIfBlockPlayerByHeight(nextUpBase)
 //			    && fallingDirection != Direction.Up) {
 			if (nextDownBase.collider != null) {
-				var obj = nextDownBase.transform.GetComponent<ObjectInfo>();
+				ObjectInfo obj = nextDownBase.transform.GetComponent<ObjectInfo>();
 				// Check if current pos is next to the next wall, taking height into account.
+//				if (Mathf.Abs(targetTransform.position.y - obj.bottomBound - (currentPlatform != null ? currentPlatform.height : 0)) < BOUND_CORRECTION 
+//				    && CheckIfBlockPlayerByHeight(nextUpBase) &&
+//				    fallingDirection != Direction.Up) {
 				if (Mathf.Abs(targetTransform.position.y - obj.topBound) < BOUND_CORRECTION && CheckIfBlockPlayerByHeight(nextDownBase) &&
 				    fallingDirection != Direction.Down) {
-//					Debug.Log("normal blocking down...");
+					Debug.Log("normal blocking down...");
 					blockSide();
 				} else {
-//					Debug.Log("normal unblocking down...");
+					Debug.Log("normal unblocking down...");
 					currentUpBase = new RaycastHit2D();
 					minUpBaseDistance = Mathf.Infinity; // Reset distance
 					unblockSide();

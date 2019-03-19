@@ -16,6 +16,10 @@ public class ObjectInfo : MonoBehaviour {
 	[DisableInspectorEdit] public float bottomBound;
 	[DisableInspectorEdit] public float rightBound;
 	[DisableInspectorEdit] public float leftBound;
+	[DisableInspectorEdit] public float baseTopBound;
+	[DisableInspectorEdit] public float baseBottomBound;
+	[DisableInspectorEdit] public float baseRightBound;
+	[DisableInspectorEdit] public float baseLeftBound;
 	[DisableInspectorEdit] public int sortingOrder;
 	[DisableInspectorEdit] public ObjectValues values;
 	
@@ -35,6 +39,7 @@ public class ObjectInfo : MonoBehaviour {
 		myRenderer = GetComponent<Renderer>();
 		if (transform.childCount > 0) {
 			child = transform.GetChild(0).gameObject;
+			Debug.Log("child " + child.name);
 			childRenderer = child.GetComponent<Renderer>();
 		}
 		// If platform doesn't have a fixed height, calculate the height from the bottom of the platform
@@ -44,6 +49,7 @@ public class ObjectInfo : MonoBehaviour {
 			Debug.Log(string.Format("Using a fixed height: {0}", height));
 		}
 		
+//		position = child.transform.TransformPoint(child.transform.position);
 		position = child.transform.position;
 		h = GetComponent<CompositeCollider2D>().bounds.extents.y * 2;
 		w = GetComponent<CompositeCollider2D>().bounds.extents.x * 2;
@@ -51,6 +57,10 @@ public class ObjectInfo : MonoBehaviour {
 		bottomBound = position.y - h / 2;
 		rightBound = position.x + w / 2;
 		leftBound = position.x - w / 2;
+		baseTopBound = topBound - height;
+		baseBottomBound = bottomBound - height;
+		baseRightBound = rightBound;
+		baseLeftBound = leftBound;
 		sortingOrder = childRenderer.sortingOrder;
 		values = new ObjectValues(position, h, w, height, sortingOrder, name);
 	}
