@@ -3,6 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// State Machines:
+/// BattleState - what goes on during initialization, ongoing interactions, and ending the state.
+/// TurneState  - what goes on during initialization, ongoing interactions, and ending the state.
+/// BattlePhase - beginning of turn status, player actions, battle calculations, turn resolution.
+/// WinStatus   - How the battle ended. Determines if player gets exp/loot, goes back to last save point, or escaped.
+/// </summary>
 public enum BattleState {
 	Init,
 	Ongoing,
@@ -27,15 +34,16 @@ public enum WinStatus {
 	Lose, 
 	Escape
 }
+
 /// <summary>
 /// TODO: Maybe can convert states to enums instead of coroutines; do fixed update w/ state machine instead
 /// </summary>
 public class BattleStates : MonoBehaviour {
+	private enum Direction { Up, Down, Left, Right }
 
-	public enum Direction { Up, Down, Left, Right }
-	public enum Button { Fire2, Submit, Jump, Cancel }
+	private enum Button { Fire2, Submit, Jump, Cancel }
 
-	public static int TURN_COUNT;
+	private static int TURN_COUNT;
 
 	// Queue used for determining which unit goes when.
 	private Queue turnQueue = new Queue();
