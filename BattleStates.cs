@@ -5,13 +5,13 @@ using UnityEngine;
 
 public enum BattleState {
 	Init,
-	Start,
+	Ongoing,
 	End
 }
 
 public enum TurnState {
 	Init,
-	Start,
+	Ongoing,
 	End
 }
 
@@ -19,7 +19,7 @@ public enum BattlePhase {
 	Status,
 	Action,
 	Battle,
-	Resolve
+	Resolution
 }
 
 public enum WinStatus {
