@@ -39,7 +39,7 @@ public class ObjectInfo : MonoBehaviour {
 		myRenderer = GetComponent<Renderer>();
 		if (transform.childCount > 0) {
 			child = transform.GetChild(0).gameObject;
-			Debug.Log("child " + child.name);
+//			Debug.Log("child " + child.name);
 			childRenderer = child.GetComponent<Renderer>();
 		}
 		// If platform doesn't have a fixed height, calculate the height from the bottom of the platform

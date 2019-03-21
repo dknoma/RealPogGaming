@@ -25,7 +25,7 @@ public class CameraMovement : MonoBehaviour {
 		}
 	}
 
-	private void Update() {
+	private void FixedUpdate() {
 //        var camPos = cam.transform.position;
 //		if (player.jumping) {
 //			
