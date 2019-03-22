@@ -9,10 +9,6 @@ public class CameraMovement : MonoBehaviour {
 //	private float fallingSpeed;
 	private float diagonalMovementSpeed;
 
-//	public CameraMovement() {
-//		diagonalMovementSpeed = Mathf.Sqrt(movementSpeed * movementSpeed / 2);	// Init diagonal movement speed
-//	}
-	
 	private void OnEnable() {
 		cam = Camera.main;
 		player = GameObject.FindWithTag("Player").GetComponent<PlayerController>();    // Get the main player character

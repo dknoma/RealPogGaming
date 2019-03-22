@@ -1,17 +1,28 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
+[DisallowMultipleComponent]
 public class GameMaster : MonoBehaviour {
 
+	public static GameMaster gm;
+		
 	// Use a queue to insert character actions
 	//		Resets every turn; turns determined when actionqueue is empty
-	private BattleStates battle;
-	private bool battleInProgress = false;
+//	private bool battleInProgress = false;
 
-	void Start () {
-		battle = transform.GetComponentInChildren<BattleStates> ();
+	private void Awake () {
+		if (gm == null) {
+			gm = this;
+		} else if (gm != this) {
+			//If instance already exists and it's not this: destroy this game object
+			Destroy(gameObject);
+		}
+		DontDestroyOnLoad(gameObject);
+//		battle = transform.GetComponentInChildren<BattleStates> ();
 	}
+	
 
 //	void Update () {
 //		if (Input.GetButtonDown("Fire1")) {

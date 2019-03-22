@@ -4,9 +4,6 @@ public class ObjectValues {
 
     public string name;
     public float height;
-    public bool determinePriortyWithHeight;
-    public bool fixedHeight;
-    public bool fixedSorting;
     public Vector3 position;
     public float h;
     public float w;
@@ -18,7 +15,6 @@ public class ObjectValues {
     public float baseBottomBound;
     public float baseRightBound;
     public float baseLeftBound;
-//    public float distance;
     public int sortingOrder;
 
     public ObjectValues(Vector3 pos, float h, float w, float height, int order, string name) {
