@@ -11,18 +11,21 @@ using UnityEngine;
 /// WinStatus   - How the battle ended. Determines if player gets exp/loot, goes back to last save point, or escaped.
 /// </summary>
 public enum BattleState {
+	Nil,
 	Init,
 	Ongoing,
 	End
 }
 
 public enum TurnState {
+	Nil,
 	Init,
 	Ongoing,
 	End
 }
 
 public enum BattlePhase {
+	Nil,
 	Status,
 	Action,
 	Battle,
@@ -30,6 +33,7 @@ public enum BattlePhase {
 }
 
 public enum WinStatus {
+	Nil,
 	Win, 
 	Lose, 
 	Escape
@@ -392,6 +396,9 @@ public class BattleStates : MonoBehaviour {
 	 **************************************************/
 	public void EndBattle(WinStatus winStatus) {
 		switch(winStatus) {
+			case WinStatus.Nil:
+				// Default state.
+				break;
 			case WinStatus.Win:
 				GrantExpToParty();
 				break;
