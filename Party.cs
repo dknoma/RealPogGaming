@@ -9,32 +9,31 @@ public class Party : MonoBehaviour {
 	public GameObject frontUnit;
 	public GameObject backUnit;
 
-	private List<GameObject> partyMembers;
+	private List<GameObject> partyMembers = new List<GameObject>();
 		
 	// Use this for initialization
-	void Awake () {
-		this.partyMembers = new List<GameObject>();
+	private void Awake () {
 //		this.partyMembers.Add(new PartyMember(this.frontUnit, (int) Slot.Front));
 //		if(this.backUnit != null) {
 //			this.partyMembers.Add(new PartyMember(this.backUnit, (int) Slot.Back));
 //		}
 	}
 
-	public void initPartyMembers() {
-		this.frontUnit.GetComponent<Character> ().setPartySlot ((int) Slot.Front);
-		this.partyMembers.Add(this.frontUnit);
-		if(this.backUnit != null) {
-			this.backUnit.GetComponent<Character> ().setPartySlot ((int) Slot.Back);
-			this.partyMembers.Add(this.backUnit);
+	public void InitPartyMembers() {
+		frontUnit.GetComponent<Character> ().setPartySlot ((int) Slot.Front);
+		partyMembers.Add(frontUnit);
+		if(backUnit != null) {
+			backUnit.GetComponent<Character> ().setPartySlot ((int) Slot.Back);
+			partyMembers.Add(backUnit);
 		}
-		Debug.Log ("Party length: " + this.partyMembers.Count);
+		Debug.Log ("Party length: " + partyMembers.Count);
 	}
 
-	public void changePartyMember(GameObject newMember) {
+	public void ChangePartyMember(GameObject newMember) {
 		
 	}
 
-	public List<GameObject> getPartyMembers() {
-		return this.partyMembers;
+	public List<GameObject> GetPartyMembers() {
+		return partyMembers;
 	}
 }

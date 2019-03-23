@@ -1477,6 +1477,7 @@ public class PlayerController : TopDownBehavior {
 	}
 	// TODO: MovePlayer()
 	private void MovePlayer() {
+		if (BattleManager.bm.InBattle()) return;
 		//Debug.Log(string.Format("v: {0}, h {1}", Input.GetAxisRaw("Vertical"), Input.GetAxisRaw("Horizontal")));
 		if (Input.GetAxisRaw("Vertical") > 0 && Mathf.Abs(Input.GetAxisRaw("Horizontal")) < Mathf.Epsilon) {
 			// Facing up

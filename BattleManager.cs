@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// State Machines:
@@ -45,10 +46,9 @@ public enum WinStatus {
 /// </summary>
 [DisallowMultipleComponent]
 public class BattleManager : MonoBehaviour {
-	private enum Direction { Up, Down, Left, Right }
-	private enum Button { Fire2, Submit, Jump, Cancel }
-
-	private static BattleManager bm;
+	
+	public static BattleManager bm;
+	
 	private static int TURN_COUNT;
 	
 	public BattleState BattleState { get; set; }
@@ -76,7 +76,7 @@ public class BattleManager : MonoBehaviour {
 	private bool resolvingTurn;
 	private bool inCutscene;
 
-	public bool battleOver;
+	private bool inBattle;
 	private bool directionIsPressed;
 	private bool directionCanBePressed = true;
 	private bool buttonIsPressed;
@@ -90,13 +90,17 @@ public class BattleManager : MonoBehaviour {
 	private bool finishedResolve;
 	private bool finishedTurn;
 
-	private MenuGraph<int> testMenu;	// Get options from units Character component
+	private bool axisDown;
+
+	private ActionMenu testMenu;	// Get options from units Character component
 	//private int currentOption = 0;
 
 	private Direction currentDirection;
 	private Button currentButton;
 
-
+	private Coroutine directionRoutine;
+	private Coroutine directionResetRoutine;
+	
 	private void Awake() {
 		if (bm == null) {
 			bm = this;
@@ -106,7 +110,11 @@ public class BattleManager : MonoBehaviour {
 		DontDestroyOnLoad(gameObject);
 		
 		party = GameObject.FindGameObjectWithTag("Party").GetComponent<Party>();
-		party.initPartyMembers ();
+		party.InitPartyMembers ();
+	}
+
+	private void Start() {
+		testMenu = GameObject.FindGameObjectWithTag("TestMenu").GetComponent<ActionMenu>();
 	}
 
 
@@ -125,6 +133,7 @@ public class BattleManager : MonoBehaviour {
 				// Not in battle.
 				break;
 			case BattleState.Init:
+				inBattle = true;
 				InitBattle();
 				break;
 			case BattleState.Ongoing:
@@ -147,10 +156,12 @@ public class BattleManager : MonoBehaviour {
 					case WinStatus.Lose:
 						break;
 					case WinStatus.Escape:
+						Debug.Log("Escaped battle successfully.");
 						break;
 					default:
 						throw new ArgumentOutOfRangeException("WinStatus", WinStatus, null);
 				}
+				inBattle = false;
 				Debug.Log("Ending battle.");
 				break;
 			default:
@@ -198,11 +209,16 @@ public class BattleManager : MonoBehaviour {
 					break;
 				case BattlePhase.Action:
 					// TODO: let unit do their actions: attack, use items, run away
-					if (Input.GetButtonDown("Test")) {
-						Debug.Log("Ending action phase...");
+					
+//					directionRoutine = StartCoroutine (WaitForDirection ());
+					GetAxisDown();
+					NavigateActionMennu();
+					
+					if (Input.GetButtonDown("Test") && testMenu.CurrentAction.CompareTag("AttackAction")) {
 						BattlePhase = BattlePhase.Battle;
+					} else if (Input.GetButtonDown("Test") && testMenu.CurrentAction.CompareTag("RunAction")) {
+						EndBattle(WinStatus.Escape);
 					}
-
 					break;
 				case BattlePhase.Battle:
 					// TODO: resolve the unit's action: attacking(action commands for bonus dmg), healing(possible action
@@ -213,12 +229,10 @@ public class BattleManager : MonoBehaviour {
 						int dmg = CalculateDamage(currentUnit, target);
 						TryDamage(dmg, target);
 					}
-
-					if (Input.GetButtonDown("Test")) {
-						Debug.Log("Ending battle phase...");
-						BattlePhase = BattlePhase.Resolution;
-					}
-
+					BattlePhase = BattlePhase.Resolution;
+//					if (Input.GetButtonDown("Test")) {
+//						Debug.Log("Ending battle phase...");
+//					}
 					break;
 				case BattlePhase.Resolution:
 					// TODO: resolve end of turn effects: do DoT, decrement status counters
@@ -226,19 +240,71 @@ public class BattleManager : MonoBehaviour {
 						resolvingTurn = true;
 						currentUnit.GetComponent<Character>().resolveStatusAfflictions();
 					}
-
-					if (Input.GetButtonDown("Test")) {
-						Debug.Log("Ending resolution phase...");
-						BattlePhase = BattlePhase.Nil;
-						TurnState = TurnState.End; // End turn
-					}
-
+					BattlePhase = BattlePhase.Nil;
+					TurnState = TurnState.End; // End turn
+//					if (Input.GetButtonDown("Test")) {
+//						Debug.Log("Ending resolution phase...");
+//					}
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
 		} else {
 			Debug.Log("In cutscene.");
+		}
+	}
+
+	private void NavigateActionMennu() {
+		switch(currentDirection) {
+			case Direction.Up:
+//				Debug.Log ("Up");
+				testMenu.NavigateMenu(currentDirection);
+				break;
+			case Direction.Down:
+//				Debug.Log ("Down");
+				testMenu.NavigateMenu(currentDirection);
+				break;
+			case Direction.Left:
+//				Debug.Log ("Left");
+				testMenu.NavigateMenu(currentDirection);
+				break;
+			case Direction.Right:
+//				Debug.Log ("Right");
+				testMenu.NavigateMenu(currentDirection);
+				break;
+			default:
+//				Debug.Log ("no move");
+				break;
+		}
+	}
+
+	private void GetAxisDown() {
+		if (axisDown) {
+			currentDirection = Direction.Null;
+			if (!(Math.Abs(Input.GetAxisRaw("Horizontal")) < Mathf.Epsilon) ||
+			    !(Math.Abs(Input.GetAxisRaw("Vertical")) < Mathf.Epsilon)) return;
+//			Debug.Log("Reset axis down");
+			axisDown = false;
+
+			return;
+		}
+		if(Input.GetAxisRaw ("Horizontal") > 0) {
+//			Debug.Log ("Right");
+			axisDown = true;
+			currentDirection = Direction.Right;
+		} else if(Input.GetAxisRaw ("Horizontal") < 0) {
+//			Debug.Log ("Left");
+			axisDown = true;
+			currentDirection = Direction.Left;
+		} else if(Input.GetAxisRaw ("Vertical") > 0) {
+			axisDown = true;
+			currentDirection = Direction.Up;
+		} else if(Input.GetAxisRaw ("Vertical") < 0) {
+			axisDown = true;
+			currentDirection = Direction.Down;
+		} else {
+//			Debug.Log("Reset axis down");
+			axisDown = false;
 		}
 	}
 
@@ -307,6 +373,11 @@ public class BattleManager : MonoBehaviour {
 //		finishedTurn = true;
 //		battleOver = true;
 	}
+
+	public bool InBattle() {
+		return inBattle;
+	}
+	
 	/***************************
 	 * 						   *
 	 * Party related functions *
@@ -314,7 +385,7 @@ public class BattleManager : MonoBehaviour {
 	 ***************************/ 
 	private void AddPartyToList() {
 		// Get party members from sibling component
-		List<GameObject> partyMembers = party.getPartyMembers();
+		List<GameObject> partyMembers = party.GetPartyMembers();
 		foreach(GameObject member in partyMembers) {
 			units.Add(member);
             allies.Add(member);
