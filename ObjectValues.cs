@@ -22,6 +22,7 @@ public class ObjectValues {
         this.height = height;
         position = pos;
         sortingOrder = order;
+        Debug.LogFormat("MY NAME IS {0}", name);
 //        this.h = h;
 //        this.w = w;
 //        topBound = position.y + h / 2;

@@ -22,7 +22,7 @@ public class ObjectInfo : MonoBehaviour {
 //	[DisableInspectorEdit] public float baseRightBound;
 //	[DisableInspectorEdit] public float baseLeftBound;
 	[DisableInspectorEdit] public int sortingOrder;
-	[DisableInspectorEdit] public ObjectValues values;
+//	[DisableInspectorEdit] public ObjectValues values;
 	
 
 	private CompositeCollider2D coll;
@@ -40,7 +40,6 @@ public class ObjectInfo : MonoBehaviour {
 		myRenderer = GetComponent<TilemapRenderer>();
 		if (transform.childCount > 0) {
 			child = transform.GetChild(0).gameObject;
-//			Debug.Log("child " + child.name);
 			childRenderer = child.GetComponent<Renderer>();
 		}
 		// If platform doesn't have a fixed height, calculate the height from the bottom of the platform
@@ -49,9 +48,10 @@ public class ObjectInfo : MonoBehaviour {
 		} else {
 			Debug.Log(string.Format("Using a fixed height: {0}", height));
 		}
-		
-//		position = child.transform.TransformPoint(child.transform.position);
 		position = child.transform.position;
+		sortingOrder = childRenderer.sortingOrder;
+//		values = new ObjectValues(name, height, position, sortingOrder);
+//		position = child.transform.TransformPoint(child.transform.position);
 //		h = GetComponent<Collider2D>().bounds.extents.y * 2;
 //		w = GetComponent<Collider2D>().bounds.extents.x * 2;
 //		topBound = position.y + h / 2;
@@ -62,8 +62,6 @@ public class ObjectInfo : MonoBehaviour {
 //		baseBottomBound = bottomBound - height;
 //		baseRightBound = rightBound;
 //		baseLeftBound = leftBound;
-		sortingOrder = childRenderer.sortingOrder;
-		values = new ObjectValues(name, height, position, sortingOrder);
 	}
 
 	// Draw debug ray to show where the raycast is originating from
@@ -72,8 +70,6 @@ public class ObjectInfo : MonoBehaviour {
 		// Set sort order to platform positions sorting order
 		if (fixedSorting || myRenderer == null) return;
 		myRenderer.sortingOrder = childRenderer.sortingOrder;
-		values.sortingOrder 
-			= myRenderer
-				.sortingOrder;
+//		values.sortingOrder = myRenderer.sortingOrder;
 	}
 }

@@ -57,13 +57,13 @@ public class PlayerController : TopDownBehavior {
 	private ContactFilter2D floorContactFilter;
 	private ContactFilter2D boundsContactFilter;
 	private PlayerShadow shadow;
-	[HideInInspector]
-	public ObjectValues nextPlatform;
 	
 	[HideInInspector]
-	public ObjectValues currentPlatform;
-	private ObjectValues previousPlatform;
-	private ObjectValues ground;
+	public ObjectInfo nextPlatform;
+	[HideInInspector]
+	public ObjectInfo currentPlatform;
+	private ObjectInfo previousPlatform;
+	private ObjectInfo ground;
 
 	// Physics stuff
 	public bool[] isDirectionBlocked = new bool[(int)Direction.DownLeft + 1];
@@ -131,7 +131,7 @@ public class PlayerController : TopDownBehavior {
 	private float xRadius;
 //	private Vector3 groundPosition;
 	private float groundHeight;
-	private bool grounded = true;
+	public bool grounded = true;
 	private bool rising;
 	private bool lowering;
 	
@@ -190,26 +190,11 @@ public class PlayerController : TopDownBehavior {
 		diagonalMovementSpeed = Mathf.Sqrt(overworldSpeed * overworldSpeed / 2);
 		diagonalBoundCorrection = Mathf.Sqrt(2 * (BOUND_CORRECTION*BOUND_CORRECTION));
 		blockingCorrectionSpeed = overworldSpeed;
-		ground = new ObjectValues("ground", 0, Vector3.zero, -9999999);
-		previousPlatform = ground;
+//		ground = new ObjectValues("ground", 0, Vector3.zero, -9999999);
+//		previousPlatform = ground;
 //		InitPlatform();
 	}
 	
-	private void OnCollisionEnter2D(Collision2D coll) {
-		if(coll.gameObject.CompareTag("Platform")) {
-			Debug.Log(string.Format("\t\tnext plat {0}", coll.gameObject.name));
-			ObjectValues platValues = coll.gameObject.GetComponent<ObjectInfo>().values;
-			nextPlatform = platValues;
-		}
-	}
-	
-	private void OnCollisionStay2D(Collision2D coll) {
-		if(coll.gameObject.CompareTag("Base")) {
-			Debug.Log(string.Format("\t\tcurrent base {0}", coll.gameObject.name));
-			ObjectValues baseValues = coll.gameObject.GetComponent<ObjectInfo>().values;
-//			nextPlatform = platValues;
-		}
-	}
 
 //	/// <summary>
 //	/// Detect what the current platform the player is inside.
@@ -285,6 +270,22 @@ public class PlayerController : TopDownBehavior {
 //		}
 //	}
 
+	private void OnCollisionEnter2D(Collision2D coll) {
+		if(coll.gameObject.CompareTag("Platform")) {
+			Debug.Log(string.Format("\t\ttouched next plat {0}", coll.gameObject.name));
+			ObjectInfo platValues = coll.gameObject.GetComponent<ObjectInfo>();
+			nextPlatform = platValues;
+		}
+	}
+	
+	private void OnCollisionStay2D(Collision2D coll) {
+		if(coll.gameObject.CompareTag("Base")) {
+			Debug.Log(string.Format("\t\tcurrent base {0}", coll.gameObject.name));
+			ObjectInfo baseValues = coll.gameObject.GetComponent<ObjectInfo>();
+//			nextPlatform = platValues;
+		}
+	}
+	
 	/// <summary>
 	/// Reset animation settings when main player is changed
 	/// </summary>
@@ -313,9 +314,9 @@ public class PlayerController : TopDownBehavior {
 //		Debug.Log("velocity " + velocity);
 		if (!grounded) {
 			transform.position += (Vector3)velocity;
-			currentHeight = transform.position.y - shadow.transform.position.y
-			                + (currentPlatform != null
-				            ? currentPlatform.height : 0);
+			currentHeight = transform.position.y - shadow.transform.position.y + currentPlatform.height;
+//			                + (currentPlatform != null
+//				            ? currentPlatform.height : 0);
 //			Debug.Log("p height " + currentPlatform.height);
 			if (transform.position.y - shadow.transform.position.y >= 0.0001) return;
 			Debug.Log("is grounded.");
@@ -324,13 +325,14 @@ public class PlayerController : TopDownBehavior {
 			isFalling = false;									// Player is not falling
 			transform.position = shadow.transform.position;		// Make sure player doesnt go lower than allowed
 			rising = false;
-			currentHeight = transform.position.y - shadow.transform.position.y
-			                + (currentPlatform != null ? currentPlatform.height : 0);
+			currentHeight = transform.position.y - shadow.transform.position.y + currentPlatform.height;
 		} else {
 			jumping = false;
 			transform.position = shadow.transform.position;
-			currentHeight = currentPlatform != null ? currentPlatform.height : 0;
-			currentPlatform = Math.Abs(currentHeight) < Mathf.Epsilon ? ground : currentPlatform;
+//			currentHeight = currentPlatform != null ? currentPlatform.height : 0;
+			Debug.LogFormat("currr: {0}", currentPlatform.name);
+			currentHeight = currentPlatform.height;
+//			currentPlatform = Math.Abs(currentHeight) < Mathf.Epsilon ? ground : currentPlatform;
 			velocity = Vector2.zero;
 			transitionToCurrentPlatform = false;
 		}
@@ -402,7 +404,7 @@ public class PlayerController : TopDownBehavior {
 //		       && myPosition.y >= platform.bottomBound && myPosition.y <= platform.topBound;
 //	}
 
-	public ObjectValues GetCurrentPlatform() {
+	public ObjectInfo GetCurrentPlatform() {
 		return currentPlatform;
 	}
 
@@ -2462,7 +2464,7 @@ public class PlayerController : TopDownBehavior {
 		//Vector3 collPos = hit.transform.GetComponent<Collider2D>().GetComponent<ObjectPosition>().transform.position;
 		//Physics2D.Raycast(collPos, Vector2.up, platformContactFilter, wallHits, Mathf.Infinity);
 //		Debug.Log("height: " + currentHeight + ", " + hit.transform.GetComponent<ObjectInfo>().height);
-		return currentHeight < hit.transform.GetComponent<ObjectInfo>().values.height;
+		return currentHeight < hit.transform.GetComponent<ObjectInfo>().height;
 		//+ wallHits[0].collider.GetComponent<ObjectInfo>().height;
 		//+ wallChecks[0].GetComponent<ObjectInfo>().height && !isFalling;
 	}
@@ -2619,7 +2621,7 @@ public class PlayerController : TopDownBehavior {
 	private void CastUp(Transform targetTransform, int layermask, Action blockSide, Action unblockSide, Action clearSides) {
 		int hits = Physics2D.RaycastNonAlloc(targetTransform.transform.position, Vector2.up, resultsUp,Mathf.Infinity, layermask);
 		RaycastHit2D boundHit = RaycastInDirection(Direction.Up);
-		Debug.Log(string.Format("base distance: {0}, {1}, {2}",  resultsUp[0].transform.name, resultsUp[0].point, transform.position));
+//		Debug.Log(string.Format("base distance: {0}, {1}, {2}",  resultsUp[0].transform.name, resultsUp[0].point, transform.position));
 		if (boundHit.collider != null && boundHit.distance < BOUND_CORRECTION) {
 			blockSide();
 			return;

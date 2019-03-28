@@ -5,9 +5,9 @@ using UnityEngine;
 
 public class PlayerShadow : MonoBehaviour {
 	
-	public ObjectValues currentPlatform;
-	private ObjectValues previousPlatform;
-	private ObjectValues ground;
+	public ObjectInfo currentPlatform;
+	private ObjectInfo previousPlatform;
+//	private ObjectInfo ground;
 //	private ObjectValues nextPlatform;
 	
 	private const float BOUND_CORRECTION = 1.625f;
@@ -16,7 +16,9 @@ public class PlayerShadow : MonoBehaviour {
 	private bool lowering;
 	private bool leftCurrentPlatform;
 	private bool isOnPlatform;
+	private bool overAnotherPlat;
 	private float fallingHeight;
+	private float groundedHeight;
 	
 	private PlayerController player;
 	private Direction fallingDirection;
@@ -42,33 +44,57 @@ public class PlayerShadow : MonoBehaviour {
 		int baseMask = LayerMask.GetMask("Base");
 		int platformMask = LayerMask.GetMask("Platform");
 		baseContactFilter.SetLayerMask(baseMask);
-		wallContactFilter.SetLayerMask(LayerMask.GetMask("Wall"));
 		platformContactFilter.SetLayerMask(platformMask);
 		floorContactFilter.SetLayerMask(platformMask);
 		floorContactFilter.SetLayerMask(LayerMask.GetMask("Ground"));
+		wallContactFilter.SetLayerMask(LayerMask.GetMask("Wall"));
 		boundsContactFilter.SetLayerMask(LayerMask.GetMask("Bounds"));
 		player = gameObject.FindComponentInSiblingsWithTag<PlayerController>("Player");
 		myColl = gameObject.GetComponent<Collider2D>();
-		ground = new ObjectValues("ground", 0, Vector3.zero, -9999999);
-		previousPlatform = ground;
-//		InitPlatform();
+		
+		Debug.LogFormat("player {0}", player.transform.name);
+		RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, Mathf.Infinity, platformMask);
+		Debug.LogFormat("hit {0}", hit.transform.name);
+		Debug.LogFormat("aslkfhasflkjasfl;kj: {0}", hit.transform.GetComponent<ObjectInfo>());
+		player.currentPlatform = hit.transform.GetComponent<ObjectInfo>();
+		Debug.LogFormat("Initial platform: {0}", player.currentPlatform.name);
+		previousPlatform = player.currentPlatform;
+//		ground = new ObjectValues("ground", 0, Vector3.zero, -9999999);
+//		previousPlatform = ground;
 	}
 
 	private void Update() {
 		fallingDirection = player.facingDirection;
 	}
 
+	private void OnCollisionEnter2D(Collision2D coll) {
+		if(coll.gameObject.CompareTag("Platform")) {
+			Debug.Log(string.Format("\t\ttouched next plat {0}", coll.gameObject.name));
+			ObjectInfo platValues = coll.gameObject.GetComponent<ObjectInfo>();
+//			player.nextPlatform = platValues;
+			if (player.nextPlatform != player.currentPlatform) {
+				overAnotherPlat = true;
+			}
+		}
+	}
+	
 	private void OnCollisionStay2D(Collision2D coll) {
 		if(coll.gameObject.CompareTag("Platform")) {
-			ObjectValues platValues = coll.gameObject.GetComponent<ObjectInfo>().values;
-			Debug.Log(string.Format("\t\tinside plat {0}", platValues.name));
-			if(player.currentHeight < platValues.height) return;
-			player.currentPlatform = platValues;
-			if(player.isWalking && player.nextPlatform != ground
+			ObjectInfo platValues = coll.gameObject.GetComponent<ObjectInfo>();
+			if (player.currentHeight < platValues.height && !player.grounded) {
+				Debug.Log("returning...");
+				return;
+			}
+			if (!overAnotherPlat) {
+				player.currentPlatform = platValues;
+			}
+			Debug.Log(string.Format("\t\tinside plat {0}", player.currentPlatform.name));
+			if(player.isWalking && player.nextPlatform != currentPlatform
 			                    && HigherThanPlatform(player.nextPlatform) 
-			                    && !rising && player.nextPlatform != currentPlatform) {
-				Debug.Log("UP: trying to jump onto " + platValues.name);
+			                    && !rising) {
+				Debug.Log("UP: trying to jump onto " + player.currentPlatform.name);
 				Debug.Log(string.Format("Inside {0}", player.nextPlatform.name));
+				overAnotherPlat = false;
 				currentPlatform = player.nextPlatform;
 				isOnPlatform = true;
 				leftCurrentPlatform = false;
@@ -83,13 +109,14 @@ public class PlayerShadow : MonoBehaviour {
 	private void OnCollisionExit2D(Collision2D coll) {
 		if(coll.gameObject.CompareTag("Platform")) {
 			Debug.Log(string.Format("\t\texiting plat {0}", coll.gameObject.name));
-			ObjectValues platValues = coll.gameObject.GetComponent<ObjectInfo>().values;
+			overAnotherPlat = false;
+			ObjectInfo platValues = coll.gameObject.GetComponent<ObjectInfo>();
 			previousPlatform = platValues;
 			if(fallingDirection == Direction.Down) {
 				int hits = myColl.Cast(Vector2.down, platformContactFilter, pResultsDown, Mathf.Infinity);
 				if(hits > 0) {
 					Debug.Log("DOWN GROUND");
-					ObjectValues plat = pResultsDown[0].transform.GetComponent<ObjectInfo>().values;
+					ObjectInfo plat = pResultsDown[0].transform.GetComponent<ObjectInfo>();
 					player.nextPlatform = plat;
 				} 
 //				else {
@@ -112,11 +139,11 @@ public class PlayerShadow : MonoBehaviour {
 //				currentPlatform = nextPlatform;
 			}
 //			currentPlatform = ground;
-			player.nextPlatform = ground;
+//			player.nextPlatform = ground;
 		}
 	}
 	
-	private bool HigherThanPlatform(ObjectValues platform) {
+	private bool HigherThanPlatform(ObjectInfo platform) {
 		return player.currentHeight > platform.height;
 	}
 
@@ -193,6 +220,12 @@ public class PlayerShadow : MonoBehaviour {
 			default: 
 				throw new ArgumentOutOfRangeException();
 		}
+	}
+
+	private void InitPlatform() {
+		myColl.Cast(Vector2.down, platformContactFilter, pResultsDown, Mathf.Infinity);
+		player.currentPlatform = pResultsDown[0].collider.GetComponent<ObjectInfo>();
+		Debug.LogFormat("Initial platform: {0}", player.currentPlatform.name);
 	}
 	
 	/// <summary>
