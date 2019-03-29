@@ -48,6 +48,10 @@ public class MenuGraph<T> {
 	public T GetCurrentItem() {
 		return menuItems [currentOptionIndex];
 	}
+	
+	public T GetItem(int index) {
+		return menuItems [index];
+	}
 
 	public void AddItem(T item, int index) {
 		menuItems[index] = item;

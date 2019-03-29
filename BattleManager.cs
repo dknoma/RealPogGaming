@@ -92,7 +92,8 @@ public class BattleManager : MonoBehaviour {
 
 	private bool axisDown;
 
-	private ActionMenu testMenu;	// Get options from units Character component
+	private GameObject testMenu;
+	private ActionMenu actionMenu;	// Get options from units Character component
 	//private int currentOption = 0;
 
 	private Direction currentDirection;
@@ -108,13 +109,15 @@ public class BattleManager : MonoBehaviour {
 			Destroy(gameObject);
 		}
 		DontDestroyOnLoad(gameObject);
-		
 		party = GameObject.FindGameObjectWithTag("Party").GetComponent<Party>();
 		party.InitPartyMembers ();
 	}
 
 	private void Start() {
-		testMenu = GameObject.FindGameObjectWithTag("TestMenu").GetComponent<ActionMenu>();
+		testMenu = GameObject.FindGameObjectWithTag("TestMenu");
+		actionMenu = testMenu.GetComponentInChildren<ActionMenu>();
+		testMenu.SetActive(false);
+		actionMenu.gameObject.SetActive(false);
 	}
 
 
@@ -167,6 +170,7 @@ public class BattleManager : MonoBehaviour {
 				allies = new List<GameObject>();
 				enemies = new List<GameObject>();
 				Debug.Log("Ending battle.");
+				testMenu.SetActive(false);
 				break;
 			default:
 				throw new ArgumentOutOfRangeException();
@@ -205,23 +209,23 @@ public class BattleManager : MonoBehaviour {
 		if (!inCutscene) {
 			switch (BattlePhase) {
 				case BattlePhase.Nil:
+					finishedActing = false;
 					break;
 				case BattlePhase.Status:
+					finishedActing = false;
 					// TODO: check what actions can take if any
 					Debug.Log("Checking" + currentUnit.name + "'s status.");
 					BattlePhase = BattlePhase.Action;
 					break;
 				case BattlePhase.Action:
 					// TODO: let unit do their actions: attack, use items, run away
-					
-//					directionRoutine = StartCoroutine (WaitForDirection ());
-					GetAxisDown();
-					NavigateActionMennu();
-					
-					if (Input.GetButtonDown("Test") && testMenu.CurrentAction.CompareTag("AttackAction")) {
+					// TODO: have a bool that will change from the action menu depending on the action
+					// TODO: bool decides when to go to the next phase
+						// attack/support/defend/run
+					// TODO: action menu doesnt need to access bool, only set it
+					actionMenu.gameObject.SetActive(true);
+					if (finishedActing) {
 						BattlePhase = BattlePhase.Battle;
-					} else if (Input.GetButtonDown("Test") && testMenu.CurrentAction.CompareTag("RunAction")) {
-						EndBattle(WinStatus.Escape);
 					}
 					break;
 				case BattlePhase.Battle:
@@ -232,11 +236,8 @@ public class BattleManager : MonoBehaviour {
 						GameObject target = currentUnit.CompareTag("Enemy") ? party.frontUnit : enemies[0];
 						int dmg = CalculateDamage(currentUnit, target);
 						TryDamage(dmg, target);
+						BattlePhase = BattlePhase.Resolution;
 					}
-					BattlePhase = BattlePhase.Resolution;
-//					if (Input.GetButtonDown("Test")) {
-//						Debug.Log("Ending battle phase...");
-//					}
 					break;
 				case BattlePhase.Resolution:
 					// TODO: resolve end of turn effects: do DoT, decrement status counters
@@ -246,69 +247,12 @@ public class BattleManager : MonoBehaviour {
 					}
 					BattlePhase = BattlePhase.Nil;
 					TurnState = TurnState.End; // End turn
-//					if (Input.GetButtonDown("Test")) {
-//						Debug.Log("Ending resolution phase...");
-//					}
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
 		} else {
 			Debug.Log("In cutscene.");
-		}
-	}
-
-	private void NavigateActionMennu() {
-		switch(currentDirection) {
-			case Direction.Up:
-//				Debug.Log ("Up");
-				testMenu.NavigateMenu(currentDirection);
-				break;
-			case Direction.Down:
-//				Debug.Log ("Down");
-				testMenu.NavigateMenu(currentDirection);
-				break;
-			case Direction.Left:
-//				Debug.Log ("Left");
-				testMenu.NavigateMenu(currentDirection);
-				break;
-			case Direction.Right:
-//				Debug.Log ("Right");
-				testMenu.NavigateMenu(currentDirection);
-				break;
-			default:
-//				Debug.Log ("no move");
-				break;
-		}
-	}
-
-	private void GetAxisDown() {
-		if (axisDown) {
-			currentDirection = Direction.Null;
-			if (!(Math.Abs(Input.GetAxisRaw("Horizontal")) < Mathf.Epsilon) ||
-			    !(Math.Abs(Input.GetAxisRaw("Vertical")) < Mathf.Epsilon)) return;
-//			Debug.Log("Reset axis down");
-			axisDown = false;
-
-			return;
-		}
-		if(Input.GetAxisRaw ("Horizontal") > 0) {
-//			Debug.Log ("Right");
-			axisDown = true;
-			currentDirection = Direction.Right;
-		} else if(Input.GetAxisRaw ("Horizontal") < 0) {
-//			Debug.Log ("Left");
-			axisDown = true;
-			currentDirection = Direction.Left;
-		} else if(Input.GetAxisRaw ("Vertical") > 0) {
-			axisDown = true;
-			currentDirection = Direction.Up;
-		} else if(Input.GetAxisRaw ("Vertical") < 0) {
-			axisDown = true;
-			currentDirection = Direction.Down;
-		} else {
-//			Debug.Log("Reset axis down");
-			axisDown = false;
 		}
 	}
 
@@ -329,6 +273,7 @@ public class BattleManager : MonoBehaviour {
 		TurnState = TurnState.Init; 		// Turn initialization: calculate turn order, etc.
 		Debug.Log ("number of units: " + numUnits);
 		BattleState = BattleState.Ongoing;	// Go ahead and start the battle
+		testMenu.SetActive(true);
 	}
 	
 	private void StartTurn() {
@@ -349,7 +294,10 @@ public class BattleManager : MonoBehaviour {
 	/**************************************************
 	 **************************************************
 	 **************************************************/
-	// ReSharper disable once MemberCanBePrivate.Global
+	public void FinishAction() {
+		finishedActing = true;
+	}
+	
 	public void EndBattle(WinStatus winStatus) {
 		turnQueue.Clear ();
 		WinStatus = winStatus;

@@ -298,8 +298,10 @@ public class PlayerController : TopDownBehavior {
 		//Debug.Log("curr h: " + currentHeight);
 		//Debug.Log("fall direction: " + fallingDirection);
 //		Debug.Log("shad pos: " + shadow.transform.position);
-
 		Jump();
+		if (BattleManager.bm.InBattle()) {
+			StopDirection(facingDirection);
+		}
 //		CheckPlatformCollision();
 //		ComputeVelocity();
 		//groundHeight = shadow.totalHeight;
@@ -2531,6 +2533,14 @@ public class PlayerController : TopDownBehavior {
 		isWalking = true;
 		facingDirection = direction;
 		animator.SetBool(IsWalkingAni, true);
+		animator.SetInteger(DirectionAni, (int)facingDirection - 1);
+		animator.SetTrigger(ChangeDirectionAni);
+	}
+	
+	private void StopDirection(Direction direction) {
+		isWalking = false;
+		facingDirection = direction;
+		animator.SetBool(IsWalkingAni, false);
 		animator.SetInteger(DirectionAni, (int)facingDirection - 1);
 		animator.SetTrigger(ChangeDirectionAni);
 	}

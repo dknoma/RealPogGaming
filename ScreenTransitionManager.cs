@@ -16,6 +16,8 @@ public enum Transition {
 public class ScreenTransitionManager : MonoBehaviour {
 
 	public static ScreenTransitionManager transitionManager;
+
+	public bool inDebug;
 	
 	public Transition transition = Transition.Triangle;
 	public Material defaultTexture;
@@ -24,9 +26,9 @@ public class ScreenTransitionManager : MonoBehaviour {
 	public Material sawtoothTransitionMaterial;
 	public Material angularTransitionMaterial;
 	public GameObject debugTextbox;
-	[DisableInspectorEdit] public bool isTransitioningToBlack;
-	[DisableInspectorEdit] public bool isTransitioningFromBlack;
-
+	
+	private bool isTransitioningToBlack;
+	private bool isTransitioningFromBlack;
 	private float transitionCounter;
 	private float transitionCutoff;
 	private Text debugText;
@@ -53,6 +55,7 @@ public class ScreenTransitionManager : MonoBehaviour {
 	}
 
 	private void Update() {
+		if (!inDebug) return;
 		TestButtons();
 		if (debugText == null) return;
 		debugText.text = string.Format("Press Tab to change:\n{0}", transition.ToString());
