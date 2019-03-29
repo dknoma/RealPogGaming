@@ -330,7 +330,7 @@ public class PlayerController : TopDownBehavior {
 			jumping = false;
 			transform.position = shadow.transform.position;
 //			currentHeight = currentPlatform != null ? currentPlatform.height : 0;
-			Debug.LogFormat("currr: {0}", currentPlatform.name);
+//			Debug.LogFormat("currr: {0}", currentPlatform.name);
 			currentHeight = currentPlatform.height;
 //			currentPlatform = Math.Abs(currentHeight) < Mathf.Epsilon ? ground : currentPlatform;
 			velocity = Vector2.zero;

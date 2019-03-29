@@ -65,6 +65,7 @@ public class PlayerShadow : MonoBehaviour {
 
 	private void Update() {
 		fallingDirection = player.facingDirection;
+		groundedHeight = player.currentPlatform.height;
 	}
 
 	private void OnCollisionEnter2D(Collision2D coll) {
@@ -88,11 +89,12 @@ public class PlayerShadow : MonoBehaviour {
 			if (!overAnotherPlat) {
 				player.currentPlatform = platValues;
 			}
-			Debug.Log(string.Format("\t\tinside plat {0}", player.currentPlatform.name));
-			if(player.isWalking && player.nextPlatform != currentPlatform
+//			Debug.Log(string.Format("\t\tinside plat {0}", player.currentPlatform.name));
+			if(player.isWalking && player.nextPlatform != currentPlatform 
+			                    && Mathf.RoundToInt(player.nextPlatform.height) - Mathf.RoundToInt(groundedHeight) != 0
 			                    && HigherThanPlatform(player.nextPlatform) 
 			                    && !rising) {
-				Debug.Log("UP: trying to jump onto " + player.currentPlatform.name);
+				Debug.Log("UP: trying to jump onto " + player.nextPlatform.name);
 				Debug.Log(string.Format("Inside {0}", player.nextPlatform.name));
 				overAnotherPlat = false;
 				currentPlatform = player.nextPlatform;

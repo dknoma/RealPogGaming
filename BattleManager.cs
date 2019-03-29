@@ -162,6 +162,10 @@ public class BattleManager : MonoBehaviour {
 						throw new ArgumentOutOfRangeException("WinStatus", WinStatus, null);
 				}
 				inBattle = false;
+				expToGive = 0;
+				units = new List<GameObject>();
+				allies = new List<GameObject>();
+				enemies = new List<GameObject>();
 				Debug.Log("Ending battle.");
 				break;
 			default:
@@ -238,7 +242,7 @@ public class BattleManager : MonoBehaviour {
 					// TODO: resolve end of turn effects: do DoT, decrement status counters
 					if (!resolvingTurn) {
 						resolvingTurn = true;
-						currentUnit.GetComponent<Character>().resolveStatusAfflictions();
+						currentUnit.GetComponent<Character>().ResolveStatusAfflictions();
 					}
 					BattlePhase = BattlePhase.Nil;
 					TurnState = TurnState.End; // End turn
@@ -342,26 +346,6 @@ public class BattleManager : MonoBehaviour {
 		TurnState = TurnState.Ongoing;		// Go ahead and start the turns
 	}
 	
-	private bool TryDamage(int dmg, GameObject target) {
-		// TODO: Check if target can be damaged.
-		Debug.Log(string.Format("\t{0} dealt {1} damage to {2}", currentUnit.name, dmg, target.name));
-		target.GetComponent<Character>().ModifyHP(-dmg);
-		Debug.Log(string.Format("current HP: {0}", target.GetComponent<Character>().GetCurrentHP()));
-		if(target.GetComponent<Character>().GetCurrentHP() <= 0) {
-			// Remove unit from the list if no more HP
-			units.Remove(target);
-			// TODO: if party member, make incapacitated: can be revived
-			if(target.CompareTag("Enemy")) {
-				enemies.Remove(target);
-				expToGive += target.GetComponent<Character>().expToGrant;
-				if(enemies.Count == 0) {
-					EndBattle(WinStatus.Win);
-				}
-			}
-		}
-		return true;
-	}
-	
 	/**************************************************
 	 **************************************************
 	 **************************************************/
@@ -408,7 +392,26 @@ public class BattleManager : MonoBehaviour {
 	 *  Dmg related functions  *
 	 * 						   *
 	 ***************************/ 
-
+	private bool TryDamage(int dmg, GameObject target) {
+		// TODO: Check if target can be damaged.
+		Debug.Log(string.Format("\t{0} dealt {1} damage to {2}", currentUnit.name, dmg, target.name));
+		target.GetComponent<Character>().ModifyHP(-dmg);
+		Debug.Log(string.Format("current HP: {0}", target.GetComponent<Character>().GetCurrentHP()));
+		if(target.GetComponent<Character>().GetCurrentHP() <= 0) {
+			// Remove unit from the list if no more HP
+			units.Remove(target);
+			// TODO: if party member, make incapacitated: can be revived
+			if(target.CompareTag("Enemy")) {
+				Debug.Log(string.Format("ending the battleeeeeeeeeeeee"));
+				enemies.Remove(target);
+				expToGive += target.GetComponent<Character>().expToGrant;
+				if(enemies.Count == 0) {
+					EndBattle(WinStatus.Win);
+				}
+			}
+		}
+		return true;
+	}
 	private int CalculateDamage(GameObject src, GameObject dest) {
 		Character 
 		source = src.GetComponent<Character> (),
@@ -420,13 +423,15 @@ public class BattleManager : MonoBehaviour {
 		// Calculate the current units rune bonuses
 		CalculateRuneStats (currentUnit);
 		int damage = Mathf.RoundToInt(
-			(Mathf.Pow(source.GetCurrentAtk(), 2) + source.GetRuneAtk())/ (target.GetCurrentDef() + target.GetRuneDef()) 	// Standard atk-def calc
-			* (1 + (source.currentLevel*2 - target.currentLevel) / 50)	// Level compensation
-			* ElementalAffinity.CalcElementalDamage(source.getCurrentBattleActions().getElement(), 
-				target.element));  				// elemental multiplier
+			// Standard atk-def calc
+			(Mathf.Pow(source.GetCurrentAtk(), 2) + source.GetRuneAtk()) / (target.GetCurrentDef() + target.GetRuneDef()) 								
+			// Level compensation
+			* (1 + (source.currentLevel*2 - target.currentLevel) / 50)			
+			// Elemental multiplier
+			* ElementalAffinity.CalcElementalDamage(source.getCurrentBattleActions().getElement(),	
+				target.element));  														
 		return damage;
 	}
-
 	private void GrantExpToParty() {
 		foreach(GameObject ally in allies) {
 			ally.GetComponent<Character>().GrantExp(expToGive);

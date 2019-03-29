@@ -81,15 +81,15 @@ public class CharacterStats : StatusEffects {
 	protected const int HPDESTRUCTION = (int) StatChange.HPDestruct;
 
 	void Awake() {
-		this.expUntilLevelUp = calcNextLevel();
-		this.currentHP = this.maxHP;
-		this.currentAtk = this.baseAtk;
-		this.currentDef = this.baseDef;
-		this.currentSpd = this.baseSpd;
-		this.statusTurnCounter = new int[getStatusAfflictions().Length];
-		this.statChangeTurnCounter = new int[getStatChangeAfflictions().Length];
-		this.canAct = true;
-		this.canCastSpells = true;
+		expUntilLevelUp = CalcNextLevel();
+		currentHP = maxHP;
+		currentAtk = baseAtk;
+		currentDef = baseDef;
+		currentSpd = baseSpd;
+		statusTurnCounter = new int[getStatusAfflictions().Length];
+		statChangeTurnCounter = new int[getStatChangeAfflictions().Length];
+		canAct = true;
+		canCastSpells = true;
 		if (bogResist) { addStatusResist (BOG); } 
 		if (burnResist) { addStatusResist (BURN); } 
 		if (poisonResist) { addStatusResist (POISON); } 
@@ -105,60 +105,60 @@ public class CharacterStats : StatusEffects {
 	 * HP *
 	 ******/
 	// Return a copy of this characters max hp
-	public int GetMaxHP() { return 0 + this.maxHP; }
+	public int GetMaxHP() { return 0 + maxHP; }
 
 	// Return a copy of this characters current attack
-	public int GetCurrentHP() { return 0 + this.currentHP; }
+	public int GetCurrentHP() { return 0 + currentHP; }
 
 	// Modify current HP w/ new value
-	public void ModifyHP(int hp) { this.currentHP += hp; }
+	public void ModifyHP(int hp) { currentHP += hp; }
 
 	// A % modifier for HP
-	public void ModifyHP(float hpPercentage) { this.currentHP += (int) Mathf.Round(this.maxHP * hpPercentage); }
+	public void ModifyHP(float hpPercentage) { currentHP += (int) Mathf.Round(maxHP * hpPercentage); }
 
-	public int GetRuneHP() { return 0 + this.totalRuneHP; }
+	public int GetRuneHP() { return 0 + totalRuneHP; }
 
 	/*******
 	 * ATK *
 	 *******/
 	// Return a copy of this characters base attack
-	public int GetBaseAtk() { return 0 + this.baseAtk; }
+	public int GetBaseAtk() { return 0 + baseAtk; }
 
 	// Return a copy of this characters current attack
-	public int GetCurrentAtk() { return 0 + this.currentAtk; }
+	public int GetCurrentAtk() { return 0 + currentAtk; }
 
 	// Modify current attack w/ new value
-	public void ModifyAtk(bool up) { this.currentAtk += atkMod(this.baseAtk, up); }
+	public void ModifyAtk(bool up) { currentAtk += AtkMod(baseAtk, up); }
 
-	public int GetRuneAtk() { return 0 + this.totalRuneAtk; }
+	public int GetRuneAtk() { return 0 + totalRuneAtk; }
 
 	/*******
 	 * DEF *
 	 *******/
 	// Return a copy of this characters base defense
-	public int GetBaseDef() { return 0 + this.baseDef; }
+	public int GetBaseDef() { return 0 + baseDef; }
 
 	// Return a copy of this characters current defense
-	public int GetCurrentDef() { return 0 + this.currentDef; }
+	public int GetCurrentDef() { return 0 + currentDef; }
 
 	// Modify current defense w/ new value
-	public void ModifyDef(bool up) { this.currentDef += defMod(this.baseDef, up); }
+	public void ModifyDef(bool up) { currentDef += DefMod(baseDef, up); }
 
-	public int GetRuneDef() { return 0 + this.totalRuneDef; }
+	public int GetRuneDef() { return 0 + totalRuneDef; }
 
 	/*******
 	 * SPD *
 	 *******/
 	// Return a copy of this characters base defense
-	public int GetBaseSpd() { return 0 + this.baseSpd; }
+	public int GetBaseSpd() { return 0 + baseSpd; }
 
 	// Return a copy of this characters current defense
-	public int GetCurrentSpd() { return 0 + this.currentSpd; }
+	public int GetCurrentSpd() { return 0 + currentSpd; }
 
 	// Modify current defense w/ new value
-	public void ModifySpd(bool up) { this.currentSpd += defMod(this.baseSpd, up); }
+	public void ModifySpd(bool up) { currentSpd += DefMod(baseSpd, up); }
 
-	public int GetRuneSpd() { return 0 + this.totalRuneSpd; }
+	public int GetRuneSpd() { return 0 + totalRuneSpd; }
 
 	/* 
 	 * Status effects
@@ -167,8 +167,8 @@ public class CharacterStats : StatusEffects {
 		if(!doesResistStatus(status) && !hasStatusAffliction && !afflictedByStatus(status)) {
 			// TODO: afflict the state
 			afflictStatus(status);
-			this.statusTurnCounter[status] = turnsToAfflict;
-			this.hasStatusAffliction = true;
+			statusTurnCounter[status] = turnsToAfflict;
+			hasStatusAffliction = true;
 			return true;
 		}
 		return false;
@@ -178,7 +178,7 @@ public class CharacterStats : StatusEffects {
 		if(!doesResistStatChange(statChange) && !afflictedByStatChange(statChange)) {
 			// TODO: afflict the stat change
 			afflictStatChange(statChange);
-			this.statChangeTurnCounter [statChange] = turnsToAfflict;
+			statChangeTurnCounter [statChange] = turnsToAfflict;
 			return true;
 		}
 		return false;
@@ -188,7 +188,7 @@ public class CharacterStats : StatusEffects {
 		if(!doesResistStatusRemoval(status) && !afflictedByStatus(status)) {
 			// TODO: afflict the stat change
 			removeStatus(status);
-			this.statusTurnCounter [status] = 0;
+			statusTurnCounter [status] = 0;
 			return true;
 		}
 		return false;
@@ -198,7 +198,7 @@ public class CharacterStats : StatusEffects {
 		if(!doesResistStatChangeRemoval(statChange) && !afflictedByStatChange(statChange)) {
 			// TODO: afflict the stat change
 			removeStatChange(statChange);
-			this.statChangeTurnCounter [statChange] = 0;
+			statChangeTurnCounter [statChange] = 0;
 			return true;
 		}
 		return false;
@@ -250,16 +250,16 @@ public class CharacterStats : StatusEffects {
 				}
 				break;
 			case RUNE_LOCK:
-				this.disableRunes = true;
+				disableRunes = true;
 				break;
 			case STUN:
-				this.canAct = false;
+				canAct = false;
 				break;
 			case SILENCE:
-				this.canCastSpells = false;
+				canCastSpells = false;
 				break;
 			}
-			this.hasStatusAffliction = true;
+			hasStatusAffliction = true;
 		} else {
 			Debug.Log("Already afflicted with status " + status);
 		}
@@ -272,7 +272,7 @@ public class CharacterStats : StatusEffects {
 		switch (status) {
 		case BOG:
 			if(tryRemoveStatus(BOG)) {
-				this.hasStatusAffliction = false;
+				hasStatusAffliction = false;
 			}
 			if (tryRemoveStatChange (SPDDOWN)) {
 				ModifySpd (true);// Only need to happen once, not every turn
@@ -281,7 +281,7 @@ public class CharacterStats : StatusEffects {
 		case BURN:
 			ModifyAtk (true); // Only need to happen once, not every turn
 			if(tryRemoveStatus(BURN)){
-				this.hasStatusAffliction = false;
+				hasStatusAffliction = false;
 			}
 			// Tries to remove atk down if not afflicted with a stat change removal resist
 			if (tryRemoveStatChange (ATKDOWN)) {
@@ -290,7 +290,7 @@ public class CharacterStats : StatusEffects {
 			break;
 		case POISON:
 			if(tryRemoveStatus (POISON)){
-				this.hasStatusAffliction = false;
+				hasStatusAffliction = false;
 			}
 			if (tryRemoveStatChange (ATKDOWN)) {
 				ModifyAtk (true);
@@ -298,40 +298,40 @@ public class CharacterStats : StatusEffects {
 			break;
 		case RUNE_LOCK:
 			if(tryRemoveStatus(STUN)) {
-				this.hasStatusAffliction = false;
-				this.disableRunes = false;
+				hasStatusAffliction = false;
+				disableRunes = false;
 			}
 			break;
 		case STUN:
 			if(tryRemoveStatus(STUN)) {
-				this.hasStatusAffliction = false;
-				this.canAct = true;
+				hasStatusAffliction = false;
+				canAct = true;
 			}
 			break;
 		case SILENCE:
 			if(tryRemoveStatus(SILENCE)) {
-				this.hasStatusAffliction = false;
-				this.canCastSpells = true;
+				hasStatusAffliction = false;
+				canCastSpells = true;
 			}
 			break;
 		}
 	}
 
 	public void removeAllAfflictions() {
-		for (int status = 0; status < this.afflictedStatuses.Length; status++) {
+		for (int status = 0; status < afflictedStatuses.Length; status++) {
 			switch (status) {
 			case BOG:
 				if (tryRemoveStatChange (SPDDOWN)) {
 					ModifySpd (true);// Only need to happen once, not every turn
 				}
 				if(tryRemoveStatus(BOG)) {
-					this.hasStatusAffliction = false;
+					hasStatusAffliction = false;
 				}
 				break;
 			case BURN:
 				ModifyAtk (true); // Only need to happen once, not every turn
 				if(tryRemoveStatus(BURN)) {
-					this.hasStatusAffliction = false;
+					hasStatusAffliction = false;
 				}
 			// Tries to remove atk down if not afflicted with a stat change removal resist
 				if (tryRemoveStatChange (ATKDOWN)) {
@@ -340,7 +340,7 @@ public class CharacterStats : StatusEffects {
 				break;
 			case POISON:
 				if(tryRemoveStatus(POISON)) {
-					this.hasStatusAffliction = false;
+					hasStatusAffliction = false;
 				}
 				if (tryRemoveStatChange (ATKDOWN)) {
 					ModifyAtk (true);
@@ -348,21 +348,21 @@ public class CharacterStats : StatusEffects {
 				break;
 			case RUNE_LOCK:
 				if(tryRemoveStatus(STUN)) {
-					this.hasStatusAffliction = false;
-					this.disableRunes = false;
+					hasStatusAffliction = false;
+					disableRunes = false;
 				}
 				break;
 			case STUN:
 				if(tryRemoveStatus(STUN)) {
-					this.hasStatusAffliction = false;
+					hasStatusAffliction = false;
 				}
-				this.canAct = true;
+				canAct = true;
 				break;
 			case SILENCE:
 				if(tryRemoveStatus(SILENCE)) {
-					this.hasStatusAffliction = false;
+					hasStatusAffliction = false;
 				}
-				this.canCastSpells = true;
+				canCastSpells = true;
 				break;
 			}
 		}
@@ -373,7 +373,7 @@ public class CharacterStats : StatusEffects {
 	 * this character's turns.
 	 */ 
 	public void checkStatusAfflictions() {
-		for(int i = 0; i < this.afflictedStatuses.Length; i++) {
+		for(int i = 0; i < afflictedStatuses.Length; i++) {
 			// Check status afflictions and do action depending on the affliction
 			switch (i) {
 			case BOG:
@@ -393,20 +393,20 @@ public class CharacterStats : StatusEffects {
 				break;
 			case RUNE_LOCK:
 				// Can't use runes for x turns
-				if(this.afflictedStatuses[RUNE_LOCK]) {
-					this.disableRunes = true;
+				if(afflictedStatuses[RUNE_LOCK]) {
+					disableRunes = true;
 				}
 				break;
 			case STUN:
 				// Can't act for x turns
-				if(this.afflictedStatuses[STUN]) {
-					this.canAct = false;
+				if(afflictedStatuses[STUN]) {
+					canAct = false;
 				}
 				break;
 			case SILENCE:
 				// Can't cast spells for x turns. Can still use skills
-				if(this.afflictedStatuses[SILENCE]) {
-					this.canCastSpells = false;
+				if(afflictedStatuses[SILENCE]) {
+					canCastSpells = false;
 				}
 				break;
 			default:
@@ -420,8 +420,8 @@ public class CharacterStats : StatusEffects {
 	 * Check this characters status afflictions. This method is meant to be executed at the end of each of
 	 * this character's turns.
 	 */ 
-	public void resolveStatusAfflictions() {
-		for(int i = 0; i < this.afflictedStatuses.Length; i++) {
+	public void ResolveStatusAfflictions() {
+		for(int i = 0; i < afflictedStatuses.Length; i++) {
 			// Check status afflictions and do action depending on the affliction
 			switch (i) {
 				case BOG:
@@ -429,44 +429,44 @@ public class CharacterStats : StatusEffects {
 					break;
 				case BURN:
 					// 8% DoT & p atk down
-					if (this.statusTurnCounter [BURN] > 0) {
+					if (statusTurnCounter [BURN] > 0) {
 						ModifyHP (-0.08f);
-						this.statusTurnCounter[BURN] -= 1;
-						if(this.statusTurnCounter[BURN] == 0) {
+						statusTurnCounter[BURN] -= 1;
+						if(statusTurnCounter[BURN] == 0) {
 							tryRemoveStatus (BURN);
 						}
 					}
 					break;
 				case POISON:
 					// 10% DoT & m atk down
-					if (this.statusTurnCounter [POISON] > 0) {
+					if (statusTurnCounter [POISON] > 0) {
 						ModifyHP (-0.1f);
-						this.statusTurnCounter[POISON] -= 1;
-						if(this.statusTurnCounter[POISON] == 0) {
+						statusTurnCounter[POISON] -= 1;
+						if(statusTurnCounter[POISON] == 0) {
 							tryRemoveStatus (POISON);
 						}
 					}
 					break;
 				case RUNE_LOCK:
-					this.statusTurnCounter[RUNE_LOCK] -= 1;
-					if (this.statusTurnCounter[RUNE_LOCK] == 0) {
+					statusTurnCounter[RUNE_LOCK] -= 1;
+					if (statusTurnCounter[RUNE_LOCK] == 0) {
 						tryRemoveStatus(RUNE_LOCK);
 					}
 					break;
 				case STUN:
 					// Can't act for x turns
-					if(this.statusTurnCounter[STUN] > 0) {
-						this.statusTurnCounter[STUN] -= 1;
-						if(this.statusTurnCounter[STUN] == 0) {
+					if(statusTurnCounter[STUN] > 0) {
+						statusTurnCounter[STUN] -= 1;
+						if(statusTurnCounter[STUN] == 0) {
 							tryRemoveStatus (STUN);
 						}
 					}
 					break;
 				case SILENCE:
 					// Can't cast spells for x turns. Can still use skills
-					if(this.statusTurnCounter[SILENCE] > 0) {
-						this.statusTurnCounter[SILENCE] -= 1;
-						if(this.statusTurnCounter[SILENCE] == 0) {
+					if(statusTurnCounter[SILENCE] > 0) {
+						statusTurnCounter[SILENCE] -= 1;
+						if(statusTurnCounter[SILENCE] == 0) {
 							tryRemoveStatus (SILENCE);
 						}
 					}
@@ -491,41 +491,59 @@ public class CharacterStats : StatusEffects {
 //	}
 
 	public void GrantExp(int exp) {
-		//int remainingExp = exp - this.expUntilLevelUp;
-		int totalExp = this.currentExp + exp;
-		int remainingExp = this.expUntilLevelUp - totalExp;
-		if(remainingExp > 0) {
-			this.currentExp = totalExp;
-			this.expUntilLevelUp = remainingExp;
-			Debug.Log(string.Format("{0} has gained {1} exp! exp until next level: {2}",
-				this.name, exp, this.expUntilLevelUp));
+		int totalExp = currentExp + exp;
+		int expToNextLevel = CalcNextLevel();
+		Debug.LogFormat("\tGained {0} exp, my total exp: {1}, remaining exp: {2}, total needed to go to next {3}",
+		                exp, totalExp, expToNextLevel - totalExp, expToNextLevel);
+		if(totalExp < expToNextLevel) {
+			currentExp = totalExp;
+			expUntilLevelUp = expToNextLevel - currentExp;
+			Debug.Log(string.Format("\t{0} has gained {1} exp! exp until next level: {2}",
+			                        name, exp, expUntilLevelUp));
 		} else {
-			this.currentLevel += 1;
-			this.currentExp = Mathf.Abs(remainingExp);
-			this.expUntilLevelUp = calcNextLevel() - this.currentExp;
-			Debug.Log(string.Format("{0} has leveled up: {1}, exp until next level: {2}", 
-				this.name, this.currentLevel, this.expUntilLevelUp));
+			currentLevel += 1;
+			currentExp = totalExp - expToNextLevel;
+			expUntilLevelUp = CalcNextLevel() - currentExp;	// Recalculate for next level
+			Debug.Log(string.Format("\t{0} has leveled up: {1}, exp until next level: {2}", 
+			                        name, currentLevel, expUntilLevelUp));
 		}
+		//int remainingExp = exp - this.expUntilLevelUp;
+//		Debug.Log(string.Format("\tcurrent {0}, exp until next level: {1}", currentExp, expUntilLevelUp));
+//		int remainingExp = expUntilLevelUp - totalExp;
+//		Debug.LogFormat("\tGained {0} exp, my total exp: {1}, remaining exp: {2}, total needed to go to next {3}",
+//		                exp, totalExp, remainingExp, CalcNextLevel());
+//		if(remainingExp > 0) {
+//			currentExp = totalExp;
+//			expUntilLevelUp = remainingExp;
+//			Debug.Log(string.Format("\t{0} has gained {1} exp! exp until next level: {2}",
+//				name, exp, expUntilLevelUp));
+//		} else {
+//			currentLevel += 1;
+//			currentExp = Mathf.Abs(remainingExp);
+//			expUntilLevelUp = CalcNextLevel() - currentExp;
+//			Debug.Log(string.Format("\t{0} has leveled up: {1}, exp until next level: {2}", 
+//				name, currentLevel, expUntilLevelUp));
+//		}
 	}
 
 	// Increase/decrease atk by 25% of the base value
-	private int atkMod(int baseAtk, bool up) {
+	private int AtkMod(int baseAtk, bool up) {
 		return (int) (up ? baseAtk * 0.25f : baseAtk * (-0.25f));
 	}
 
 	// Increase/decrease defense by 25% of the base value
-	private int defMod(int baseDef, bool up) {
+	private int DefMod(int baseDef, bool up) {
 		return (int) (up ? baseDef * 0.25f : baseDef * (-0.25f));
 	}
 
 	// Increase/decrease speed by 20% of the base value
-	private int spdMod(int baseSpd, bool up) {
+	private int SpdMod(int baseSpd, bool up) {
 		return (int) (up ? baseSpd * 0.2f : baseSpd * (-0.2f));
 	}
 
 	// Calculate the amount of exp required to get to the next level
 	// 1->2: 1, 2->3: 5, 3->4: 33, 4->5: 73, ...
-	private int calcNextLevel() {
-		return (int) Mathf.Round(4+(15*(Mathf.Pow(this.currentLevel, 3)))/14);
+	private int CalcNextLevel() {
+		return (int) Mathf.Round(4+15*Mathf.Pow(currentLevel, 3)/14);
 	}
 }
