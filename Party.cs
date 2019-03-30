@@ -3,16 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Party : MonoBehaviour {
-
-	public enum Slot { Front, Back };
+	private enum Slot { Front, Back }
 
 	public GameObject frontUnit;
 	public GameObject backUnit;
 
-	private List<GameObject> partyMembers = new List<GameObject>();
+	private readonly List<GameObject> partyMembers = new List<GameObject>();
 		
 	// Use this for initialization
-	private void Awake () {
+	private void OnEnable () {
+		frontUnit.GetComponent<Character> ().SetPartySlot ((int) Slot.Front);
+		partyMembers.Add(frontUnit);
+		if(backUnit != null) {
+			backUnit.GetComponent<Character> ().SetPartySlot ((int) Slot.Back);
+			partyMembers.Add(backUnit);
+		}
+		Debug.Log ("Party length: " + partyMembers.Count);
 //		this.partyMembers.Add(new PartyMember(this.frontUnit, (int) Slot.Front));
 //		if(this.backUnit != null) {
 //			this.partyMembers.Add(new PartyMember(this.backUnit, (int) Slot.Back));
@@ -20,13 +26,17 @@ public class Party : MonoBehaviour {
 	}
 
 	public void InitPartyMembers() {
-		frontUnit.GetComponent<Character> ().setPartySlot ((int) Slot.Front);
-		partyMembers.Add(frontUnit);
-		if(backUnit != null) {
-			backUnit.GetComponent<Character> ().setPartySlot ((int) Slot.Back);
-			partyMembers.Add(backUnit);
+		if (partyMembers.Count == 0) {
+			frontUnit.GetComponent<Character>().SetPartySlot((int) Slot.Front);
+			partyMembers.Add(frontUnit);
+			if (backUnit != null) {
+				backUnit.GetComponent<Character>().SetPartySlot((int) Slot.Back);
+				partyMembers.Add(backUnit);
+			}
+			Debug.Log("Party length: " + partyMembers.Count);
+		} else {
+			Debug.Log( "Party already instantiated.");
 		}
-		Debug.Log ("Party length: " + partyMembers.Count);
 	}
 
 	public void ChangePartyMember(GameObject newMember) {

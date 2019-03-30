@@ -55,6 +55,8 @@ public class BattleManager : MonoBehaviour {
 	public TurnState TurnState { get; set; }
 	public BattlePhase BattlePhase { get; set; }
 	public WinStatus WinStatus { get; set; }
+
+	private ActionType currentActionType;
 	
 	// Queue used for determining which unit goes when.
 	private Queue turnQueue = new Queue();
@@ -64,10 +66,10 @@ public class BattleManager : MonoBehaviour {
 	private List<GameObject> units = new List<GameObject>();
 	private List<GameObject> allies = new List<GameObject>();
 	private List<GameObject> enemies = new List<GameObject>();
-	private GameObject currentUnit;
+	private Character currentUnit;
 	private GameObject currentTarget;
 	private int numUnits;
-	private int expToGive = 0;
+	private int expToGive;
 	private bool fastestFirst = true;
 	private bool currentIsAlly = true;
 
@@ -218,11 +220,11 @@ public class BattleManager : MonoBehaviour {
 					BattlePhase = BattlePhase.Action;
 					break;
 				case BattlePhase.Action:
-					// TODO: let unit do their actions: attack, use items, run away
-					// TODO: have a bool that will change from the action menu depending on the action
-					// TODO: bool decides when to go to the next phase
+					// TODO []: let unit do their actions: attack, use items, run away
+					// TODO []: have a bool that will change from the action menu depending on the action
+					// TODO []: bool decides when to go to the next phase
 						// attack/support/defend/run
-					// TODO: action menu doesnt need to access bool, only set it
+					// TODO []: action menu doesnt need to access bool, only set it
 					actionMenu.gameObject.SetActive(true);
 					if (finishedActing) {
 						BattlePhase = BattlePhase.Battle;
@@ -233,9 +235,22 @@ public class BattleManager : MonoBehaviour {
 					//		 commands here as well.), item useage, Calculate damage/heals, running away.
 					if (!calculatingBattle) {
 						calculatingBattle = true;
-						GameObject target = currentUnit.CompareTag("Enemy") ? party.frontUnit : enemies[0];
-						int dmg = CalculateDamage(currentUnit, target);
-						TryDamage(dmg, target);
+						switch (currentActionType) {
+							case ActionType.Attack:
+								GameObject target = currentUnit.CompareTag("Enemy") ? party.frontUnit : enemies[0];
+								int dmg = CalculateDamage(currentUnit, target);
+								TryDamage(dmg, target);
+								break;
+							case ActionType.Support:
+								break;
+							case ActionType.Defend:
+								break;
+							case ActionType.Escape:
+								EndBattle(WinStatus.Escape);
+								break;
+							default:
+								throw new ArgumentOutOfRangeException();
+						}
 						BattlePhase = BattlePhase.Resolution;
 					}
 					break;
@@ -267,7 +282,7 @@ public class BattleManager : MonoBehaviour {
 		AddEnemiesToList();
 		// Init each characters rune bonuses
 		foreach(GameObject unit in units) {
-			CalculateRuneStats(unit);
+			CalculateRuneStats(unit.GetComponent<Character>());
 		}
 		numUnits = units.Count;
 		TurnState = TurnState.Init; 		// Turn initialization: calculate turn order, etc.
@@ -281,7 +296,7 @@ public class BattleManager : MonoBehaviour {
 		takingTurn = true;
 		TURN_COUNT++;
 		Debug.Log ("Turn " + TURN_COUNT);
-		currentUnit = turnQueue.Dequeue() as GameObject;
+		currentUnit = ((GameObject) turnQueue.Dequeue()).GetComponent<Character>();
 		// TODO: can insert check here for possible cutscenes during a battle.
 		Character unit = currentUnit.GetComponent<Character>();
 		Debug.Log("============= Begin Turn =============");
@@ -294,6 +309,10 @@ public class BattleManager : MonoBehaviour {
 	/**************************************************
 	 **************************************************
 	 **************************************************/
+	public void SetCurrentActionType(ActionType actionType) {
+		currentActionType = actionType;
+	}
+	
 	public void FinishAction() {
 		finishedActing = true;
 	}
@@ -360,14 +379,14 @@ public class BattleManager : MonoBehaviour {
 		}
 		return true;
 	}
-	private int CalculateDamage(GameObject src, GameObject dest) {
+	private int CalculateDamage(Character src, GameObject dest) {
 		Character 
-		source = src.GetComponent<Character> (),
+		source = src,
 		target = dest.GetComponent<Character> ();
 		Debug.Log (string.Format("{0}'s atk: {1}, {2}'s def: {3}", 
 			source.name, source.GetCurrentAtk(), target.name, target.GetCurrentDef()));
 		Debug.Log (string.Format("{0}'s attack element: {1}, {2} element: {3}", 
-			source.name, source.getCurrentBattleActions().getElement(), target.name, target.element));
+			source.name, source.GetCurrentBattleActions().getElement(), target.name, target.element));
 		// Calculate the current units rune bonuses
 		CalculateRuneStats (currentUnit);
 		int damage = Mathf.RoundToInt(
@@ -376,7 +395,7 @@ public class BattleManager : MonoBehaviour {
 			// Level compensation
 			* (1 + (source.currentLevel*2 - target.currentLevel) / 50)			
 			// Elemental multiplier
-			* ElementalAffinity.CalcElementalDamage(source.getCurrentBattleActions().getElement(),	
+			* ElementalAffinity.CalcElementalDamage(source.GetCurrentBattleActions().getElement(),	
 				target.element));  														
 		return damage;
 	}
@@ -403,7 +422,7 @@ public class BattleManager : MonoBehaviour {
 		}
 	}
 
-	private void CalculateRuneStats(GameObject currentUnit) {
+	private void CalculateRuneStats(Character currentUnit) {
 		RuneSlots slots = currentUnit.GetComponent<RuneSlots>();
 	}
 
@@ -420,5 +439,15 @@ public class BattleManager : MonoBehaviour {
 			GameObject target = y as GameObject;
 			return src.GetComponent<Character>().GetCurrentSpd() - target.GetComponent<Character>().GetCurrentSpd();
 		}
+	}
+	/**
+	 * gsetters
+	 */
+	public Character GetCurrentUnit() {
+		return currentUnit;
+	}
+	
+	public List<GameObject> GetEnemies() {
+		return enemies;
 	}
 }

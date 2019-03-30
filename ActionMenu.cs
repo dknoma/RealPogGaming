@@ -2,31 +2,56 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+//public enum 
 public class ActionMenu : MonoBehaviour {
 
-	public Image CurrentAction { get; private set; }
+	private Image currentActionImage;
 	
 	private readonly List<GameObject> actions = new List<GameObject>();
-	private MenuGraph<Image> testMenu;
+	private MenuGraph<GameObject> testMenu;
+	private MenuGraph<GameObject> enemies;
+//	private MenuGraph<Image> testMenu;
 	
+	// TODO: get current unit from battlemanager -> get actions from units battleaction list in Character -> 
+	//		 instantiate actions into menu
+
+	// TODO: action object -> action has action type; use state machine to determine how phases move
+	private GameObject currentBattleAction;
+	private BattleAction currentAction;
 	private Direction currentDirection;
 	private bool axisDown;
+	private bool inSubMenu;
 
 	private void OnEnable() {
 		foreach (Transform child in transform) {
 			Debug.Log(child.name);
 			actions.Add(child.gameObject);
 		}
-		Debug.Log("size: " + actions.Count);
-		testMenu = new MenuGraph<Image>(actions.Count, MenuType.Horizontal);
-		testMenu.InitMenuItems(new Image[actions.Count]);
-		for(int i = 0; i < actions.Count; i++) {
-			Image img = actions[i].GetComponent<Image>();
-			testMenu.AddItem(img, i);
-			testMenu.GetItem(i).color = Color.white;
+		int actionCount = actions.Count;
+		Debug.Log("size: " + actionCount);
+		testMenu = new MenuGraph<GameObject>(actionCount, MenuType.Horizontal);
+		testMenu.InitMenuItems(new GameObject[actionCount]);		
+//		testMenu = new MenuGraph<Image>(actions.Count, MenuType.Horizontal);
+//		testMenu.InitMenuItems(new Image[actions.Count]);
+		for(int i = 0; i < actionCount; i++) {
+//			Image img = actions[i].GetComponent<Image>();
+			testMenu.AddItem(actions[i], i);
+			testMenu.GetItem(i).GetComponent<Image>().color = Color.white;
+//			testMenu.AddItem(img, i);
+//			testMenu.GetItem(i).color = Color.white;
 		}
-		CurrentAction = testMenu.GetCurrentItem();
-		CurrentAction.color = Color.grey;
+//		currentActionImage = testMenu.GetCurrentItem();
+		currentBattleAction = testMenu.GetCurrentItem();
+		currentActionImage = currentBattleAction.GetComponent<Image>();
+		currentActionImage.color = Color.grey;
+		
+		// Get current enemy list. Useful for targeting enemies
+		int enemyCount = BattleManager.bm.GetEnemies().Count;
+		enemies = new MenuGraph<GameObject>(enemyCount, MenuType.Both);
+		enemies.InitMenuItems(new GameObject[enemyCount]);
+		for(int i = 0; i < enemyCount; i++) {
+			enemies.AddItem(BattleManager.bm.GetEnemies()[i], i);
+		}
 	}
 
 	private void Update() {
@@ -34,19 +59,21 @@ public class ActionMenu : MonoBehaviour {
 			GetAxisDown();
 //			NavigateActionMenu();
 		}
-		if (Input.GetButtonDown("Test") && CurrentAction.CompareTag("AttackAction")) {
+		if (Input.GetButtonDown("Test") && currentActionImage.CompareTag("AttackAction")) {
 			BattleManager.bm.BattlePhase = BattlePhase.Battle;
-		} else if (Input.GetButtonDown("Test") && CurrentAction.CompareTag("RunAction")) {
+		} else if (Input.GetButtonDown("Test") && currentActionImage.CompareTag("RunAction")) {
 			BattleManager.bm.EndBattle(WinStatus.Escape);
 		}
 	}
 	
 	public void NavigateMenu(Direction direction) {
 		Debug.Log("direction: " + direction);
-		testMenu.TraverseOptions((int) direction);
-		CurrentAction.color = Color.white; // Change previous action to white
-		CurrentAction = testMenu.GetCurrentItem();
-		CurrentAction.color = Color.grey; // Change current action to grey
+		testMenu.TraverseOptions(direction);
+		currentActionImage.color = Color.white; // Change previous action to white
+//		currentActionImage = testMenu.GetCurrentItem();
+		currentBattleAction = testMenu.GetCurrentItem();
+		currentActionImage = currentBattleAction.GetComponent<Image>();
+		currentActionImage.color = Color.grey; // Change current action to grey
 	}
 	
 	
@@ -74,7 +101,6 @@ public class ActionMenu : MonoBehaviour {
 			    !(Mathf.Abs(Input.GetAxisRaw("Vertical")) < Mathf.Epsilon)) return;
 //			Debug.Log("Reset axis down");
 			axisDown = false;
-
 			return;
 		}
 		if(Input.GetAxisRaw ("Horizontal") > 0) {

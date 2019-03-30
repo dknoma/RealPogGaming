@@ -12,18 +12,18 @@ public enum MenuType {
 
 public class MenuGraph<T> {
 
-
 	public int optionNum;
-	private MenuType menuType;
+	private readonly MenuType menuType;
 
 	// Init menu items via inspector, or add them in via code
-	[SerializeField]
 	private T[] menuItems;
-	private MenuNode[] menuNodes;
-	private int currentOptionIndex;
-	private int size;
-	private int width;
+	private readonly MenuNode[] menuNodes;
+	private readonly int size;
+	private readonly int width;
 	private int height;
+	private int currentOptionIndex;
+
+	private readonly bool symmetricalRectMenu;
 
 	public MenuGraph(int size, MenuType type) {
 		this.size = size;
@@ -31,14 +31,16 @@ public class MenuGraph<T> {
 		height = size;
 		menuType = type;
 		menuNodes = new MenuNode[size];
+		symmetricalRectMenu = false;
 	}
 
-	public MenuGraph(int width, int height, MenuType type) {
+	public MenuGraph(int width, int height) {
 		size = width * height;
 		this.width = width;
 		this.height = height;
-		menuType = type;
+		menuType = MenuType.Both;
 		menuNodes = new MenuNode[size];
+		symmetricalRectMenu = true;
 	}
 
 	public void InitMenuItems(T[] arr) {
@@ -58,7 +60,8 @@ public class MenuGraph<T> {
 	}
 
 	// Node based graph traversal for neighbor system
-	public void TraverseOptions(int direction) {
+	public void TraverseOptions(Direction direction) {
+		if (menuItems.Length == 1) return;
 		switch(menuType) {
 		case MenuType.Horizontal:
 			// If the node at the current index is null, create a new one
@@ -66,16 +69,15 @@ public class MenuGraph<T> {
 				menuNodes [currentOptionIndex] = new MenuNode (currentOptionIndex);
 			}
 			switch(direction){
-				case (int) Direction.Right:
+				case Direction.Right:
 					MenuNode rightNeighbor = menuNodes [currentOptionIndex].rightNeighbor;
 					if(rightNeighbor == null) {
 						int newNeighborIndex = (currentOptionIndex + 1) % size;
 						menuNodes [currentOptionIndex].index = currentOptionIndex;
 						// If the desired neighbor doesnt exist -> create it, else set using existing node
 						if (menuNodes [newNeighborIndex] == null) {
-							MenuNode newNode = new MenuNode (newNeighborIndex);
+							MenuNode newNode = new MenuNode(newNeighborIndex) {leftNeighbor = menuNodes[currentOptionIndex]};
 							// set the new nodes origin neighbor to this node
-							newNode.leftNeighbor = menuNodes [currentOptionIndex];
 							menuNodes [currentOptionIndex].rightNeighbor = newNode;
 							// Change current index and update the next node
 							currentOptionIndex = newNeighborIndex;
@@ -92,16 +94,15 @@ public class MenuGraph<T> {
 						currentOptionIndex = rightNeighbor.index;
 					}
 					break;
-				case (int) Direction.Left:
+				case Direction.Left:
 					MenuNode leftNeighbor = menuNodes [currentOptionIndex].leftNeighbor;
 					if(leftNeighbor == null) {
 						int newNeighborIndex = (currentOptionIndex + size - 1) % size;
 						menuNodes [currentOptionIndex].index = currentOptionIndex;
 						// If the desired neighbor doesnt exist -> create it, else set using existing node
 						if (menuNodes [newNeighborIndex] == null) {
-							MenuNode newNode = new MenuNode (newNeighborIndex);
+							MenuNode newNode = new MenuNode(newNeighborIndex) {rightNeighbor = menuNodes[currentOptionIndex]};
 							// set the new nodes origin neighbor to this node
-							newNode.rightNeighbor = menuNodes [currentOptionIndex];
 							menuNodes [currentOptionIndex].leftNeighbor = newNode;
 							// Change current index and update the next node
 							currentOptionIndex = newNeighborIndex;
@@ -126,16 +127,15 @@ public class MenuGraph<T> {
 				menuNodes [currentOptionIndex] = new MenuNode (currentOptionIndex);
 			}
 			switch(direction){
-				case (int) Direction.Down:
+				case Direction.Down:
 					MenuNode bottomNeighbor = menuNodes [currentOptionIndex].bottomNeighbor;
 					if(bottomNeighbor == null) {
 						int newNeighborIndex = (currentOptionIndex + 1) % size;
 						menuNodes [currentOptionIndex].index = currentOptionIndex;
 						// If the desired neighbor doesnt exist -> create it, else set using existing node
 						if (menuNodes [newNeighborIndex] == null) {
-							MenuNode newNode = new MenuNode (newNeighborIndex);
+							MenuNode newNode = new MenuNode(newNeighborIndex) {topNeighbor = menuNodes[currentOptionIndex]};
 							// set the new nodes origin neighbor to this node
-							newNode.topNeighbor = menuNodes [currentOptionIndex];
 							menuNodes [currentOptionIndex].bottomNeighbor = newNode;
 	//						this.menuNodes [this.currentOptionIndex].bottomNeighbor.topNeighbor = this.menuNodes [this.currentOptionIndex];
 							// Change current index and update the next node
@@ -153,16 +153,15 @@ public class MenuGraph<T> {
 						currentOptionIndex = bottomNeighbor.index;
 					}
 					break;
-				case (int) Direction.Up:
+				case Direction.Up:
 					MenuNode topNeighbor = menuNodes [currentOptionIndex].topNeighbor;
 					if(topNeighbor == null) {
 						int newNeighborIndex = (currentOptionIndex + size - 1) % size;
 						menuNodes [currentOptionIndex].index = currentOptionIndex;
 						// If the desired neighbor doesnt exist -> create it, else set using existing node
 						if (menuNodes [newNeighborIndex] == null) {
-							MenuNode newNode = new MenuNode (newNeighborIndex);
+							MenuNode newNode = new MenuNode(newNeighborIndex) {bottomNeighbor = menuNodes[currentOptionIndex]};
 							// set the new nodes origin neighbor to this node
-							newNode.bottomNeighbor = menuNodes [currentOptionIndex];
 							menuNodes [currentOptionIndex].topNeighbor = newNode;
 	//						this.menuNodes [this.currentOptionIndex].topNeighbor.bottomNeighbor = this.menuNodes [this.currentOptionIndex];
 							// Change current index and update the next node
@@ -188,118 +187,240 @@ public class MenuGraph<T> {
 			if(menuNodes [currentOptionIndex] == null) {
 				menuNodes [currentOptionIndex] = new MenuNode (currentOptionIndex);
 			}
-			switch(direction){
-				case (int) Direction.Right:
-					MenuNode rightNeighbor = menuNodes [currentOptionIndex].rightNeighbor;
-					if(rightNeighbor == null) {
-						int newNeighborIndex = CalculateMoveRight ();
-						menuNodes [currentOptionIndex].index = currentOptionIndex;
-						// If the desired neighbor doesnt exist -> create it, else set using existing node
-						if(menuNodes[newNeighborIndex] == null) {
-							MenuNode newNode = new MenuNode (newNeighborIndex);
-							// set the new nodes origin neighbor to this node
-							newNode.leftNeighbor = menuNodes [currentOptionIndex];
-							menuNodes [currentOptionIndex].rightNeighbor = newNode;
-	//						this.menuNodes [this.currentOptionIndex].rightNeighbor.leftNeighbor = this.menuNodes [this.currentOptionIndex];
-							// Change current index and update the next node
-							currentOptionIndex = newNeighborIndex;
-							menuNodes [currentOptionIndex] = newNode;
+
+			if (symmetricalRectMenu) {
+				switch (direction) {
+					case Direction.Right:
+						MenuNode rightNeighbor = menuNodes[currentOptionIndex].rightNeighbor;
+						if (rightNeighbor == null) {
+							int newNeighborIndex = CalculateMoveRight();
+							menuNodes[currentOptionIndex].index = currentOptionIndex;
+							// If the desired neighbor doesnt exist -> create it, else set using existing node
+							if (menuNodes[newNeighborIndex] == null) {
+								MenuNode newNode = new MenuNode(newNeighborIndex) {leftNeighbor = menuNodes[currentOptionIndex]};
+								// set the new nodes origin neighbor to this node
+								menuNodes[currentOptionIndex].rightNeighbor = newNode;
+								//						this.menuNodes [this.currentOptionIndex].rightNeighbor.leftNeighbor = this.menuNodes [this.currentOptionIndex];
+								// Change current index and update the next node
+								currentOptionIndex = newNeighborIndex;
+								menuNodes[currentOptionIndex] = newNode;
+							} else {
+								menuNodes[currentOptionIndex].rightNeighbor = menuNodes[newNeighborIndex];
+								menuNodes[currentOptionIndex].rightNeighbor.leftNeighbor =
+									menuNodes[currentOptionIndex];
+								// Change current index and update the next node
+								currentOptionIndex = newNeighborIndex;
+							}
 						} else {
-							menuNodes [currentOptionIndex].rightNeighbor = menuNodes[newNeighborIndex];
-							menuNodes [currentOptionIndex].rightNeighbor.leftNeighbor = menuNodes [currentOptionIndex];
-							// Change current index and update the next node
-							currentOptionIndex = newNeighborIndex;
+							// Set this nodes neighbor to the desired node, move index
+							if (menuNodes[currentOptionIndex].rightNeighbor.index < 0) {
+								menuNodes[currentOptionIndex].rightNeighbor = rightNeighbor;
+							}
+
+							currentOptionIndex = rightNeighbor.index;
 						}
-					} else {
-						// Set this nodes neighbor to the desired node, move index
-						if(menuNodes [currentOptionIndex].rightNeighbor.index < 0) {
-							menuNodes [currentOptionIndex].rightNeighbor = rightNeighbor;
-						}
-						currentOptionIndex = rightNeighbor.index;
-					}
-					break;
-				case (int) Direction.Left:
-					MenuNode leftNeighbor = menuNodes [currentOptionIndex].leftNeighbor;
-					if(leftNeighbor == null) {
-						int newNeighborIndex = CalculateMoveLeft ();
-						menuNodes [currentOptionIndex].index = currentOptionIndex;
-						// If the desired neighbor doesnt exist -> create it, else set using existing node
-						if(menuNodes[newNeighborIndex] == null) {
-							MenuNode newNode = new MenuNode (newNeighborIndex);
-							// set the new nodes origin neighbor to this node
-							newNode.rightNeighbor = menuNodes [currentOptionIndex];
-							menuNodes [currentOptionIndex].leftNeighbor = newNode;
-	//						this.menuNodes [this.currentOptionIndex].leftNeighbor.rightNeighbor = this.menuNodes [this.currentOptionIndex];
-							// Change current index and update the next node
-							currentOptionIndex = newNeighborIndex;
-							menuNodes [currentOptionIndex] = newNode;
+
+						break;
+					case Direction.Left:
+						MenuNode leftNeighbor = menuNodes[currentOptionIndex].leftNeighbor;
+						if (leftNeighbor == null) {
+							int newNeighborIndex = CalculateMoveLeft();
+							menuNodes[currentOptionIndex].index = currentOptionIndex;
+							// If the desired neighbor doesnt exist -> create it, else set using existing node
+							if (menuNodes[newNeighborIndex] == null) {
+								MenuNode newNode = new MenuNode(newNeighborIndex) {rightNeighbor = menuNodes[currentOptionIndex]};
+								// set the new nodes origin neighbor to this node
+								menuNodes[currentOptionIndex].leftNeighbor = newNode;
+								//						this.menuNodes [this.currentOptionIndex].leftNeighbor.rightNeighbor = this.menuNodes [this.currentOptionIndex];
+								// Change current index and update the next node
+								currentOptionIndex = newNeighborIndex;
+								menuNodes[currentOptionIndex] = newNode;
+							} else {
+								menuNodes[currentOptionIndex].leftNeighbor = menuNodes[newNeighborIndex];
+								menuNodes[currentOptionIndex].leftNeighbor.rightNeighbor =
+									menuNodes[currentOptionIndex];
+								// Change current index and update the next node
+								currentOptionIndex = newNeighborIndex;
+							}
 						} else {
-							menuNodes [currentOptionIndex].leftNeighbor = menuNodes[newNeighborIndex];
-							menuNodes [currentOptionIndex].leftNeighbor.rightNeighbor = menuNodes [currentOptionIndex];
-							// Change current index and update the next node
-							currentOptionIndex = newNeighborIndex;
+							// Set this nodes neighbor to the desired node, move index
+							menuNodes[currentOptionIndex].leftNeighbor = leftNeighbor;
+							currentOptionIndex = leftNeighbor.index;
 						}
-					} else {
-						// Set this nodes neighbor to the desired node, move index
-						menuNodes [currentOptionIndex].leftNeighbor = leftNeighbor;
-						currentOptionIndex = leftNeighbor.index;
-					}
-					break;
-				case (int) Direction.Down:
-					MenuNode bottomNeighbor = menuNodes [currentOptionIndex].bottomNeighbor;
-					if(bottomNeighbor == null) {
-						int newNeighborIndex = (currentOptionIndex + width) % size;
-						menuNodes [currentOptionIndex].index = currentOptionIndex;
-						// If the desired neighbor doesnt exist -> create it, else set using existing node
-						if(menuNodes[newNeighborIndex] == null) {
-							MenuNode newNode = new MenuNode (newNeighborIndex);
-							// set the new nodes origin neighbor to this node
-							newNode.topNeighbor = menuNodes [currentOptionIndex];
-							menuNodes [currentOptionIndex].bottomNeighbor = newNode;
-	//						this.menuNodes [this.currentOptionIndex].bottomNeighbor.topNeighbor = this.menuNodes [this.currentOptionIndex];
-							// Change current index and update the next node
-							currentOptionIndex = newNeighborIndex;
-							menuNodes [currentOptionIndex] = newNode;
+
+						break;
+					case Direction.Down:
+						MenuNode bottomNeighbor = menuNodes[currentOptionIndex].bottomNeighbor;
+						if (bottomNeighbor == null) {
+							int newNeighborIndex = (currentOptionIndex + width) % size;
+							menuNodes[currentOptionIndex].index = currentOptionIndex;
+							// If the desired neighbor doesnt exist -> create it, else set using existing node
+							if (menuNodes[newNeighborIndex] == null) {
+								MenuNode newNode = new MenuNode(newNeighborIndex) {topNeighbor = menuNodes[currentOptionIndex]};
+								// set the new nodes origin neighbor to this node
+								menuNodes[currentOptionIndex].bottomNeighbor = newNode;
+								//						this.menuNodes [this.currentOptionIndex].bottomNeighbor.topNeighbor = this.menuNodes [this.currentOptionIndex];
+								// Change current index and update the next node
+								currentOptionIndex = newNeighborIndex;
+								menuNodes[currentOptionIndex] = newNode;
+							} else {
+								menuNodes[currentOptionIndex].bottomNeighbor = menuNodes[newNeighborIndex];
+								menuNodes[currentOptionIndex].bottomNeighbor.topNeighbor =
+									menuNodes[currentOptionIndex];
+								currentOptionIndex = newNeighborIndex;
+							}
 						} else {
-							menuNodes [currentOptionIndex].bottomNeighbor = menuNodes[newNeighborIndex];
-							menuNodes [currentOptionIndex].bottomNeighbor.topNeighbor = menuNodes [currentOptionIndex];
-							currentOptionIndex = newNeighborIndex;
+							// Set this nodes neighbor to the desired node, move index
+							menuNodes[currentOptionIndex].bottomNeighbor = bottomNeighbor;
+							currentOptionIndex = bottomNeighbor.index;
 						}
-					} else {
-						// Set this nodes neighbor to the desired node, move index
-						menuNodes [currentOptionIndex].bottomNeighbor = bottomNeighbor;
-						currentOptionIndex = bottomNeighbor.index;
-					}
-					break;
-				case (int) Direction.Up:
-					MenuNode topNeighbor = menuNodes [currentOptionIndex].topNeighbor;
-					if(topNeighbor == null) {
-						int newNeighborIndex = (currentOptionIndex + (size-width)) % size;
-						menuNodes [currentOptionIndex].index = currentOptionIndex;
-						// If the desired neighbor doesnt exist -> create it, else set using existing node
-						if(menuNodes[newNeighborIndex] == null) {
-							MenuNode newNode = new MenuNode (newNeighborIndex);
-							// set the new nodes origin neighbor to this node
-							newNode.bottomNeighbor = menuNodes [currentOptionIndex];
-							menuNodes [currentOptionIndex].topNeighbor = newNode;
-	//						this.menuNodes [this.currentOptionIndex].topNeighbor.bottomNeighbor = this.menuNodes [this.currentOptionIndex];
-							// Change current index and update the next node
-							currentOptionIndex = newNeighborIndex;
-							menuNodes [currentOptionIndex] = newNode;
+
+						break;
+					case Direction.Up:
+						MenuNode topNeighbor = menuNodes[currentOptionIndex].topNeighbor;
+						if (topNeighbor == null) {
+							int newNeighborIndex = (currentOptionIndex + (size - width)) % size;
+							menuNodes[currentOptionIndex].index = currentOptionIndex;
+							// If the desired neighbor doesnt exist -> create it, else set using existing node
+							if (menuNodes[newNeighborIndex] == null) {
+								MenuNode newNode = new MenuNode(newNeighborIndex) {bottomNeighbor = menuNodes[currentOptionIndex]};
+								// set the new nodes origin neighbor to this node
+								menuNodes[currentOptionIndex].topNeighbor = newNode;
+								//						this.menuNodes [this.currentOptionIndex].topNeighbor.bottomNeighbor = this.menuNodes [this.currentOptionIndex];
+								// Change current index and update the next node
+								currentOptionIndex = newNeighborIndex;
+								menuNodes[currentOptionIndex] = newNode;
+							} else {
+								menuNodes[currentOptionIndex].topNeighbor = menuNodes[newNeighborIndex];
+								menuNodes[currentOptionIndex].topNeighbor.bottomNeighbor =
+									menuNodes[currentOptionIndex];
+								// Change current index and update the next node
+								currentOptionIndex = newNeighborIndex;
+							}
 						} else {
-							menuNodes [currentOptionIndex].topNeighbor = menuNodes[newNeighborIndex];
-							menuNodes [currentOptionIndex].topNeighbor.bottomNeighbor = menuNodes [currentOptionIndex];
-							// Change current index and update the next node
-							currentOptionIndex = newNeighborIndex;
+							// Set this nodes neighbor to the desired node, move index
+							menuNodes[currentOptionIndex].topNeighbor = topNeighbor;
+							currentOptionIndex = topNeighbor.index;
 						}
-					} else {
-						// Set this nodes neighbor to the desired node, move index
-						menuNodes [currentOptionIndex].topNeighbor = topNeighbor;
-						currentOptionIndex = topNeighbor.index;
-					}
-					break;
+
+						break;
+				}
+				break;
+			} else {
+				// Menu is NOT a n x m menu, is only a one dimensional menu.
+				switch (direction) {
+					case Direction.Right:
+						MenuNode rightNeighbor = menuNodes[currentOptionIndex].rightNeighbor;
+						if (rightNeighbor == null) {
+							int newNeighborIndex = (currentOptionIndex + 1) % size;
+							menuNodes[currentOptionIndex].index = currentOptionIndex;
+							// If the desired neighbor doesnt exist -> create it, else set using existing node
+							if (menuNodes[newNeighborIndex] == null) {
+								MenuNode newNode = new MenuNode(newNeighborIndex) {leftNeighbor = menuNodes[currentOptionIndex]};
+								// set the new nodes origin neighbor to this node
+								menuNodes[currentOptionIndex].rightNeighbor = newNode;
+								// Change current index and update the next node
+								currentOptionIndex = newNeighborIndex;
+								menuNodes[currentOptionIndex] = newNode;
+							} else {
+								menuNodes[currentOptionIndex].rightNeighbor = menuNodes[newNeighborIndex];
+								menuNodes[currentOptionIndex].rightNeighbor.leftNeighbor =
+									menuNodes[currentOptionIndex];
+								// Change current index and update the next node
+								currentOptionIndex = newNeighborIndex;
+							}
+						} else {
+							// Set this nodes neighbor to the desired node, move index
+							menuNodes[currentOptionIndex].rightNeighbor = rightNeighbor;
+							currentOptionIndex = rightNeighbor.index;
+						}
+
+						break;
+					case Direction.Left:
+						MenuNode leftNeighbor = menuNodes[currentOptionIndex].leftNeighbor;
+						if (leftNeighbor == null) {
+							int newNeighborIndex = (currentOptionIndex + size - 1) % size;
+							menuNodes[currentOptionIndex].index = currentOptionIndex;
+							// If the desired neighbor doesnt exist -> create it, else set using existing node
+							if (menuNodes[newNeighborIndex] == null) {
+								MenuNode newNode = new MenuNode(newNeighborIndex) {rightNeighbor = menuNodes[currentOptionIndex]};
+								// set the new nodes origin neighbor to this node
+								menuNodes[currentOptionIndex].leftNeighbor = newNode;
+								// Change current index and update the next node
+								currentOptionIndex = newNeighborIndex;
+								menuNodes[currentOptionIndex] = newNode;
+							} else {
+								menuNodes[currentOptionIndex].leftNeighbor = menuNodes[newNeighborIndex];
+								menuNodes[currentOptionIndex].leftNeighbor.rightNeighbor =
+									menuNodes[currentOptionIndex];
+								// Change current index and update the next node
+								currentOptionIndex = newNeighborIndex;
+							}
+						} else {
+							// Set this nodes neighbor to the desired node, move index
+							menuNodes[currentOptionIndex].leftNeighbor = leftNeighbor;
+							currentOptionIndex = leftNeighbor.index;
+						}
+
+						break;
+					case Direction.Down:
+						MenuNode bottomNeighbor = menuNodes[currentOptionIndex].bottomNeighbor;
+						if (bottomNeighbor == null) {
+							int newNeighborIndex = (currentOptionIndex + 1) % size;
+							menuNodes[currentOptionIndex].index = currentOptionIndex;
+							// If the desired neighbor doesnt exist -> create it, else set using existing node
+							if (menuNodes[newNeighborIndex] == null) {
+								MenuNode newNode = new MenuNode(newNeighborIndex) {topNeighbor = menuNodes[currentOptionIndex]};
+								// set the new nodes origin neighbor to this node
+								menuNodes[currentOptionIndex].bottomNeighbor = newNode;
+								//						this.menuNodes [this.currentOptionIndex].bottomNeighbor.topNeighbor = this.menuNodes [this.currentOptionIndex];
+								// Change current index and update the next node
+								currentOptionIndex = newNeighborIndex;
+								menuNodes[currentOptionIndex] = newNode;
+							} else {
+								menuNodes[currentOptionIndex].bottomNeighbor = menuNodes[newNeighborIndex];
+								menuNodes[currentOptionIndex].bottomNeighbor.topNeighbor =
+									menuNodes[currentOptionIndex];
+								// Change current index and update the next node
+								currentOptionIndex = newNeighborIndex;
+							}
+						} else {
+							// Set this nodes neighbor to the desired node, move index
+							menuNodes[currentOptionIndex].bottomNeighbor = bottomNeighbor;
+							currentOptionIndex = bottomNeighbor.index;
+						}
+
+						break;
+					case Direction.Up:
+						MenuNode topNeighbor = menuNodes[currentOptionIndex].topNeighbor;
+						if (topNeighbor == null) {
+							int newNeighborIndex = (currentOptionIndex + size - 1) % size;
+							menuNodes[currentOptionIndex].index = currentOptionIndex;
+							// If the desired neighbor doesnt exist -> create it, else set using existing node
+							if (menuNodes[newNeighborIndex] == null) {
+								MenuNode newNode = new MenuNode(newNeighborIndex) {bottomNeighbor = menuNodes[currentOptionIndex]};
+								// set the new nodes origin neighbor to this node
+								menuNodes[currentOptionIndex].topNeighbor = newNode;
+								//						this.menuNodes [this.currentOptionIndex].topNeighbor.bottomNeighbor = this.menuNodes [this.currentOptionIndex];
+								// Change current index and update the next node
+								currentOptionIndex = newNeighborIndex;
+								menuNodes[currentOptionIndex] = newNode;
+							} else {
+								menuNodes[currentOptionIndex].topNeighbor = menuNodes[newNeighborIndex];
+								menuNodes[currentOptionIndex].topNeighbor.bottomNeighbor =
+									menuNodes[currentOptionIndex];
+								// Change current index and update the next node
+								currentOptionIndex = newNeighborIndex;
+							}
+						} else {
+							// Set this nodes neighbor to the desired node, move index
+							menuNodes[currentOptionIndex].topNeighbor = topNeighbor;
+							currentOptionIndex = topNeighbor.index;
+						}
+						break;
+				}
+				break;
 			}
-			break;
 		default:
 			throw new ArgumentOutOfRangeException();
 		}

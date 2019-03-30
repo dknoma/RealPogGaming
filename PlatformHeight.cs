@@ -26,7 +26,7 @@ public class PlatformHeight : MonoBehaviour {
 	private Vector3 platformPosition;
 	private Vector3 bottomOfPlatform;
 
-	void OnEnable()  {
+	private void OnEnable()  {
 		// If platform doesn't have a fixed height, calculate the height from the bottom of the platform
 		if (!fixedHeight) {
 			groundContactFilter.SetLayerMask(LayerMask.GetMask("Ground"));
@@ -66,7 +66,7 @@ public class PlatformHeight : MonoBehaviour {
 	}
 
 	// Draw debug ray to show where the raycast is originating from
-	void Update() {
+	private void Update() {
 		if (debugLines) {
 			Vector3 lineOrigin = new Vector3(bottomOfPlatform.x + 0.5f, bottomOfPlatform.y, bottomOfPlatform.y);
 			if (!checkUpCollider) {

@@ -80,7 +80,7 @@ public class CharacterStats : StatusEffects {
 	protected const int SPDDOWN = (int) StatChange.SpeedDown;
 	protected const int HPDESTRUCTION = (int) StatChange.HPDestruct;
 
-	void Awake() {
+	private void Awake() {
 		expUntilLevelUp = CalcNextLevel();
 		currentHP = maxHP;
 		currentAtk = baseAtk;

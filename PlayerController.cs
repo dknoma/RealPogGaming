@@ -27,7 +27,7 @@ public enum Direction {
  * 		- If slow, make Dictionaries that hold components (platform info, etc) and get from ids
 */			 
 [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Local")]
-public class PlayerController : TopDownBehavior {
+public class PlayerController : MonoBehaviour {
 
 	[Header("Direction Variables")]
 	public Direction facingDirection = Direction.Down;

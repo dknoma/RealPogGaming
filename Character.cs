@@ -6,24 +6,37 @@ using UnityEngine;
 [RequireComponent(typeof(BattleActions))]
 public class Character : CharacterStats, IComparable {
 
+//	public List<ScriptableObject> battleActionsList = new List<ScriptableObject>();
+	public BattleAction basicAttackAction;
+	public BattleAction supportAction;
+//	public BattleAction specialAction;
+	public BattleAction defendAction;
+	public BattleAction escapeAction;
+	
+	private Dictionary<ActionType, ScriptableObject> battleActions = new Dictionary<ActionType, ScriptableObject>();
+	
 	private BattleActions currentBattleActions;
-	private int partySlot = 0;
+	private int partySlot;
 
 	// Use this for initialization
-	void Start () {
-		this.currentBattleActions = GetComponent<BattleActions>();
+	private void Start () {
+		currentBattleActions = GetComponent<BattleActions>();
 		Weapon weapon = GetComponentInChildren<Weapon> ();
 		if(weapon != null) {
-			this.currentBattleActions.setElement (weapon.weaponElement);
+			currentBattleActions.setElement (weapon.weaponElement);
 		}
+//		battleActions[ActionType.Attack]
+//		if (battleActionsList.Count > 0) {
+//				
+//		}
 	}
 
-	public BattleActions getCurrentBattleActions() {
-		return this.currentBattleActions;
+	public BattleActions GetCurrentBattleActions() {
+		return currentBattleActions;
 	}
 
-	public void setPartySlot(int slot) {
-		this.partySlot = slot;
+	public void SetPartySlot(int slot) {
+		partySlot = slot;
 	}
 
 	/**
@@ -35,17 +48,16 @@ public class Character : CharacterStats, IComparable {
 		} 
 		Character otherCharacter = obj as Character;
 		if(otherCharacter != null) {
-			return this.currentSpd - otherCharacter.currentSpd;
-		} else {
-			throw new ArgumentException("Object is not a Character...");
+			return currentSpd - otherCharacter.currentSpd;
 		}
+		throw new ArgumentException("Object is not a Character...");
 	}
 
-	public bool canCharacterAct() {
-		return this.canAct;
+	public bool CanCharacterAct() {
+		return canAct;
 	}
 		
-	public int getPartySlot() {
-		return this.partySlot;
+	public int GetPartySlot() {
+		return partySlot;
 	}
 }
