@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+//[CreateAssetMenu(fileName = "Equipment", menuName = "CharacterEquipement/Equipment", order = 1)]
 public class CharacterEquipement : MonoBehaviour {
-
-
 	/** Advanced Equipment ****************************************************************/
 	// If wearing overall, then no chest or bottom; If Chest and/or bottom, then no overall
 //	enum AdvArmorSlots { Head, Overall, Chest, Bottom, Shoes, Gloves };
@@ -14,25 +14,33 @@ public class CharacterEquipement : MonoBehaviour {
 
 	/** Simple Equipment ******************************************************************/
 	// Armor encompasses chest, bottom, shoes
-	public enum ArmorSlots { Head, Armor, Gloves };
-	public enum WeaponSlots { MainHand, OffHand };
-	public enum AccessorySlots { Slot1, Slot2 };
+	public enum ArmorSlots { Head, Armor, Gloves }
+	public enum WeaponSlots { MainHand, OffHand }
+	public enum AccessorySlots { Slot1, Slot2 }
 	/**************************************************************************************/
 
-	public GameObject headgear;
-	public GameObject armor;
-	public GameObject gloves;
-	public GameObject weapon;
-	public GameObject pendant;
-	public GameObject ring;
-	public GameObject earring;
+	[SerializeField] private Armor headgear;
+	[SerializeField] private Armor armor;
+	[SerializeField] private Armor gloves;
+	[SerializeField] private Weapon weapon;
+	[SerializeField] private Accessory pendant;
+	[SerializeField] private Accessory ring;
+	[SerializeField] private Accessory earring;
 
-	private int totalHP = 0;
-	private int totalAtk = 0;
-	private int totalDef = 0;
-	private int totalSpd = 0;
-	private int runeHP = 0;
-	private int runeAtk = 0;
-	private int runeDef = 0;
-	private int runeSpd = 0;
+	private int totalHP;
+	private int totalAtk;
+	private int totalDef;
+	private int totalSpd;
+	private int runeHP;
+	private int runeAtk;
+	private int runeDef;
+	private int runeSpd;
+
+	public void SetWeapon(Weapon newWeapon) {
+		weapon = newWeapon;
+	}
+	
+	public Weapon GetWeapon() {
+		return weapon;
+	}
 }

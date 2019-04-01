@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(BattleActions))]
+//[RequireComponent(typeof(BattleActions))]
 public class Character : CharacterStats, IComparable {
 
 //	public List<ScriptableObject> battleActionsList = new List<ScriptableObject>();
@@ -15,24 +15,40 @@ public class Character : CharacterStats, IComparable {
 	
 	private Dictionary<ActionType, ScriptableObject> battleActions = new Dictionary<ActionType, ScriptableObject>();
 	
-	private BattleActions currentBattleActions;
+	private BattleAction currentBattleAction;
 	private int partySlot;
 
+	private CharacterEquipement equipement;
+	private Weapon weapon;
+	private Element attackElement;
+
 	// Use this for initialization
-	private void Start () {
-		currentBattleActions = GetComponent<BattleActions>();
-		Weapon weapon = GetComponentInChildren<Weapon> ();
-		if(weapon != null) {
-			currentBattleActions.setElement (weapon.weaponElement);
-		}
+	private void OnEnable () {
+		currentBattleAction = basicAttackAction;
+		equipement = gameObject.GetComponent<CharacterEquipement>();
+		Debug.LogFormat("{0} weapon {1}", name, equipement.GetWeapon());
+		SetWeapon(equipement.GetWeapon());
+		basicAttackAction.SetWeapon(weapon);
+//		WeaponValues weaponValues = GetComponentInChildren<WeaponValues> ();
+//		if(weaponValues != null) {
+//			currentBattleAction.SetWeapon(weaponValues);
+////			currentBattleAction.SetWeaponType(weaponValues.weaponType);
+////			currentBattleAction.SetElement (weaponValues.weaponElement);
+//		}
 //		battleActions[ActionType.Attack]
 //		if (battleActionsList.Count > 0) {
 //				
 //		}
 	}
 
-	public BattleActions GetCurrentBattleActions() {
-		return currentBattleActions;
+	public void SetWeapon(Weapon newWeapon) {
+		weapon = newWeapon;
+		attackElement = weapon.GetWeaponElement();
+		basicAttackAction.SetWeapon(weapon);
+	}
+
+	public Element GetAttackElement() {
+		return attackElement;
 	}
 
 	public void SetPartySlot(int slot) {

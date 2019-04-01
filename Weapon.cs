@@ -1,33 +1,53 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public enum HandType { 
 	TwoHanded, 
 	OneHanded 
-};
+}
 
 public enum WeaponType { 
 	GreatSword, 
 	Sword, 
 	Dagger, 
+	Rod,
 	Staff, 
-	Bow 
-};
+	Bow,
+	Spear
+}
 
 public enum WeaponSlot { 
 	MainHand, 
 	OffHand 
-};
-
-[ExecuteInEditMode]
+}
 public class Weapon : MonoBehaviour {
 
-
-	// Can choose stats for the weapon in the inspector.
-	public Element weaponElement = Element.None;
-	public HandType handType;
-	public WeaponType weaponType;
-	public WeaponSlot weaponSlot;
-	public int atk = 0;
+//	[SerializeField] protected WeaponValues values;	// could use weaponvalues to store updated values and json
+	[SerializeField] protected Element weaponElement = Element.None;
+	private HandType handType;
+	[SerializeField] protected WeaponType weaponType;
+	private WeaponSlot weaponSlot;
+	[SerializeField] protected int hp;
+	[SerializeField] protected int atk;
+	[SerializeField] protected int def;
+	[SerializeField] protected int spd;
+	[SerializeField] protected bool basicAttack;
+	[SerializeField] protected bool altAttack;
+	[SerializeField] protected bool specialAttack;
+	
+	private void OnEnable() {
+		Debug.LogFormat("{0}", name);
+	}
+	
+	public void SetWeaponType(WeaponType type) {
+		weaponType = type; 
+	}
+	public void SetWeaponElement(Element element) {
+		weaponElement = element;
+	}
+	public WeaponType GetWeaponType() {
+		return weaponType; 
+	}
+	public Element GetWeaponElement() {
+		return weaponElement;
+	}
 }

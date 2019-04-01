@@ -241,12 +241,16 @@ public class BattleManager : MonoBehaviour {
 								int dmg = CalculateDamage(currentUnit, target);
 								TryDamage(dmg, target);
 								break;
-							case ActionType.Support:
+							case ActionType.Heal:
 								break;
 							case ActionType.Defend:
 								break;
 							case ActionType.Escape:
 								EndBattle(WinStatus.Escape);
+								break;
+							case ActionType.Revive:
+								break;
+							case ActionType.Buff:
 								break;
 							default:
 								throw new ArgumentOutOfRangeException();
@@ -386,7 +390,7 @@ public class BattleManager : MonoBehaviour {
 		Debug.Log (string.Format("{0}'s atk: {1}, {2}'s def: {3}", 
 			source.name, source.GetCurrentAtk(), target.name, target.GetCurrentDef()));
 		Debug.Log (string.Format("{0}'s attack element: {1}, {2} element: {3}", 
-			source.name, source.GetCurrentBattleActions().getElement(), target.name, target.element));
+			source.name, source.GetAttackElement(), target.name, target.element));
 		// Calculate the current units rune bonuses
 		CalculateRuneStats (currentUnit);
 		int damage = Mathf.RoundToInt(
@@ -395,7 +399,7 @@ public class BattleManager : MonoBehaviour {
 			// Level compensation
 			* (1 + (source.currentLevel*2 - target.currentLevel) / 50)			
 			// Elemental multiplier
-			* ElementalAffinity.CalcElementalDamage(source.GetCurrentBattleActions().getElement(),	
+			* ElementalAffinity.CalcElementalDamage(source.GetAttackElement(),	
 				target.element));  														
 		return damage;
 	}

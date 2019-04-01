@@ -2,15 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum MenuingOption {
-	Action,
-	Submenu
+public enum MenuOption {
+	Attack,
+	Support,
+	Special,
+	Defend,
+	Escape
 }
 
 public enum ActionType {
 	Attack,
-	Support,
-//	Special,
+	Heal,
+	Revive,
+	Buff,
 	Defend,
 	Escape
 }
@@ -21,10 +25,17 @@ public enum ActionType {
 /// </summary>
 public class BattleAction : ScriptableObject {
 
-	protected ActionType actionType;
-	protected virtual void DoAction() {}
-
-	public ActionType GetActionType() {
-		return actionType;
+	protected MenuOption menuOption;
+	public virtual void DoAction() {}
+	public virtual void SetWeapon(Weapon weapon) {}
+	public MenuOption GetMenuOptionType() {
+		return menuOption;
+	}
+	public virtual WeaponType GetWeaponType() {
+		return WeaponType.Sword;
+	}
+	
+	public virtual Element GetElement() {
+		return Element.None;
 	}
 }

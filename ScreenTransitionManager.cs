@@ -12,7 +12,7 @@ public enum Transition {
 	Bubble
 }
 
-[ExecuteInEditMode]
+//[ExecuteInEditMode]
 public class ScreenTransitionManager : MonoBehaviour {
 
 	public static ScreenTransitionManager transitionManager;

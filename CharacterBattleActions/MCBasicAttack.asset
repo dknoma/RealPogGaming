@@ -12,4 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d35f99195030f7a41999b8eee2a4a31b, type: 3}
   m_Name: MCBasicAttack
   m_EditorClassIdentifier: 
-  weaponType: 0
+  attackAImage: {fileID: 7644282902382778174, guid: 88c8bde2168f82040ac8f0f6822818e1,
+    type: 3}
+  attackBImage: {fileID: 3122534689900117860, guid: f7ef9ab8d4b7ce2428b984927cd84a46,
+    type: 3}
