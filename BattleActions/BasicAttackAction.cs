@@ -47,7 +47,7 @@ public class BasicAttackAction : BattleAction {
 	private const string SPEAR_A = "Heart Piercer";
 	private const string SPEAR_B = "Armor Piercer";
 
-	private MenuingOption menuingOption;
+//	private MenuingOption menuingOption;
 	
 	private MenuGraph<GameObject> attackSelectMenu;
 

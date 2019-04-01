@@ -47,6 +47,9 @@ public class Character : CharacterStats, IComparable {
 		Debug.LogFormat("ASDASD {0}", battleActions[option].name);
 		return battleActions[option];
 	}
+	public Weapon GetWeapon() {
+		return weapon;
+	}
 
 	public void SetWeapon(Weapon newWeapon) {
 		weapon = newWeapon;

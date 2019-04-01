@@ -237,9 +237,11 @@ public class BattleManager : MonoBehaviour {
 						calculatingBattle = true;
 						switch (currentActionType) {
 							case ActionType.Attack:
-								GameObject target = currentUnit.CompareTag("Enemy") ? party.frontUnit : enemies[0];
-								int dmg = CalculateDamage(currentUnit, target);
-								TryDamage(dmg, target);
+//								GameObject target = currentUnit.CompareTag("Enemy") ? party.frontUnit : enemies[0];
+//								int dmg = CalculateDamage(currentUnit, target);
+//								TryDamage(dmg, target);
+								int dmg = CalculateDamage(currentUnit, currentTarget);
+								TryDamage(dmg, currentTarget);
 								break;
 							case ActionType.Heal:
 								break;
@@ -445,10 +447,18 @@ public class BattleManager : MonoBehaviour {
 		}
 	}
 	/**
-	 * gsetters
+	 * GETSET
 	 */
 	public Character GetCurrentUnit() {
 		return currentUnit;
+	}
+	
+	public void SetCurrentTarget(GameObject target) {
+		currentTarget = target;
+	}
+	
+	public GameObject GetCurrentTarget() {
+		return currentTarget;
 	}
 	
 	public List<GameObject> GetEnemies() {

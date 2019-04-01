@@ -59,6 +59,10 @@ public class MenuGraph<T> {
 		menuItems[index] = item;
 	}
 
+	public MenuType GetMenuType() {
+		return menuType;
+	}
+
 	// Node based graph traversal for neighbor system
 	public void TraverseOptions(Direction direction) {
 		if (menuItems.Length == 1) return;
@@ -431,7 +435,7 @@ public class MenuGraph<T> {
 		int firstRowIndex = GetFirstIndexOfRow ();
 		return currentOptionIndex < (width-1 + firstRowIndex) 
 			// if not the last option in the row
-			? ((currentOptionIndex + (((int)Mathf.Floor (currentOptionIndex / width)+1)*firstRowIndex) + 1) % (width + firstRowIndex))
+			? ((currentOptionIndex + ((int)Mathf.Floor (currentOptionIndex / width)+1)*firstRowIndex) + 1) % (width + firstRowIndex)
 			// else
 				: ((currentOptionIndex + firstRowIndex + 1) % (width + firstRowIndex));
 	}
@@ -440,14 +444,14 @@ public class MenuGraph<T> {
 		int firstRowIndex = GetFirstIndexOfRow ();
 		return currentOptionIndex == 0 || currentOptionIndex > firstRowIndex
 			// if not the first option in the row
-			? (currentOptionIndex + (width-1 + firstRowIndex)) % (width + firstRowIndex)
+			? (currentOptionIndex + width-1 + firstRowIndex) % (width + firstRowIndex)
 			// else
-				: ((((int)Mathf.Floor (currentOptionIndex / width)+1)*firstRowIndex) - 1) % (width + firstRowIndex);
+				: (((int)Mathf.Floor (currentOptionIndex / width)+1)*firstRowIndex - 1) % (width + firstRowIndex);
 	}
 
 	// Gets the first index in the current options row
 	private int GetFirstIndexOfRow() {
-		int first = (width * (int)Mathf.Floor (currentOptionIndex / width));
+		int first = width * (int)Mathf.Floor (currentOptionIndex / width);
 		return first;
 	}
 
@@ -460,7 +464,7 @@ public class MenuGraph<T> {
 	// Inner node class that determines an items index and its neighbors
 	private class MenuNode {
 
-		public int index = -1;
+		public int index;
 		public MenuNode topNeighbor;
 		public MenuNode bottomNeighbor;
 		public MenuNode leftNeighbor;
