@@ -17,7 +17,7 @@ public class EscapeAction : BattleAction {
 		menuOption = MenuOption.Escape;
 	}
 
-	public override void DoAction() {
+	public override void DoAction(bool selectingOption) {
 		BattleManager.bm.EndBattle(WinStatus.Escape);
 	}
 }

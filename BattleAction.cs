@@ -26,7 +26,7 @@ public enum ActionType {
 public class BattleAction : ScriptableObject {
 
 	protected MenuOption menuOption;
-	public virtual void DoAction() {}
+	public virtual void DoAction(bool selectingOption) {}
 	public virtual void SetWeapon(Weapon weapon) {}
 	public MenuOption GetMenuOptionType() {
 		return menuOption;

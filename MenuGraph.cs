@@ -424,7 +424,7 @@ public class MenuGraph<T> {
 		default:
 			throw new ArgumentOutOfRangeException();
 		}
-		Debug.Log ("node: " + menuNodes[currentOptionIndex]);
+//		Debug.Log ("node: " + menuNodes[currentOptionIndex]);
 	}
 
 	private int CalculateMoveRight() {

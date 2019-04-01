@@ -25,16 +25,16 @@ public class ActionMenu : MonoBehaviour {
 	
 	private Image currentActionImage;
 	
-	private readonly List<GameObject> actions = new List<GameObject>();
-	private MenuGraph<GameObject> testMenu;
+	private readonly List<OptionContainer> actions = new List<OptionContainer>();
+	private MenuGraph<OptionContainer> testMenu;
 	private MenuGraph<GameObject> enemies;
-	private MenuGraph<GameObject> currentMenu;
+	private MenuGraph<OptionContainer> currentMenu;
 	
 	// TODO: get current unit from battlemanager -> get actions from units battleaction list in Character -> 
 	//		 instantiate actions into menu
 
 	// TODO: action object -> action has action type; use state machine to determine how phases move
-	private GameObject currentBattleAction;
+	private GameObject currentBattleOption;
 	private BattleAction currentAction;		// This caches the current action so if action is canceled, goes back to main menu
 	private Direction currentDirection;
 	private bool axisDown;
@@ -44,6 +44,8 @@ public class ActionMenu : MonoBehaviour {
 	private GameObject runOption;
 
 	private void OnEnable() {
+		if (!BattleManager.bm.InBattle()) return;
+		// Only instantiate objects when in battle
 		if (attackoption == null) {
 			Debug.Log("Instantiate attack option.");
 			attackoption = Instantiate(attackOptionPrefab, transform, false);
@@ -52,26 +54,24 @@ public class ActionMenu : MonoBehaviour {
 			runOption = Instantiate(runOptionPrefab, transform, false);
 		}
 		// TODO: make options objects rather than images. This way they can render position and sort order correctly
-		actions.Add(attackoption);
-		actions.Add(runOption);
+		Character currentUnit = BattleManager.bm.GetCurrentUnit();
+		actions.Add(new OptionContainer(attackoption, currentUnit.GetAction(MenuOption.Attack)));	// Add attack option render and action to the list
+		actions.Add(new OptionContainer(runOption, currentUnit.GetAction(MenuOption.Escape))); 		// Add escape option render and action to the list
 		int actionCount = actions.Count;
 		Debug.Log("action menu size: " + actionCount);
-		testMenu = new MenuGraph<GameObject>(actionCount, MenuType.Horizontal);
-		testMenu.InitMenuItems(new GameObject[actionCount]);		
-//		testMenu = new MenuGraph<Image>(actions.Count, MenuType.Horizontal);
-//		testMenu.InitMenuItems(new Image[actions.Count]);
+		testMenu = new MenuGraph<OptionContainer>(actionCount, MenuType.Horizontal);
+		testMenu.InitMenuItems(new OptionContainer[actionCount]);
 		for(int i = 0; i < actionCount; i++) {
 //			Image img = actions[i].GetComponent<Image>();
 			testMenu.AddItem(actions[i], i);
-			testMenu.GetItem(i).GetComponent<Image>().color = Color.grey;
-//			testMenu.AddItem(img, i);
-//			testMenu.GetItem(i).color = Color.white;
+			testMenu.GetItem(i).OptionRender().GetComponent<Image>().color = Color.grey;
 		}
 		currentMenu = testMenu;
-//		currentActionImage = testMenu.GetCurrentItem();
-		currentBattleAction = testMenu.GetCurrentItem();
-		currentActionImage = currentBattleAction.GetComponent<Image>();
+		currentBattleOption = testMenu.GetCurrentItem().OptionRender();
+		currentActionImage = currentBattleOption.GetComponent<Image>();
 		currentActionImage.color = Color.white;
+
+		currentAction = currentMenu.GetCurrentItem().Action();
 		
 		// Get current enemy list. Useful for targeting enemies
 		int enemyCount = BattleManager.bm.GetEnemies().Count;
@@ -85,11 +85,11 @@ public class ActionMenu : MonoBehaviour {
 	private void Update() {
 		if (BattleManager.bm.InBattle() && BattleManager.bm.BattlePhase == BattlePhase.Action) {
 			GetAxisDown();
+			if (Input.GetButtonDown("Test")) {
+				currentAction.DoAction(true); // TODO: actually navigate through menu, let it go to next submenu and still nagivate
+			}
 		}
 
-		if (Input.GetButtonDown("Test")) {
-			currentAction.DoAction();	// TODO: actually navigate through menu, let it go to next submenu and still nagivate
-		}
 //		if (Input.GetButtonDown("Test") && currentActionImage.CompareTag("AttackAction")) {
 //			BattleManager.bm.BattlePhase = BattlePhase.Battle;
 //		} else if (Input.GetButtonDown("Test") && currentActionImage.CompareTag("RunAction")) {
@@ -98,12 +98,14 @@ public class ActionMenu : MonoBehaviour {
 	}
 	
 	public void NavigateMenu(Direction direction) {
-		Debug.Log("direction: " + direction);
+//		Debug.Log("direction: " + direction);
 		currentMenu.TraverseOptions(direction);
 		currentActionImage.color = Color.grey; // Change previous action to white
 //		currentActionImage = testMenu.GetCurrentItem();
-		currentBattleAction = currentMenu.GetCurrentItem();
-		currentActionImage = currentBattleAction.GetComponent<Image>();
+		Debug.Log("asdasda: " + currentMenu.GetCurrentItem().Action().name);
+		currentAction = currentMenu.GetCurrentItem().Action();
+		currentBattleOption = currentMenu.GetCurrentItem().OptionRender();
+		currentActionImage = currentBattleOption.GetComponent<Image>();
 		currentActionImage.color = Color.white; // Change current action to grey
 	}
 
@@ -133,6 +135,25 @@ public class ActionMenu : MonoBehaviour {
 		} else {
 //			Debug.Log("Reset axis down");
 			axisDown = false;
+		}
+	}
+
+	private class OptionContainer {
+
+		private readonly GameObject optionRender;
+		private readonly BattleAction action;
+
+		public OptionContainer(GameObject obj, BattleAction act) {
+			optionRender = obj;
+			action = act;
+		}
+
+		public GameObject OptionRender() {
+			return optionRender;
+		}
+
+		public BattleAction Action() {
+			return action;
 		}
 	}
 }

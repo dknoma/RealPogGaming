@@ -11,13 +11,14 @@ using UnityEngine.UI;
 [CreateAssetMenu(fileName = "BasicAttackAction", menuName = "ScriptableObjects/BasicAttackAction", order = 1)]
 public class BasicAttackAction : BattleAction {
 	public enum OptionState {
+		OpenedOption,
 		SelectAction,
 		SelectTarget,			// If aoe, no target selection is needed
 		DoAction,
 		CancelAction
 	}
 
-	private OptionState currentOption;
+	private OptionState currentOptionState;
 	
 //	public ActionType action;
 	private Weapon weapon;
@@ -60,19 +61,22 @@ public class BasicAttackAction : BattleAction {
 //		player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
 	}
 
-	public override void DoAction() {
+	public override void DoAction(bool selectingOption) {
 		InitAttackOptions();
 //		menuingOption = MenuingOption.Submenu;
-		switch (currentOption) {
+		switch (currentOptionState) {
+			case OptionState.OpenedOption:
+				currentOptionState = OptionState.SelectAction;
+				break;
 			case OptionState.SelectAction:
 				// TODO: navigate attack select menu
 				//		 if select an attack -> to select target
 				//		 else if cancel
-				SelectAction();
+				SelectAction(selectingOption);
 				break;
 			case OptionState.SelectTarget:
 				// TODO: navigate target select menu
-				currentOption = OptionState.DoAction;
+				currentOptionState = OptionState.DoAction;
 				break;
 			case OptionState.DoAction:
 				DoAttack();
@@ -110,6 +114,7 @@ public class BasicAttackAction : BattleAction {
 			case WeaponType.Bow:
 				attackAName = BOW_A;
 				attackBName = BOW_B;
+				
 				break;
 			case WeaponType.Spear:
 				attackAName = SPEAR_A;
@@ -120,8 +125,12 @@ public class BasicAttackAction : BattleAction {
 		}
 	}
 
-	private void SelectAction() {
-		currentOption = OptionState.SelectTarget;
+	private void SelectAction(bool selectingOption) {
+		if (selectingOption) {
+			currentOptionState = OptionState.SelectTarget;
+		} else {
+			Debug.Log("Navigating sub menu.");
+		}
 	}
 
 	private void DoAttack() {
@@ -181,6 +190,6 @@ public class BasicAttackAction : BattleAction {
 		return element;
 	}
 	public OptionState GetOptionState() {
-		return currentOption;
+		return currentOptionState;
 	}
 }

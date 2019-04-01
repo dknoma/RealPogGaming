@@ -13,7 +13,7 @@ public class Character : CharacterStats, IComparable {
 	public BattleAction defendAction;
 	public BattleAction escapeAction;
 	
-	private Dictionary<ActionType, ScriptableObject> battleActions = new Dictionary<ActionType, ScriptableObject>();
+	private Dictionary<MenuOption, BattleAction> battleActions = new Dictionary<MenuOption, BattleAction>();
 	
 	private BattleAction currentBattleAction;
 	private int partySlot;
@@ -29,6 +29,8 @@ public class Character : CharacterStats, IComparable {
 		Debug.LogFormat("{0} weapon {1}", name, equipement.GetWeapon());
 		SetWeapon(equipement.GetWeapon());
 		basicAttackAction.SetWeapon(weapon);
+		battleActions.Add(MenuOption.Attack, basicAttackAction);
+		battleActions.Add(MenuOption.Escape, escapeAction);
 //		WeaponValues weaponValues = GetComponentInChildren<WeaponValues> ();
 //		if(weaponValues != null) {
 //			currentBattleAction.SetWeapon(weaponValues);
@@ -39,6 +41,11 @@ public class Character : CharacterStats, IComparable {
 //		if (battleActionsList.Count > 0) {
 //				
 //		}
+	}
+
+	public BattleAction GetAction(MenuOption option) {
+		Debug.LogFormat("ASDASD {0}", battleActions[option].name);
+		return battleActions[option];
 	}
 
 	public void SetWeapon(Weapon newWeapon) {
