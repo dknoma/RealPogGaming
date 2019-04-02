@@ -7,7 +7,7 @@ public class Rune : MonoBehaviour {
 
 	public enum Type { Skill, Stat };
 	public enum StatType { Flat, Percent };
-	public enum Stat { HP, Atk, Def, Spd };
+	public enum Stat { Hp, Atk, Def, Spd };
 
 	public Type runeType;
 	public StatType statType;

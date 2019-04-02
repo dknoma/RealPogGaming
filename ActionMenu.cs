@@ -2,19 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 public enum MenuState {
 	Main,			// Main menu: where player selects what option they wanna take
 	SubMenu,
-	Target,
+	Target
 }
 
 public enum MenuOptionState {
-	Nil,
-	BasicAttack, // Player gets taken to a submenu where they choose which attack they want
-	Support,     // Player gets taken to a submenu where they choose another action
-	Escape,      // Player tries to escape the battle
+	BasicAttack, 	// Player gets taken to a submenu where they choose which attack they want
+	Support,     	// Player gets taken to a submenu where they choose another action
+	Escape      	// Player tries to escape the battle
 }
 
 public enum SubMenuState {
@@ -27,50 +26,46 @@ public enum SubMenuState {
 	All				// Choose any unit to target
 }
 
+public enum AttackOption {
+	A,
+	B
+}
+
+public enum ActionType {
+	Attack,
+	Heal,
+	Revive,
+	Buff,
+	Defend,
+	Escape
+}
+
 public class ActionMenu : MonoBehaviour {
 
-//	public enum ActionState {
-//		BasicAttack,
-//		Support,
-//		Special,
-//		Defend,
-//		Escape,
-//		Cancel
-//	}
-	
 	public GameObject cursor;
 	
 	public GameObject attackOptionPrefab;
 	public GameObject runOptionPrefab;
 
 	private Image currentActionImage;
-	
-//	private readonly List<ActionCategoryContainer> actions = new List<ActionCategoryContainer>();
-//	private MenuGraph<ActionCategoryContainer> mainMenu;
-//	private MenuGraph<GameObject> enemies;
-//	private MenuGraph<ActionCategoryContainer> currentMenu;
+	private WeaponType currentUnitWeaponType;
 
 	private List<ActionCategoryContainer> actions;
 	private MenuGraph<ActionCategoryContainer> mainMenu;
 	private MenuGraph<GameObject> enemies;
+	private MenuGraph<object> basicAttacks;
 	private MenuGraph<object> currentSubMenu;
 	private MenuGraph<GameObject> currentTargets;
 	
-	private MenuGraph<object> basicAttacks;
-	
-	// TODO: get current unit from battlemanager -> get actions from units battleaction list in Character -> 
-	//		 instantiate actions into menu
-
-	// TODO: action object -> action has action type; use state machine to determine how phases move
 	private MenuState menuState;
 	private MenuOptionState menuOptionState;
 	private SubMenuState subMenuState;
 	private GameObject currentBattleOptionRender;
-	private Direction currentDirection;
+//	private Direction currentDirection;
 	private bool axisDown;
 	private bool inSubMenu;
 
-	private GameObject attackoption;
+	private GameObject attackOption;
 	private GameObject runOption;
 	
 	private string attackAName = "";
@@ -90,12 +85,53 @@ public class ActionMenu : MonoBehaviour {
 	private const string SPEAR_A = "Heart Piercer";
 	private const string SPEAR_B = "Armor Piercer";
 
-	private void OnEnable() {
-		if (!BattleManager.bm.InBattle()) return;
+//	private void OnEnable() {
+//		// Only instantiate objects when in battle
+//		if (!BattleManager.bm.InBattle()) return;
+//		switch (BattleManager.bm.GetCurrentUnit().GetAffiliation()) {
+//			case Affiliation.Ally:
+//				Debug.Log("Current unit is an ally.");
+//				InitMenu();
+//				break;
+//			case Affiliation.Enemy:
+//				Debug.Log("Current unit is an enemy.");
+//				List<GameObject> allies = BattleManager.bm.GetAllies();
+//				int randomTarget = Random.Range(0, allies.Count);
+//				BattleManager.bm.SetCurrentTarget(allies[randomTarget]);
+//				BattleManager.bm.SetCurrentActionType(ActionType.Attack);
+//				BattleManager.bm.SetBattlePhase(BattlePhase.Battle);
+//				break;
+//			default:
+//				throw new ArgumentOutOfRangeException();
+//		}
+//	}
+
+	public void TryInitMenu() {
 		// Only instantiate objects when in battle
-		if (attackoption == null) {
+		if (!BattleManager.bm.InBattle()) return;
+		switch (BattleManager.bm.GetCurrentUnit().GetAffiliation()) {
+			case Affiliation.Ally:
+				Debug.Log("Current unit is an ally.");
+				InitMenu();
+				break;
+			case Affiliation.Enemy:
+				Debug.Log("Current unit is an enemy.");
+				List<GameObject> allies = BattleManager.bm.GetAllies();
+				int randomTarget = Random.Range(0, allies.Count);
+				BattleManager.bm.SetCurrentTarget(allies[randomTarget]);
+				BattleManager.bm.SetCurrentActionType(ActionType.Attack);
+				BattleManager.bm.SetBattlePhase(BattlePhase.Battle);
+				break;
+			default:
+				throw new ArgumentOutOfRangeException();
+		}
+	}
+
+	private void InitMenu() {
+		Debug.Log("Init action menu.");
+		if (attackOption == null) {
 			Debug.Log("Instantiate attack option.");
-			attackoption = Instantiate(attackOptionPrefab, transform, false);
+			attackOption = Instantiate(attackOptionPrefab, transform, false);
 		}
 		if (runOption == null) {
 			runOption = Instantiate(runOptionPrefab, transform, false);
@@ -103,7 +139,7 @@ public class ActionMenu : MonoBehaviour {
 		// TODO: make options objects rather than images. This way they can render position and sort order correctly
 //		Character currentUnit = BattleManager.bm.GetCurrentUnit();
 		actions = new List<ActionCategoryContainer> {
-					new ActionCategoryContainer(attackoption, MenuOptionState.BasicAttack), // Add attack option render and action to the list
+					new ActionCategoryContainer(attackOption, MenuOptionState.BasicAttack), // Add attack option render and action to the list
 					new ActionCategoryContainer(runOption, MenuOptionState.Escape) 			// Add escape option render and action to the list
 				};
 
@@ -130,20 +166,18 @@ public class ActionMenu : MonoBehaviour {
 		for(int i = 0; i < enemyCount; i++) {
 			enemies.AddItem(BattleManager.bm.GetEnemies()[i], i);
 		}
-		InitAttackOptions();
+		currentUnitWeaponType = BattleManager.bm.GetCurrentUnit().GetWeapon().GetWeaponType();
+		InitAttackOptions(currentUnitWeaponType);
+		Debug.Log("Unit's weapon ====== " + currentUnitWeaponType);
 		basicAttacks = new MenuGraph<object>(2, MenuType.Vertical);
 		basicAttacks.InitMenuItems(new object[2]);
-		basicAttacks.AddItem(attackAName, 0);
-		basicAttacks.AddItem(attackBName, 1);
+		basicAttacks.AddItem(new Attack(AttackOption.A, attackAName), 0);
+		basicAttacks.AddItem(new Attack(AttackOption.B, attackBName), 1);
 	}
 
 	private void Update() {
-		if (BattleManager.bm.InBattle() && BattleManager.bm.BattlePhase == BattlePhase.Action) {
+		if (BattleManager.bm.InBattle() && BattleManager.bm.GetBattlePhase() == BattlePhase.Action) {
 			UseMenu();
-//			GetAxisDown();
-//			if (Input.GetButtonDown("Test")) {
-////				currentAction.DoAction(true); // TODO: actually navigate through menu, let it go to next submenu and still nagivate
-//			}
 		}
 
 //		if (Input.GetButtonDown("Test") && currentActionImage.CompareTag("AttackAction")) {
@@ -170,11 +204,11 @@ public class ActionMenu : MonoBehaviour {
 		} else if (menuType == typeof(GameObject)) {
 			menu.TraverseOptions(direction);
 			GameObject currentTarget = menu.GetCurrentItem() as GameObject;
-			Debug.LogFormat("Current target = {0}", currentTarget.name);
+			Debug.LogFormat("Current target: {0}", currentTarget.name);
 		} else if (menuType == typeof(object)) {
 			menu.TraverseOptions(direction);
-			string currentAttack = menu.GetCurrentItem() as string;
-			Debug.LogFormat("Current attack = {0}", currentAttack);
+			Attack currentAttack = menu.GetCurrentItem() as Attack;
+			Debug.LogFormat("Current attack: {0}", currentAttack.Name());
 		}
 //		Debug.Log("direction: " + direction);
 ////		currentMenu.TraverseOptions(direction);
@@ -191,7 +225,7 @@ public class ActionMenu : MonoBehaviour {
 
 	private void GetAxisDown<T>(MenuGraph<T> menu) {
 		if (axisDown) {
-			currentDirection = Direction.Null;
+//			currentDirection = Direction.Null;
 			if (!(Mathf.Abs(Input.GetAxisRaw("Horizontal")) < Mathf.Epsilon) ||
 			    !(Mathf.Abs(Input.GetAxisRaw("Vertical")) < Mathf.Epsilon)) return;
 //			Debug.Log("Reset axis down");
@@ -235,14 +269,14 @@ public class ActionMenu : MonoBehaviour {
 	private void UseMenu() {
 		switch (menuState) {
 			case MenuState.Main:
-				Debug.Log("Choosing menu category.");
+//				Debug.Log("Choosing menu category.");
 				GetAxisDown(mainMenu);
 				if (Input.GetButtonDown("Test")) {
 					ChangeMenu();
 				}
 				break;
 			case MenuState.SubMenu:
-				Debug.Log("Choosing sub menu category.");
+//				Debug.Log("Choosing sub menu category.");
 				GetAxisDown(currentSubMenu);
 				if (Input.GetButtonDown("Test")) {
 					DoMenuAction();
@@ -250,7 +284,7 @@ public class ActionMenu : MonoBehaviour {
 				// TODO: If hit cancel, go back to main
 				break;
 			case MenuState.Target:
-				Debug.Log("Choosing target.");
+//				Debug.Log("Choosing target.");
 				GetAxisDown(currentTargets);
 				if (Input.GetButtonDown("Test")) {
 					ChooseTarget();
@@ -264,11 +298,10 @@ public class ActionMenu : MonoBehaviour {
 	private void ChangeMenu() {
 		Debug.LogFormat("menu option state: {0}", menuOptionState);
 		switch (menuOptionState) {
-			case MenuOptionState.Nil:
-				break;
 			case MenuOptionState.BasicAttack:
 				Debug.Log("Chose  basic attack.");
 				currentSubMenu = basicAttacks;
+				Debug.LogFormat("Current attack: {0}", currentSubMenu.GetCurrentItem() as string);
 				menuState = MenuState.SubMenu;
 				break;
 			case MenuOptionState.Support:
@@ -284,11 +317,10 @@ public class ActionMenu : MonoBehaviour {
 
 	private void DoMenuAction() {
 		switch (menuOptionState) {
-			case MenuOptionState.Nil:
-				break;
 			case MenuOptionState.BasicAttack:
 				Debug.Log("Choosing target.");
 				currentTargets = enemies;
+				Debug.LogFormat("current taget: {0}",currentTargets.GetCurrentItem().name);
 				menuState = MenuState.Target;
 				subMenuState = SubMenuState.BasicAttack;
 				// Current targets = enemies
@@ -317,10 +349,12 @@ public class ActionMenu : MonoBehaviour {
 			case SubMenuState.Nil:
 				break;
 			case SubMenuState.BasicAttack:
+				Attack currentAttack = currentSubMenu.GetCurrentItem() as Attack;
+				Debug.LogFormat("Using {0}", currentAttack.Name());
 				BattleManager.bm.SetCurrentTarget(currentTargets.GetCurrentItem());
-				BattleManager.bm.BattlePhase = BattlePhase.Battle;
+				BattleManager.bm.SetBattlePhase(BattlePhase.Battle);
 				subMenuState = SubMenuState.Nil;
-				menuOptionState = MenuOptionState.Nil;
+				menuOptionState = MenuOptionState.BasicAttack;
 				menuState = MenuState.Main;
 				break;
 			case SubMenuState.Support:
@@ -337,9 +371,30 @@ public class ActionMenu : MonoBehaviour {
 				throw new ArgumentOutOfRangeException();
 		}
 	}
+
+//	private void DoAttack() {
+//		switch (currentUnitWeaponType) {
+//			case WeaponType.GreatSword:
+//				break;
+//			case WeaponType.Sword:
+//				break;
+//			case WeaponType.Dagger:
+//				break;
+//			case WeaponType.Rod:
+//				break;
+//			case WeaponType.Staff:
+//				break;
+//			case WeaponType.Bow:
+//				break;
+//			case WeaponType.Spear:
+//				break;
+//			default:
+//				throw new ArgumentOutOfRangeException();
+//		}
+//	}
 	
-	private void InitAttackOptions() {
-		switch (BattleManager.bm.GetCurrentUnit().GetWeapon().GetWeaponType()) {
+	private void InitAttackOptions(WeaponType type) {
+		switch (type) {
 			case WeaponType.GreatSword:
 				attackAName = GREATSWORD_A;
 				attackBName = GREATSWORD_B;
@@ -422,6 +477,25 @@ public class ActionMenu : MonoBehaviour {
 
 		public MenuOptionState MenuOptionState() {
 			return menuOptionState;
+		}
+	}
+
+	private class Attack {
+
+		private readonly AttackOption attackOption;
+		private readonly string name;
+
+		public Attack(AttackOption atk, string name) {
+			attackOption = atk;
+			this.name = name;
+		}
+
+		public AttackOption Option() {
+			return attackOption;
+		}
+
+		public string Name() {
+			return name;
 		}
 	}
 }

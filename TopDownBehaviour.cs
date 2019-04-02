@@ -5,7 +5,7 @@ using UnityEngine;
 public class TopDownBehavior : MonoBehaviour {
 
 
-	protected virtual void OnKinematicStayTD(ContactFilter2D contactFilter) {
+	protected virtual void OnKinematicStayTd(ContactFilter2D contactFilter) {
 
 	}
 

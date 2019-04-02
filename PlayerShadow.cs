@@ -31,14 +31,14 @@ public class PlayerShadow : MonoBehaviour {
 	private ContactFilter2D boundsContactFilter;
 	
 	// Platform physics
-	private RaycastHit2D[] pResultsUp = new RaycastHit2D[2];
+//	private RaycastHit2D[] pResultsUp = new RaycastHit2D[2];
 	private RaycastHit2D[] pResultsDown = new RaycastHit2D[2];
-	private RaycastHit2D[] pResultsRight = new RaycastHit2D[2];
-	private RaycastHit2D[] pResultsLeft  = new RaycastHit2D[2];
-	private RaycastHit2D[] pResultsUpRight = new RaycastHit2D[2];
-	private RaycastHit2D[] pResultsUpLeft = new RaycastHit2D[2];
-	private RaycastHit2D[] pResultsDownRight = new RaycastHit2D[2];
-	private RaycastHit2D[] pResultsDownLeft = new RaycastHit2D[2];
+//	private RaycastHit2D[] pResultsRight = new RaycastHit2D[2];
+//	private RaycastHit2D[] pResultsLeft  = new RaycastHit2D[2];
+//	private RaycastHit2D[] pResultsUpRight = new RaycastHit2D[2];
+//	private RaycastHit2D[] pResultsUpLeft = new RaycastHit2D[2];
+//	private RaycastHit2D[] pResultsDownRight = new RaycastHit2D[2];
+//	private RaycastHit2D[] pResultsDownLeft = new RaycastHit2D[2];
 	
 	private void Awake() {
 		int baseMask = LayerMask.GetMask("Base");

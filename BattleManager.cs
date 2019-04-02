@@ -49,18 +49,21 @@ public class BattleManager : MonoBehaviour {
 	
 	public static BattleManager bm;
 	
-	private static int TURN_COUNT;
-	
-	public BattleState BattleState { get; set; }
-	public TurnState TurnState { get; set; }
-	public BattlePhase BattlePhase { get; set; }
-	public WinStatus WinStatus { get; set; }
+	private static int _turnCount;
+
+	private BattleState BattleState { get; set; }
+	private TurnState TurnState { get; set; }
+	private BattlePhase BattlePhase { get; set; }
+	private WinStatus WinStatus { get; set; }
 
 	private ActionType currentActionType;
+
+	[SerializeField] private GameObject battleCanvasPrefab;
+	private GameObject battleCanvas;
 	
 	// Queue used for determining which unit goes when.
 	private Queue turnQueue = new Queue();
-	private Queue turnQueueUI = new Queue();
+	private Queue turnQueueUi = new Queue();
 	private Party party;
 	// List of units to be part of the battle
 	private List<GameObject> units = new List<GameObject>();
@@ -77,6 +80,7 @@ public class BattleManager : MonoBehaviour {
 	private bool calculatingBattle;
 	private bool resolvingTurn;
 	private bool inCutscene;
+	private bool menuActivated;
 
 	private bool inBattle;
 	private bool directionIsPressed;
@@ -94,7 +98,7 @@ public class BattleManager : MonoBehaviour {
 
 	private bool axisDown;
 
-	private GameObject testMenu;
+//	private GameObject testMenu;
 	private ActionMenu actionMenu;	// Get options from units Character component
 	//private int currentOption = 0;
 
@@ -116,10 +120,9 @@ public class BattleManager : MonoBehaviour {
 	}
 
 	private void Start() {
-		testMenu = GameObject.FindGameObjectWithTag("TestMenu");
-		actionMenu = testMenu.GetComponentInChildren<ActionMenu>();
-		testMenu.SetActive(false);
-		actionMenu.gameObject.SetActive(false);
+//		testMenu = GameObject.FindGameObjectWithTag("TestMenu");
+//		actionMenu = testMenu.GetComponentInChildren<ActionMenu>();
+//		testMenu.SetActive(false);
 	}
 
 
@@ -172,7 +175,8 @@ public class BattleManager : MonoBehaviour {
 				allies = new List<GameObject>();
 				enemies = new List<GameObject>();
 				Debug.Log("Ending battle.");
-				testMenu.SetActive(false);
+				actionMenu.gameObject.SetActive(false);
+				Destroy(battleCanvas);
 				break;
 			default:
 				throw new ArgumentOutOfRangeException();
@@ -215,20 +219,23 @@ public class BattleManager : MonoBehaviour {
 					break;
 				case BattlePhase.Status:
 					finishedActing = false;
+					menuActivated = false;
 					// TODO: check what actions can take if any
 					Debug.Log("Checking" + currentUnit.name + "'s status.");
 					BattlePhase = BattlePhase.Action;
 					break;
 				case BattlePhase.Action:
 					// TODO []: let unit do their actions: attack, use items, run away
-					// TODO []: have a bool that will change from the action menu depending on the action
-					// TODO []: bool decides when to go to the next phase
-						// attack/support/defend/run
-					// TODO []: action menu doesnt need to access bool, only set it
-					actionMenu.gameObject.SetActive(true);
-					if (finishedActing) {
-						BattlePhase = BattlePhase.Battle;
+					// TODO [x]: have a bool that will change from the action menu depending on the action
+					if (!menuActivated) {
+						menuActivated = true;
+						actionMenu.gameObject.SetActive(true);
+						actionMenu.TryInitMenu();
 					}
+
+//					if (finishedActing) {
+//						BattlePhase = BattlePhase.Battle;
+//					}
 					break;
 				case BattlePhase.Battle:
 					// TODO: resolve the unit's action: attacking(action commands for bonus dmg), healing(possible action
@@ -266,6 +273,7 @@ public class BattleManager : MonoBehaviour {
 						resolvingTurn = true;
 						currentUnit.GetComponent<Character>().ResolveStatusAfflictions();
 					}
+					actionMenu.gameObject.SetActive(false);
 					BattlePhase = BattlePhase.Nil;
 					TurnState = TurnState.End; // End turn
 					break;
@@ -280,7 +288,7 @@ public class BattleManager : MonoBehaviour {
 	// Use this for initialization
 	private void InitBattle () {
 		// Initialize battle settings
-		TURN_COUNT = 0;
+		_turnCount = 0;
 		units = new List<GameObject> ();
 		turnQueue = new Queue ();
 		// Add all units involved in the battle to the list
@@ -293,21 +301,30 @@ public class BattleManager : MonoBehaviour {
 		numUnits = units.Count;
 		TurnState = TurnState.Init; 		// Turn initialization: calculate turn order, etc.
 		Debug.Log ("number of units: " + numUnits);
+		if (battleCanvas == null) {
+			battleCanvas = Instantiate(battleCanvasPrefab);
+			battleCanvas.GetComponent<Canvas>().worldCamera = Camera.main;
+//			battleCanvas.worldCamera = Camera.main;
+			actionMenu = battleCanvas.GetComponentInChildren<ActionMenu>();
+		}
+//		actionMenu.gameObject.SetActive(false);
 		BattleState = BattleState.Ongoing;	// Go ahead and start the battle
-		testMenu.SetActive(true);
+//		testMenu.SetActive(true);
 	}
 	
 	private void StartTurn() {
 		// Keep this round going until all units finish their turns
 		takingTurn = true;
-		TURN_COUNT++;
-		Debug.Log ("Turn " + TURN_COUNT);
+		_turnCount++;
+		Debug.Log ("Turn " + _turnCount);
 		currentUnit = ((GameObject) turnQueue.Dequeue()).GetComponent<Character>();
 		// TODO: can insert check here for possible cutscenes during a battle.
 		Character unit = currentUnit.GetComponent<Character>();
 		Debug.Log("============= Begin Turn =============");
 		Debug.Log(string.Format("Name: {0}, HP: {1}, exp until level up: {2}",
-		                        currentUnit.name, unit.GetCurrentHP(), unit.expUntilLevelUp));
+		                        currentUnit.name, unit.GetCurrentHp(), unit.expUntilLevelUp));
+//		actionMenu.gameObject.SetActive(true);
+//		actionMenu.TryInitMenu();
 		BattlePhase = BattlePhase.Status;	// The start of the units turn
 		TurnState = TurnState.Ongoing;		// Go ahead and start the turns
 	}
@@ -368,9 +385,9 @@ public class BattleManager : MonoBehaviour {
 	private bool TryDamage(int dmg, GameObject target) {
 		// TODO: Check if target can be damaged.
 		Debug.Log(string.Format("\t{0} dealt {1} damage to {2}", currentUnit.name, dmg, target.name));
-		target.GetComponent<Character>().ModifyHP(-dmg);
-		Debug.Log(string.Format("current HP: {0}", target.GetComponent<Character>().GetCurrentHP()));
-		if(target.GetComponent<Character>().GetCurrentHP() <= 0) {
+		target.GetComponent<Character>().ModifyHp(-dmg);
+		Debug.Log(string.Format("current HP: {0}", target.GetComponent<Character>().GetCurrentHp()));
+		if(target.GetComponent<Character>().GetCurrentHp() <= 0) {
 			// Remove unit from the list if no more HP
 			units.Remove(target);
 			// TODO: if party member, make incapacitated: can be revived
@@ -417,14 +434,14 @@ public class BattleManager : MonoBehaviour {
 	private void CalculatePriority(bool fastestFirst) {
 		// Sor the units based on speed
 		if (fastestFirst) {
-			Sorting.descendingMergeSort (units, new CompareCharactersBySpeed ());
+			Sorting.DescendingMergeSort (units, new CompareCharactersBySpeed ());
 		} else {
-			Sorting.mergeSort (units, new CompareCharactersBySpeed ());
+			Sorting.MergeSort (units, new CompareCharactersBySpeed ());
 		}
 		// Add unit to the queue
 		for(int i = 0; i < units.Count; i++) {
 			turnQueue.Enqueue(units[i]);
-			turnQueueUI.Enqueue(units[i]);
+			turnQueueUi.Enqueue(units[i]);
 		}
 	}
 
@@ -461,7 +478,19 @@ public class BattleManager : MonoBehaviour {
 		return currentTarget;
 	}
 	
+	public List<GameObject> GetAllies() {
+		return allies;
+	}
+	
 	public List<GameObject> GetEnemies() {
 		return enemies;
+	}
+	
+	public BattlePhase GetBattlePhase() {
+		return BattlePhase;
+	}
+	
+	public void SetBattlePhase(BattlePhase phase) {
+		BattlePhase = phase;
 	}
 }

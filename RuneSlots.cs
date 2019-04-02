@@ -12,7 +12,7 @@ public class RuneSlots : MonoBehaviour {
 	[SerializeField]
 	private GameObject[] runes = new GameObject[(int)Slots.Stat4 + 1];
 
-	public int totalRuneHP;
+	public int totalRuneHp;
 	public int totalRuneAtk;
 	public int totalRuneDef;
 	public int totalRuneSpd;
@@ -23,8 +23,8 @@ public class RuneSlots : MonoBehaviour {
 				Rune rune = runes[i].GetComponent<Rune>();
 				Rune.Stat stat = rune.whichStat;
 				switch (stat) {
-					case Rune.Stat.HP:
-						totalRuneHP += rune.statCount;
+					case Rune.Stat.Hp:
+						totalRuneHp += rune.statCount;
 						break;
 					case Rune.Stat.Atk:
 						totalRuneAtk += rune.statCount;

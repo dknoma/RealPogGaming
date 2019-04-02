@@ -76,10 +76,10 @@ namespace UnityEditor
 			
 		public void OnEnable()
 		{
-			if (tile.m_TilingRules == null)
-				tile.m_TilingRules = new List<RuleTile.TilingRule>();
+			if (tile.mTilingRules == null)
+				tile.mTilingRules = new List<RuleTile.TilingRule>();
 
-			m_ReorderableList = new ReorderableList(tile.m_TilingRules, typeof(RuleTile.TilingRule), true, true, true, true);
+			m_ReorderableList = new ReorderableList(tile.mTilingRules, typeof(RuleTile.TilingRule), true, true, true, true);
 			m_ReorderableList.drawHeaderCallback = OnDrawHeader;
 			m_ReorderableList.drawElementCallback = OnDrawElement;
 			m_ReorderableList.elementHeightCallback = GetElementHeight;
@@ -93,14 +93,14 @@ namespace UnityEditor
 
 		private float GetElementHeight(int index)
 		{
-			if (tile.m_TilingRules != null && tile.m_TilingRules.Count > 0)
+			if (tile.mTilingRules != null && tile.mTilingRules.Count > 0)
 			{
-				switch (tile.m_TilingRules[index].m_Output)
+				switch (tile.mTilingRules[index].mOutput)
 				{
 					case RuleTile.TilingRule.OutputSprite.Random:
-						return k_DefaultElementHeight + k_SingleLineHeight*(tile.m_TilingRules[index].m_Sprites.Length + 3) + k_PaddingBetweenRules;
+						return k_DefaultElementHeight + k_SingleLineHeight*(tile.mTilingRules[index].mSprites.Length + 3) + k_PaddingBetweenRules;
 					case RuleTile.TilingRule.OutputSprite.Animation:
-						return k_DefaultElementHeight + k_SingleLineHeight*(tile.m_TilingRules[index].m_Sprites.Length + 2) + k_PaddingBetweenRules;
+						return k_DefaultElementHeight + k_SingleLineHeight*(tile.mTilingRules[index].mSprites.Length + 2) + k_PaddingBetweenRules;
 				}
 			}
 			return k_DefaultElementHeight + k_PaddingBetweenRules;
@@ -108,7 +108,7 @@ namespace UnityEditor
 
 		private void OnDrawElement(Rect rect, int index, bool isactive, bool isfocused)
 		{
-			RuleTile.TilingRule rule = tile.m_TilingRules[index];
+			RuleTile.TilingRule rule = tile.mTilingRules[index];
 
 			float yPos = rect.yMin + 2f;
 			float height = rect.height - k_PaddingBetweenRules;
@@ -139,11 +139,11 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI()
 		{
-			tile.m_DefaultSprite = EditorGUILayout.ObjectField("Default Sprite", tile.m_DefaultSprite, typeof(Sprite), false) as Sprite;
-			tile.m_DefaultColliderType = (Tile.ColliderType)EditorGUILayout.EnumPopup("Default Collider", tile.m_DefaultColliderType);
+			tile.mDefaultSprite = EditorGUILayout.ObjectField("Default Sprite", tile.mDefaultSprite, typeof(Sprite), false) as Sprite;
+			tile.mDefaultColliderType = (Tile.ColliderType)EditorGUILayout.EnumPopup("Default Collider", tile.mDefaultColliderType);
 			EditorGUILayout.Space();
 
-			if (m_ReorderableList != null && tile.m_TilingRules != null)
+			if (m_ReorderableList != null && tile.mTilingRules != null)
 				m_ReorderableList.DoLayoutList();
 		}
 
@@ -173,7 +173,7 @@ namespace UnityEditor
 					Rect r = new Rect(rect.xMin + x * w, rect.yMin + y * h, w - 1, h - 1);
 					if (x != 1 || y != 1)
 					{
-						switch (tilingRule.m_Neighbors[index])
+						switch (tilingRule.mNeighbors[index])
 						{
 							case RuleTile.TilingRule.Neighbor.This:
 								GUI.DrawTexture(r, arrows[y*3 + x]);
@@ -184,7 +184,7 @@ namespace UnityEditor
 						}
 						if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition))
 						{
-							tilingRule.m_Neighbors[index] = (RuleTile.TilingRule.Neighbor) (((int)tilingRule.m_Neighbors[index] + 1) % 3);
+							tilingRule.mNeighbors[index] = (RuleTile.TilingRule.Neighbor) (((int)tilingRule.mNeighbors[index] + 1) % 3);
 							GUI.changed = true;
 							Event.current.Use();
 						}
@@ -193,7 +193,7 @@ namespace UnityEditor
 					}
 					else
 					{
-						switch (tilingRule.m_RuleTransform)
+						switch (tilingRule.mRuleTransform)
 						{
 							case RuleTile.TilingRule.Transform.Rotated:
 								GUI.DrawTexture(r, autoTransforms[0]);
@@ -208,7 +208,7 @@ namespace UnityEditor
 
 						if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition))
 						{
-							tilingRule.m_RuleTransform = (RuleTile.TilingRule.Transform)(((int)tilingRule.m_RuleTransform + 1) % 4);
+							tilingRule.mRuleTransform = (RuleTile.TilingRule.Transform)(((int)tilingRule.mRuleTransform + 1) % 4);
 							GUI.changed = true;
 							Event.current.Use();
 						}
@@ -220,7 +220,7 @@ namespace UnityEditor
 		private static void OnSelect(object userdata)
 		{
 			MenuItemData data = (MenuItemData) userdata;
-			data.m_Rule.m_RuleTransform = data.m_NewValue;
+			data.m_Rule.mRuleTransform = data.m_NewValue;
 		}
 
 		private class MenuItemData
@@ -237,7 +237,7 @@ namespace UnityEditor
 
 		private void SpriteOnGUI(Rect rect, RuleTile.TilingRule tilingRule)
 		{
-			tilingRule.m_Sprites[0] = EditorGUI.ObjectField(new Rect(rect.xMax - rect.height, rect.yMin, rect.height, rect.height), tilingRule.m_Sprites[0], typeof (Sprite), false) as Sprite;
+			tilingRule.mSprites[0] = EditorGUI.ObjectField(new Rect(rect.xMax - rect.height, rect.yMin, rect.height, rect.height), tilingRule.mSprites[0], typeof (Sprite), false) as Sprite;
 		}
 
 		private static void RuleInspectorOnGUI(Rect rect, RuleTile.TilingRule tilingRule)
@@ -245,44 +245,44 @@ namespace UnityEditor
 			float y = rect.yMin;
 			EditorGUI.BeginChangeCheck();
 			GUI.Label(new Rect(rect.xMin, y, k_LabelWidth, k_SingleLineHeight), "Rule");
-			tilingRule.m_RuleTransform = (RuleTile.TilingRule.Transform)EditorGUI.EnumPopup(new Rect(rect.xMin + k_LabelWidth, y, rect.width - k_LabelWidth, k_SingleLineHeight), tilingRule.m_RuleTransform);
+			tilingRule.mRuleTransform = (RuleTile.TilingRule.Transform)EditorGUI.EnumPopup(new Rect(rect.xMin + k_LabelWidth, y, rect.width - k_LabelWidth, k_SingleLineHeight), tilingRule.mRuleTransform);
 			y += k_SingleLineHeight;
 			GUI.Label(new Rect(rect.xMin, y, k_LabelWidth, k_SingleLineHeight), "Collider");
-			tilingRule.m_ColliderType = (Tile.ColliderType)EditorGUI.EnumPopup(new Rect(rect.xMin + k_LabelWidth, y, rect.width - k_LabelWidth, k_SingleLineHeight), tilingRule.m_ColliderType);
+			tilingRule.mColliderType = (Tile.ColliderType)EditorGUI.EnumPopup(new Rect(rect.xMin + k_LabelWidth, y, rect.width - k_LabelWidth, k_SingleLineHeight), tilingRule.mColliderType);
 			y += k_SingleLineHeight;
 			GUI.Label(new Rect(rect.xMin, y, k_LabelWidth, k_SingleLineHeight), "Output");
-			tilingRule.m_Output = (RuleTile.TilingRule.OutputSprite)EditorGUI.EnumPopup(new Rect(rect.xMin + k_LabelWidth, y, rect.width - k_LabelWidth, k_SingleLineHeight), tilingRule.m_Output);
+			tilingRule.mOutput = (RuleTile.TilingRule.OutputSprite)EditorGUI.EnumPopup(new Rect(rect.xMin + k_LabelWidth, y, rect.width - k_LabelWidth, k_SingleLineHeight), tilingRule.mOutput);
 			y += k_SingleLineHeight;
 
-			if (tilingRule.m_Output == RuleTile.TilingRule.OutputSprite.Animation)
+			if (tilingRule.mOutput == RuleTile.TilingRule.OutputSprite.Animation)
 			{
 				GUI.Label(new Rect(rect.xMin, y, k_LabelWidth, k_SingleLineHeight), "Speed");
-				tilingRule.m_AnimationSpeed = EditorGUI.FloatField(new Rect(rect.xMin + k_LabelWidth, y, rect.width - k_LabelWidth, k_SingleLineHeight), tilingRule.m_AnimationSpeed);
+				tilingRule.mAnimationSpeed = EditorGUI.FloatField(new Rect(rect.xMin + k_LabelWidth, y, rect.width - k_LabelWidth, k_SingleLineHeight), tilingRule.mAnimationSpeed);
 				y += k_SingleLineHeight;
 			}
-			if (tilingRule.m_Output == RuleTile.TilingRule.OutputSprite.Random)
+			if (tilingRule.mOutput == RuleTile.TilingRule.OutputSprite.Random)
 			{
 				GUI.Label(new Rect(rect.xMin, y, k_LabelWidth, k_SingleLineHeight), "Noise");
-				tilingRule.m_PerlinScale = EditorGUI.Slider(new Rect(rect.xMin + k_LabelWidth, y, rect.width - k_LabelWidth, k_SingleLineHeight), tilingRule.m_PerlinScale, 0.001f, 0.999f);
+				tilingRule.mPerlinScale = EditorGUI.Slider(new Rect(rect.xMin + k_LabelWidth, y, rect.width - k_LabelWidth, k_SingleLineHeight), tilingRule.mPerlinScale, 0.001f, 0.999f);
 				y += k_SingleLineHeight;
 
 				GUI.Label(new Rect(rect.xMin, y, k_LabelWidth, k_SingleLineHeight), "Shuffle");
-				tilingRule.m_RandomTransform = (RuleTile.TilingRule.Transform)EditorGUI.EnumPopup(new Rect(rect.xMin + k_LabelWidth, y, rect.width - k_LabelWidth, k_SingleLineHeight), tilingRule.m_RandomTransform);
+				tilingRule.mRandomTransform = (RuleTile.TilingRule.Transform)EditorGUI.EnumPopup(new Rect(rect.xMin + k_LabelWidth, y, rect.width - k_LabelWidth, k_SingleLineHeight), tilingRule.mRandomTransform);
 				y += k_SingleLineHeight;
 			}
 
-			if (tilingRule.m_Output != RuleTile.TilingRule.OutputSprite.Single)
+			if (tilingRule.mOutput != RuleTile.TilingRule.OutputSprite.Single)
 			{
 				GUI.Label(new Rect(rect.xMin, y, k_LabelWidth, k_SingleLineHeight), "Size");
 				EditorGUI.BeginChangeCheck();
-				int newLength = EditorGUI.DelayedIntField(new Rect(rect.xMin + k_LabelWidth, y, rect.width - k_LabelWidth, k_SingleLineHeight), tilingRule.m_Sprites.Length);
+				int newLength = EditorGUI.DelayedIntField(new Rect(rect.xMin + k_LabelWidth, y, rect.width - k_LabelWidth, k_SingleLineHeight), tilingRule.mSprites.Length);
 				if (EditorGUI.EndChangeCheck())
-					Array.Resize(ref tilingRule.m_Sprites, Math.Max(newLength, 1));
+					Array.Resize(ref tilingRule.mSprites, Math.Max(newLength, 1));
 				y += k_SingleLineHeight;
 
-				for (int i = 0; i < tilingRule.m_Sprites.Length; i++)
+				for (int i = 0; i < tilingRule.mSprites.Length; i++)
 				{
-					tilingRule.m_Sprites[i] = EditorGUI.ObjectField(new Rect(rect.xMin + k_LabelWidth, y, rect.width - k_LabelWidth, k_SingleLineHeight), tilingRule.m_Sprites[i], typeof(Sprite), false) as Sprite;
+					tilingRule.mSprites[i] = EditorGUI.ObjectField(new Rect(rect.xMin + k_LabelWidth, y, rect.width - k_LabelWidth, k_SingleLineHeight), tilingRule.mSprites[i], typeof(Sprite), false) as Sprite;
 					y += k_SingleLineHeight;
 				}
 			}
@@ -290,7 +290,7 @@ namespace UnityEditor
 
 		public override Texture2D RenderStaticPreview(string assetPath, Object[] subAssets, int width, int height)
 		{
-			if (tile.m_DefaultSprite != null)
+			if (tile.mDefaultSprite != null)
 			{
 				Type t = GetType("UnityEditor.SpriteUtility");
 				if (t != null)
@@ -298,7 +298,7 @@ namespace UnityEditor
 					MethodInfo method = t.GetMethod("RenderStaticPreview", new Type[] {typeof (Sprite), typeof (Color), typeof (int), typeof (int)});
 					if (method != null)
 					{
-						object ret = method.Invoke("RenderStaticPreview", new object[] {tile.m_DefaultSprite, Color.white, width, height});
+						object ret = method.Invoke("RenderStaticPreview", new object[] {tile.mDefaultSprite, Color.white, width, height});
 						if (ret is Texture2D)
 							return ret as Texture2D;
 					}

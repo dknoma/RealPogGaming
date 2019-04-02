@@ -29,7 +29,7 @@ public class MaxHeap {
 	 * @param pos the index of the element in the sorting array
 	 * @return the index of the left child
 	 */
-	private int leftChild(int pos) {
+	private int LeftChild(int pos) {
 		return 2 * pos + 1 - lowIndex;
 	}
 
@@ -39,7 +39,7 @@ public class MaxHeap {
 	 * @param pos the index of the element in the sorting array
 	 * @return the index of the right child
 	 */
-	private int rightChild(int pos) {
+	private int RightChild(int pos) {
 		return 2 * pos + 2 - lowIndex;
 	}
 
@@ -49,7 +49,7 @@ public class MaxHeap {
 	 * @param pos the index of the element in the sorting array
 	 * @return the index of the parent
 	 */
-	private int parent(int pos) {
+	private int Parent(int pos) {
 		return pos / 2;
 	}
 
@@ -59,7 +59,7 @@ public class MaxHeap {
 	 * @param pos the index of the element in the sorting array
 	 * @return true if the node is a leaf, false otherwise
 	 */
-	private bool isLeaf(int pos, int maxIndex) {
+	private bool IsLeaf(int pos, int maxIndex) {
 		return ((pos < (maxIndex + lowIndex) / 2) && pos >= lowIndex);
 	}
 
@@ -69,7 +69,7 @@ public class MaxHeap {
 	 * @param pos1 the index of the first element in the sorting
 	 * @param pos2 the index of the second element in the sorting
 	 */
-	private void swap( int pos1, int pos2) {
+	private void Swap( int pos1, int pos2) {
 		IComparable tmp = this.heap[pos1];
 		this.heap[pos1] = this.heap[pos2];
 		this.heap[pos2] = tmp;
@@ -78,8 +78,8 @@ public class MaxHeap {
 	/** 
 	 * Builds a max heap from the given array
 	 */
-	public void buildHeap(int lastParent) {
-		pushdown(lastParent, maxIndex);
+	public void BuildHeap(int lastParent) {
+		Pushdown(lastParent, maxIndex);
 	}
 
 	/** 
@@ -87,15 +87,15 @@ public class MaxHeap {
 	 * sublist. Will continue to bubble down if the root element has
 	 * children larger than itself.
 	 */
-	public void sorting() {
+	public void Sorting() {
 		for (int i = maxIndex; i > lowIndex; i--) {
-			swap(lowIndex, i);
+			Swap(lowIndex, i);
 			maxIndex--;
-			pushdown(lowIndex, maxIndex);
+			Pushdown(lowIndex, maxIndex);
 		}
 		//if the first two values are not sorted, switch places
 		if(this.heap[lowIndex].CompareTo(this.heap[lowIndex +1]) > 0) {
-			swap(lowIndex, lowIndex +1);
+			Swap(lowIndex, lowIndex +1);
 		}
 	}
 
@@ -104,11 +104,11 @@ public class MaxHeap {
 	 *
 	 * @param position the index of the element in the sorting
 	 */
-	private void pushdown(int position, int high) {
+	private void Pushdown(int position, int high) {
 		int largestchild;
 		//continue to compare value with its children as long as its not a leaf
-		while(isLeaf(position, high)) {
-			largestchild = leftChild(position); // set the largest child to left child
+		while(IsLeaf(position, high)) {
+			largestchild = LeftChild(position); // set the largest child to left child
 			if ((largestchild < high) && (this.heap[largestchild].CompareTo(this.heap[largestchild + 1]) < 0)) {
 				largestchild = largestchild + 1; // right child was smaller, so smallest child = right child
 			}
@@ -117,16 +117,16 @@ public class MaxHeap {
 			if (this.heap[position].CompareTo(this.heap[largestchild]) >= 0) {
 				return;
 			}
-			swap(position, largestchild);
+			Swap(position, largestchild);
 			position = largestchild;
 		}
 	}
 
-	public IComparable get(int index) {
+	public IComparable Get(int index) {
 		return this.heap[index];
 	}
 
-	public int size() {
+	public int Size() {
 		return this.heapSize;
 	}
 }

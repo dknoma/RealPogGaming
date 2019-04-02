@@ -10,7 +10,7 @@ public static class Sorting {
 	 */
 
 	// Ascending merge sort. Useful if want slowest characters to move first
-	public static void mergeSort(List<GameObject> list, IComparer customComparer) {
+	public static void MergeSort(List<GameObject> list, IComparer customComparer) {
 		List<GameObject> temp = new List<GameObject> (new GameObject[list.Count]);
 		//loop 2^i times, inc m which is how many times we merge
 		for(int i = 1, m = 1; i < list.Count; i *= 2, m++) {
@@ -27,12 +27,12 @@ public static class Sorting {
 					high = list.Count - 1;
 				}
 				//sort and merge the two sublists
-				merge(list, temp, j, mid, high, customComparer);
+				Merge(list, temp, j, mid, high, customComparer);
 			}
 		}
 	}
 	// Helper method to do in place sorting
-	private static void merge(List<GameObject> list, List<GameObject> temp, int low, int mid, int high, IComparer customComparer) {
+	private static void Merge(List<GameObject> list, List<GameObject> temp, int low, int mid, int high, IComparer customComparer) {
 		int k = low;
 		int i = low;
 		int j = mid + 1;
@@ -62,7 +62,7 @@ public static class Sorting {
 	}
 
 	// Descending order sort. Useful for checking who has a greater stat
-	public static void descendingMergeSort(List<GameObject> list, IComparer customComparer) {
+	public static void DescendingMergeSort(List<GameObject> list, IComparer customComparer) {
 		List<GameObject> temp = new List<GameObject> (new GameObject[list.Count]);
 		//loop 2^i times, inc m which is how many times we merge
 		for(int i = 1, m = 1; i < list.Count; i *= 2, m++) {
@@ -79,13 +79,13 @@ public static class Sorting {
 					high = list.Count - 1;
 				}
 				//sort and merge the two sublists
-				descendingMerge(list, temp, j, mid, high, customComparer);
+				DescendingMerge(list, temp, j, mid, high, customComparer);
 			}
 		}
 	}
 
 	// Helper method to do in place sorting
-	private static void descendingMerge(List<GameObject> list, List<GameObject> temp, int low, int mid, int high, IComparer customComparer) {
+	private static void DescendingMerge(List<GameObject> list, List<GameObject> temp, int low, int mid, int high, IComparer customComparer) {
 		int k = low;
 		int i = low;
 		int j = mid + 1;
@@ -118,7 +118,7 @@ public static class Sorting {
 	 * In-place array sorting
 	 */
 
-	public static IComparable[] mergeSort(IComparable[] array) {
+	public static IComparable[] MergeSort(IComparable[] array) {
 		IComparable[] temp = new IComparable[array.Length];
 		//loop 2^i times, inc m which is how many times we merge
 		for(int i = 1, m = 1; i < array.Length; i *= 2, m++) {
@@ -136,14 +136,14 @@ public static class Sorting {
 				}
 				Debug.Log ("mid: " + mid + "\nhigh: " + high);
 				//sort and merge the two sublists
-				merge(array, temp, j, mid, high);
+				Merge(array, temp, j, mid, high);
 			}
 		}
 		return array;
 	}
 
 	// Helper method to do in place sorting
-	private static void merge(IComparable[] arr, IComparable[] temp, int low, int mid, int high) {
+	private static void Merge(IComparable[] arr, IComparable[] temp, int low, int mid, int high) {
 		Debug.Log ("low: " + low + ", mid: " + mid + ", high: " + high + "\n\tlen: " +  arr.Length);
 		for(int r = 0; r < arr.Length; r++) {
 			Debug.Log ("\t\tr: " + arr[r]);		
@@ -187,7 +187,7 @@ public static class Sorting {
 		}
 	}
 
-	public static IComparable[] descendingMergeSort(IComparable[] array) {
+	public static IComparable[] DescendingMergeSort(IComparable[] array) {
 		IComparable[] temp = new IComparable[array.Length];
 		//loop 2^i times, inc m which is how many times we merge
 		for(int i = 1, m = 1; i < array.Length; i *= 2, m++) {
@@ -204,14 +204,14 @@ public static class Sorting {
 					high = array.Length - 1;
 				}
 				//sort and merge the two sublists
-				descendingMerge(array, temp, j, mid, high);
+				DescendingMerge(array, temp, j, mid, high);
 			}
 		}
 		return array;
 	}
 
 	// Helper method to do in place sorting
-	private static void descendingMerge(IComparable[] arr, IComparable[] temp, int low, int mid, int high) {
+	private static void DescendingMerge(IComparable[] arr, IComparable[] temp, int low, int mid, int high) {
 		int k = low;
 		int i = low;
 		int j = mid + 1;

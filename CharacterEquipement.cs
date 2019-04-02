@@ -27,11 +27,11 @@ public class CharacterEquipement : MonoBehaviour {
 	[SerializeField] private Accessory ring;
 	[SerializeField] private Accessory earring;
 
-	private int totalHP;
+	private int totalHp;
 	private int totalAtk;
 	private int totalDef;
 	private int totalSpd;
-	private int runeHP;
+	private int runeHp;
 	private int runeAtk;
 	private int runeDef;
 	private int runeSpd;

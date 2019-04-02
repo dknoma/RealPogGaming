@@ -16,7 +16,7 @@ public enum Element {
 public class ElementalAffinity : MonoBehaviour {
 
 
-	private static readonly int lastNormalEle = (int)Element.Electric;
+	private static readonly int LastNormalEle = (int)Element.Electric;
 
 	public static float CalcElementalDamage(Element source, Element target) {
 		switch(source) {
@@ -29,7 +29,7 @@ public class ElementalAffinity : MonoBehaviour {
 			return CalcNormal(source, target);
 		case Element.Light:
 		case Element.Dark:
-			return CalcLD(source, target);
+			return CalcLd(source, target);
 		default:
 			return 1.0f;
 		}
@@ -37,17 +37,17 @@ public class ElementalAffinity : MonoBehaviour {
 
 	// Normal elemental damage calculations
 	private static float CalcNormal(Element source, Element target) {
-		if ((int)target == ((int)source + 1) % (lastNormalEle+1)) {
+		if ((int)target == ((int)source + 1) % (LastNormalEle+1)) {
 			return 1.5f;
-		} else if ((int)target == ((int)source + lastNormalEle) % (lastNormalEle+1)) {
+		} else if ((int)target == ((int)source + LastNormalEle) % (LastNormalEle+1)) {
 			return 0.5f;
 		}
 		return 1.0f;
 	}
 
 	// Light-dark elemental damage calculations
-	private static float CalcLD(Element source, Element target) {
-		if((int) target > lastNormalEle && ((int) target == ((int) source+1) % 6 || (int) target == ((int) source+5) % 6)) {
+	private static float CalcLd(Element source, Element target) {
+		if((int) target > LastNormalEle && ((int) target == ((int) source+1) % 6 || (int) target == ((int) source+5) % 6)) {
 			return 1.5f;
 		}
 		return 1.0f;

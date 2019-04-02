@@ -4,10 +4,7 @@ using UnityEngine;
 
 public class CharacterStats : StatusEffects {
 
-	public enum Affiliation { Ally, Enemy };
-
 	/* Public/inspector elements */
-	public Affiliation affiliation;
 	public int expToGrant = 10;
 	public bool bogResist = false;
 	public bool burnResist = false;
@@ -23,9 +20,9 @@ public class CharacterStats : StatusEffects {
 	public int currentExp = 0;
 
 	[SerializeField]
-	protected int maxHP = 20;
-	protected int currentHP;
-	protected int totalRuneHP;
+	protected int maxHp = 20;
+	protected int currentHp;
+	protected int totalRuneHp;
 	[SerializeField]
 	protected int baseAtk = 5;
 	protected int currentAtk;
@@ -64,38 +61,38 @@ public class CharacterStats : StatusEffects {
 
 
 	// Status effect constants
-	protected const int BOG = (int) Status.Bog;
-	protected const int BURN = (int) Status.Burn;
-	protected const int POISON = (int) Status.Poison;
-	protected const int RUNE_LOCK = (int) Status.RuneLock;
-	protected const int STUN = (int) Status.Stun;
-	protected const int SILENCE = (int) Status.Silence;
+	protected const int Bog = (int) Status.Bog;
+	protected const int Burn = (int) Status.Burn;
+	protected const int Poison = (int) Status.Poison;
+	protected const int RuneLock = (int) Status.RuneLock;
+	protected const int Stun = (int) Status.Stun;
+	protected const int Silence = (int) Status.Silence;
 
-	protected const int ATKUP = (int) StatChange.ATKUp;
-	protected const int DEFUP = (int) StatChange.DEFUp;
-	protected const int SPDUP = (int) StatChange.SpeedUp;
-	protected const int HPUP = (int) StatChange.HPUp;
-	protected const int ATKDOWN = (int) StatChange.ATKDown;
-	protected const int DEFDOWN = (int) StatChange.DEFDown;
-	protected const int SPDDOWN = (int) StatChange.SpeedDown;
-	protected const int HPDESTRUCTION = (int) StatChange.HPDestruct;
+	protected const int Atkup = (int) StatChange.AtkUp;
+	protected const int Defup = (int) StatChange.DefUp;
+	protected const int Spdup = (int) StatChange.SpeedUp;
+	protected const int Hpup = (int) StatChange.HpUp;
+	protected const int Atkdown = (int) StatChange.AtkDown;
+	protected const int Defdown = (int) StatChange.DefDown;
+	protected const int Spddown = (int) StatChange.SpeedDown;
+	protected const int Hpdestruction = (int) StatChange.HpDestruct;
 
 	private void Awake() {
 		expUntilLevelUp = CalcNextLevel();
-		currentHP = maxHP;
+		currentHp = maxHp;
 		currentAtk = baseAtk;
 		currentDef = baseDef;
 		currentSpd = baseSpd;
-		statusTurnCounter = new int[getStatusAfflictions().Length];
-		statChangeTurnCounter = new int[getStatChangeAfflictions().Length];
+		statusTurnCounter = new int[GetStatusAfflictions().Length];
+		statChangeTurnCounter = new int[GetStatChangeAfflictions().Length];
 		canAct = true;
 		canCastSpells = true;
-		if (bogResist) { addStatusResist (BOG); } 
-		if (burnResist) { addStatusResist (BURN); } 
-		if (poisonResist) { addStatusResist (POISON); } 
-		if (runeLockResist) { addStatusResist (RUNE_LOCK); } 
-		if (stunResist) { addStatusResist (STUN); } 
-		if (silenceResist) { addStatusResist (SILENCE); } 
+		if (bogResist) { AddStatusResist (Bog); } 
+		if (burnResist) { AddStatusResist (Burn); } 
+		if (poisonResist) { AddStatusResist (Poison); } 
+		if (runeLockResist) { AddStatusResist (RuneLock); } 
+		if (stunResist) { AddStatusResist (Stun); } 
+		if (silenceResist) { AddStatusResist (Silence); } 
 		if(transform.GetComponentInChildren<RuneSlots>() != null) {
 			transform.GetComponentInChildren<RuneSlots>().GetStatCount();
 		}
@@ -105,18 +102,18 @@ public class CharacterStats : StatusEffects {
 	 * HP *
 	 ******/
 	// Return a copy of this characters max hp
-	public int GetMaxHP() { return 0 + maxHP; }
+	public int GetMaxHp() { return 0 + maxHp; }
 
 	// Return a copy of this characters current attack
-	public int GetCurrentHP() { return 0 + currentHP; }
+	public int GetCurrentHp() { return 0 + currentHp; }
 
 	// Modify current HP w/ new value
-	public void ModifyHP(int hp) { currentHP += hp; }
+	public void ModifyHp(int hp) { currentHp += hp; }
 
 	// A % modifier for HP
-	public void ModifyHP(float hpPercentage) { currentHP += (int) Mathf.Round(maxHP * hpPercentage); }
+	public void ModifyHp(float hpPercentage) { currentHp += (int) Mathf.Round(maxHp * hpPercentage); }
 
-	public int GetRuneHP() { return 0 + totalRuneHP; }
+	public int GetRuneHp() { return 0 + totalRuneHp; }
 
 	/*******
 	 * ATK *
@@ -163,10 +160,10 @@ public class CharacterStats : StatusEffects {
 	/* 
 	 * Status effects
 	 */
-	public bool tryStatusAffliction(int status, int turnsToAfflict) {
-		if(!doesResistStatus(status) && !hasStatusAffliction && !afflictedByStatus(status)) {
+	public bool TryStatusAffliction(int status, int turnsToAfflict) {
+		if(!DoesResistStatus(status) && !hasStatusAffliction && !AfflictedByStatus(status)) {
 			// TODO: afflict the state
-			afflictStatus(status);
+			AfflictStatus(status);
 			statusTurnCounter[status] = turnsToAfflict;
 			hasStatusAffliction = true;
 			return true;
@@ -174,88 +171,88 @@ public class CharacterStats : StatusEffects {
 		return false;
 	}
 
-	public bool tryStatChange(int statChange, int turnsToAfflict) {
-		if(!doesResistStatChange(statChange) && !afflictedByStatChange(statChange)) {
+	public bool TryStatChange(int statChange, int turnsToAfflict) {
+		if(!DoesResistStatChange(statChange) && !AfflictedByStatChange(statChange)) {
 			// TODO: afflict the stat change
-			afflictStatChange(statChange);
+			AfflictStatChange(statChange);
 			statChangeTurnCounter [statChange] = turnsToAfflict;
 			return true;
 		}
 		return false;
 	}
 
-	public bool tryRemoveStatus(int status) {
-		if(!doesResistStatusRemoval(status) && !afflictedByStatus(status)) {
+	public bool TryRemoveStatus(int status) {
+		if(!DoesResistStatusRemoval(status) && !AfflictedByStatus(status)) {
 			// TODO: afflict the stat change
-			removeStatus(status);
+			RemoveStatus(status);
 			statusTurnCounter [status] = 0;
 			return true;
 		}
 		return false;
 	}
 
-	public bool tryRemoveStatChange(int statChange) {
-		if(!doesResistStatChangeRemoval(statChange) && !afflictedByStatChange(statChange)) {
+	public bool TryRemoveStatChange(int statChange) {
+		if(!DoesResistStatChangeRemoval(statChange) && !AfflictedByStatChange(statChange)) {
 			// TODO: afflict the stat change
-			removeStatChange(statChange);
+			RemoveStatChange(statChange);
 			statChangeTurnCounter [statChange] = 0;
 			return true;
 		}
 		return false;
 	}
 
-	public bool doesResistStatus(int status) {
-		return resistsStatusEffect(status);
+	public bool DoesResistStatus(int status) {
+		return ResistsStatusEffect(status);
 	}
 
-	public bool doesResistStatChange(int statChange) {
-		return resistsStatChange(statChange);
+	public bool DoesResistStatChange(int statChange) {
+		return ResistsStatChange(statChange);
 	}
 
-	public bool doesResistStatusRemoval(int status) {
-		return resistsStatusEffectRemoval(status);
+	public bool DoesResistStatusRemoval(int status) {
+		return ResistsStatusEffectRemoval(status);
 	}
 
-	public bool doesResistStatChangeRemoval(int statChange) {
-		return resistsStatChangeRemoval(statChange);
+	public bool DoesResistStatChangeRemoval(int statChange) {
+		return ResistsStatChangeRemoval(statChange);
 	}
 
 	/**
 	 * Initial state of the affliction. This method is used to initialize effects that only happen once
 	 * to the character. checkStatusAfflictions() is used for effects that happen each turn.
 	 */ 
-	public void initAffliction(int status, int turns) {
+	public void InitAffliction(int status, int turns) {
 		// Check status afflictions and do action depending on the affliction
-		if (tryStatusAffliction (status, turns)) {
+		if (TryStatusAffliction (status, turns)) {
 			switch (status) {
-			case BOG:
-				if(tryStatChange(SPDDOWN, turns)) {
+			case Bog:
+				if(TryStatChange(Spddown, turns)) {
 					ModifySpd (false);
 				} else {
 					Debug.Log("Already afflicted by speed down...");
 				}
 				break;
-			case BURN:
-				if(tryStatChange(ATKDOWN, turns)) {
+			case Burn:
+				if(TryStatChange(Atkdown, turns)) {
 					ModifyAtk (false);
 				} else {
 					Debug.Log("Already afflicted by physical attack down...");
 				}
 				break;
-			case POISON:
-				if(tryStatChange(ATKDOWN, turns)) {
+			case Poison:
+				if(TryStatChange(Atkdown, turns)) {
 					ModifyAtk (false);
 				} else {
 					Debug.Log("Already afflicted by magical attack down...");
 				}
 				break;
-			case RUNE_LOCK:
+			case RuneLock:
 				disableRunes = true;
 				break;
-			case STUN:
+			case Stun:
 				canAct = false;
 				break;
-			case SILENCE:
+			case Silence:
 				canCastSpells = false;
 				break;
 			}
@@ -268,48 +265,48 @@ public class CharacterStats : StatusEffects {
 	/**
 	 * Removes the specified affliction. This method reverses any 
 	 */ 
-	public void removeAffliction(int status) {
+	public void RemoveAffliction(int status) {
 		switch (status) {
-		case BOG:
-			if(tryRemoveStatus(BOG)) {
+		case Bog:
+			if(TryRemoveStatus(Bog)) {
 				hasStatusAffliction = false;
 			}
-			if (tryRemoveStatChange (SPDDOWN)) {
+			if (TryRemoveStatChange (Spddown)) {
 				ModifySpd (true);// Only need to happen once, not every turn
 			}
 			break;
-		case BURN:
+		case Burn:
 			ModifyAtk (true); // Only need to happen once, not every turn
-			if(tryRemoveStatus(BURN)){
+			if(TryRemoveStatus(Burn)){
 				hasStatusAffliction = false;
 			}
 			// Tries to remove atk down if not afflicted with a stat change removal resist
-			if (tryRemoveStatChange (ATKDOWN)) {
+			if (TryRemoveStatChange (Atkdown)) {
 				ModifyAtk (true);// Only need to happen once, not every turn
 			}
 			break;
-		case POISON:
-			if(tryRemoveStatus (POISON)){
+		case Poison:
+			if(TryRemoveStatus (Poison)){
 				hasStatusAffliction = false;
 			}
-			if (tryRemoveStatChange (ATKDOWN)) {
+			if (TryRemoveStatChange (Atkdown)) {
 				ModifyAtk (true);
 			}
 			break;
-		case RUNE_LOCK:
-			if(tryRemoveStatus(STUN)) {
+		case RuneLock:
+			if(TryRemoveStatus(Stun)) {
 				hasStatusAffliction = false;
 				disableRunes = false;
 			}
 			break;
-		case STUN:
-			if(tryRemoveStatus(STUN)) {
+		case Stun:
+			if(TryRemoveStatus(Stun)) {
 				hasStatusAffliction = false;
 				canAct = true;
 			}
 			break;
-		case SILENCE:
-			if(tryRemoveStatus(SILENCE)) {
+		case Silence:
+			if(TryRemoveStatus(Silence)) {
 				hasStatusAffliction = false;
 				canCastSpells = true;
 			}
@@ -317,49 +314,49 @@ public class CharacterStats : StatusEffects {
 		}
 	}
 
-	public void removeAllAfflictions() {
+	public void RemoveAllAfflictions() {
 		for (int status = 0; status < afflictedStatuses.Length; status++) {
 			switch (status) {
-			case BOG:
-				if (tryRemoveStatChange (SPDDOWN)) {
+			case Bog:
+				if (TryRemoveStatChange (Spddown)) {
 					ModifySpd (true);// Only need to happen once, not every turn
 				}
-				if(tryRemoveStatus(BOG)) {
+				if(TryRemoveStatus(Bog)) {
 					hasStatusAffliction = false;
 				}
 				break;
-			case BURN:
+			case Burn:
 				ModifyAtk (true); // Only need to happen once, not every turn
-				if(tryRemoveStatus(BURN)) {
+				if(TryRemoveStatus(Burn)) {
 					hasStatusAffliction = false;
 				}
 			// Tries to remove atk down if not afflicted with a stat change removal resist
-				if (tryRemoveStatChange (ATKDOWN)) {
+				if (TryRemoveStatChange (Atkdown)) {
 					ModifyAtk (true);// Only need to happen once, not every turn
 				}
 				break;
-			case POISON:
-				if(tryRemoveStatus(POISON)) {
+			case Poison:
+				if(TryRemoveStatus(Poison)) {
 					hasStatusAffliction = false;
 				}
-				if (tryRemoveStatChange (ATKDOWN)) {
+				if (TryRemoveStatChange (Atkdown)) {
 					ModifyAtk (true);
 				}
 				break;
-			case RUNE_LOCK:
-				if(tryRemoveStatus(STUN)) {
+			case RuneLock:
+				if(TryRemoveStatus(Stun)) {
 					hasStatusAffliction = false;
 					disableRunes = false;
 				}
 				break;
-			case STUN:
-				if(tryRemoveStatus(STUN)) {
+			case Stun:
+				if(TryRemoveStatus(Stun)) {
 					hasStatusAffliction = false;
 				}
 				canAct = true;
 				break;
-			case SILENCE:
-				if(tryRemoveStatus(SILENCE)) {
+			case Silence:
+				if(TryRemoveStatus(Silence)) {
 					hasStatusAffliction = false;
 				}
 				canCastSpells = true;
@@ -372,40 +369,40 @@ public class CharacterStats : StatusEffects {
 	 * Check this characters status afflictions. This method is meant to be executed at the beginning of each of
 	 * this character's turns.
 	 */ 
-	public void checkStatusAfflictions() {
+	public void CheckStatusAfflictions() {
 		for(int i = 0; i < afflictedStatuses.Length; i++) {
 			// Check status afflictions and do action depending on the affliction
 			switch (i) {
-			case BOG:
+			case Bog:
 				//Nothing planned atm for this status effect. Only SPDDown atm.
 				break;
-			case BURN:
+			case Burn:
 				// 8% DoT & p atk down
 //				if (this.statusTurnCounter [BURN] > 0) {
 //					modifyHP (-0.08f);
 //				}
 				break;
-			case POISON:
+			case Poison:
 				// 10% DoT & m atk down
 //				if (this.statusTurnCounter [BURN] > 0) {
 //					modifyHP (-0.1f);
 //				}
 				break;
-			case RUNE_LOCK:
+			case RuneLock:
 				// Can't use runes for x turns
-				if(afflictedStatuses[RUNE_LOCK]) {
+				if(afflictedStatuses[RuneLock]) {
 					disableRunes = true;
 				}
 				break;
-			case STUN:
+			case Stun:
 				// Can't act for x turns
-				if(afflictedStatuses[STUN]) {
+				if(afflictedStatuses[Stun]) {
 					canAct = false;
 				}
 				break;
-			case SILENCE:
+			case Silence:
 				// Can't cast spells for x turns. Can still use skills
-				if(afflictedStatuses[SILENCE]) {
+				if(afflictedStatuses[Silence]) {
 					canCastSpells = false;
 				}
 				break;
@@ -424,50 +421,50 @@ public class CharacterStats : StatusEffects {
 		for(int i = 0; i < afflictedStatuses.Length; i++) {
 			// Check status afflictions and do action depending on the affliction
 			switch (i) {
-				case BOG:
+				case Bog:
 					//Nothing planned atm for this status effect. Only SPDDown atm.
 					break;
-				case BURN:
+				case Burn:
 					// 8% DoT & p atk down
-					if (statusTurnCounter [BURN] > 0) {
-						ModifyHP (-0.08f);
-						statusTurnCounter[BURN] -= 1;
-						if(statusTurnCounter[BURN] == 0) {
-							tryRemoveStatus (BURN);
+					if (statusTurnCounter [Burn] > 0) {
+						ModifyHp (-0.08f);
+						statusTurnCounter[Burn] -= 1;
+						if(statusTurnCounter[Burn] == 0) {
+							TryRemoveStatus (Burn);
 						}
 					}
 					break;
-				case POISON:
+				case Poison:
 					// 10% DoT & m atk down
-					if (statusTurnCounter [POISON] > 0) {
-						ModifyHP (-0.1f);
-						statusTurnCounter[POISON] -= 1;
-						if(statusTurnCounter[POISON] == 0) {
-							tryRemoveStatus (POISON);
+					if (statusTurnCounter [Poison] > 0) {
+						ModifyHp (-0.1f);
+						statusTurnCounter[Poison] -= 1;
+						if(statusTurnCounter[Poison] == 0) {
+							TryRemoveStatus (Poison);
 						}
 					}
 					break;
-				case RUNE_LOCK:
-					statusTurnCounter[RUNE_LOCK] -= 1;
-					if (statusTurnCounter[RUNE_LOCK] == 0) {
-						tryRemoveStatus(RUNE_LOCK);
+				case RuneLock:
+					statusTurnCounter[RuneLock] -= 1;
+					if (statusTurnCounter[RuneLock] == 0) {
+						TryRemoveStatus(RuneLock);
 					}
 					break;
-				case STUN:
+				case Stun:
 					// Can't act for x turns
-					if(statusTurnCounter[STUN] > 0) {
-						statusTurnCounter[STUN] -= 1;
-						if(statusTurnCounter[STUN] == 0) {
-							tryRemoveStatus (STUN);
+					if(statusTurnCounter[Stun] > 0) {
+						statusTurnCounter[Stun] -= 1;
+						if(statusTurnCounter[Stun] == 0) {
+							TryRemoveStatus (Stun);
 						}
 					}
 					break;
-				case SILENCE:
+				case Silence:
 					// Can't cast spells for x turns. Can still use skills
-					if(statusTurnCounter[SILENCE] > 0) {
-						statusTurnCounter[SILENCE] -= 1;
-						if(statusTurnCounter[SILENCE] == 0) {
-							tryRemoveStatus (SILENCE);
+					if(statusTurnCounter[Silence] > 0) {
+						statusTurnCounter[Silence] -= 1;
+						if(statusTurnCounter[Silence] == 0) {
+							TryRemoveStatus (Silence);
 						}
 					}
 					break;
