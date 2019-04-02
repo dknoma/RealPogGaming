@@ -276,6 +276,12 @@ public class PlayerController : MonoBehaviour {
 			ObjectInfo platValues = coll.gameObject.GetComponent<ObjectInfo>();
 			nextPlatform = platValues;
 		}
+		if(coll.gameObject.CompareTag("Enemy")) {
+			if (Vector2.Distance(coll.GetContact(0).point, shadow.transform.position) <= shadow.GetComponent<Collider2D>().bounds.size.x) {
+				Debug.Log(string.Format("\t\tcurrent enemy {0}, {1}", coll.gameObject.name, Vector2.Distance(coll.GetContact(0).point, shadow.transform.position)));
+				BattleManager.bm.SetBattleState(BattleState.Init);
+			}
+		}
 	}
 	
 	private void OnCollisionStay2D(Collision2D coll) {

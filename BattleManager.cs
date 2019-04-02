@@ -119,13 +119,6 @@ public class BattleManager : MonoBehaviour {
 		party.InitPartyMembers ();
 	}
 
-	private void Start() {
-//		testMenu = GameObject.FindGameObjectWithTag("TestMenu");
-//		actionMenu = testMenu.GetComponentInChildren<ActionMenu>();
-//		testMenu.SetActive(false);
-	}
-
-
 	private void Update() {
 		if (Input.GetButtonDown("Fire1") && BattleState == BattleState.Nil) {
 			BattleState = BattleState.Init;
@@ -227,7 +220,7 @@ public class BattleManager : MonoBehaviour {
 				case BattlePhase.Action:
 					// TODO []: let unit do their actions: attack, use items, run away
 					// TODO [x]: have a bool that will change from the action menu depending on the action
-					if (!menuActivated) {
+					if (!menuActivated && !ScreenTransitionManager.screenTransitionManager.IsTransitioning()) {
 						menuActivated = true;
 						actionMenu.gameObject.SetActive(true);
 						actionMenu.TryInitMenu();
@@ -284,9 +277,17 @@ public class BattleManager : MonoBehaviour {
 			Debug.Log("In cutscene.");
 		}
 	}
+	
+//	private static IEnumerator TransitionScreen() {
+//		ScreenTransitionManager.screenTransitionManager.TransitionToBlack(Transition.Sawtooth);
+//		yield return new WaitUntil(() => !ScreenTransitionManager.screenTransitionManager.IsTransitioning());
+//		yield return new WaitForSeconds(1);
+//		ScreenTransitionManager.screenTransitionManager.TransitionFromBlack(Transition.Sawtooth);
+//	}
 
 	// Use this for initialization
 	private void InitBattle () {
+		ScreenTransitionManager.screenTransitionManager.DoScreenTransition(Transition.Sawtooth);
 		// Initialize battle settings
 		_turnCount = 0;
 		units = new List<GameObject> ();
@@ -484,6 +485,14 @@ public class BattleManager : MonoBehaviour {
 	
 	public List<GameObject> GetEnemies() {
 		return enemies;
+	}
+	
+	public BattleState GetBattleState() {
+		return BattleState;
+	}
+	
+	public void SetBattleState(BattleState state) {
+		BattleState = state;
 	}
 	
 	public BattlePhase GetBattlePhase() {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,7 +16,7 @@ public enum Transition {
 //[ExecuteInEditMode]
 public class ScreenTransitionManager : MonoBehaviour {
 
-	public static ScreenTransitionManager transitionManager;
+	public static ScreenTransitionManager screenTransitionManager;
 
 	public bool inDebug;
 	
@@ -29,6 +30,7 @@ public class ScreenTransitionManager : MonoBehaviour {
 	
 	private bool isTransitioningToBlack;
 	private bool isTransitioningFromBlack;
+	private bool transitioning;
 	private float transitionCounter;
 	private float transitionCutoff;
 	private Text debugText;
@@ -37,9 +39,9 @@ public class ScreenTransitionManager : MonoBehaviour {
 	private static readonly int Reverse = Shader.PropertyToID("_Reverse");
 
 	private void OnEnable() {
-		if (transitionManager == null) {
-			transitionManager = this;
-		} else if (transitionManager != this) {
+		if (screenTransitionManager == null) {
+			screenTransitionManager = this;
+		} else if (screenTransitionManager != this) {
 			Destroy(gameObject);
 		}
 		DontDestroyOnLoad(gameObject);
@@ -57,7 +59,6 @@ public class ScreenTransitionManager : MonoBehaviour {
 	private void Update() {
 		if (!inDebug) return;
 		TestButtons();
-		if (debugText == null) return;
 		debugText.text = string.Format("Press Tab to change:\n{0}", transition.ToString());
 	}
 
@@ -105,6 +106,36 @@ public class ScreenTransitionManager : MonoBehaviour {
 			default:
 				throw new ArgumentOutOfRangeException();
 		}
+	}
+
+	public void DoScreenTransition(Transition screenTransition) {
+		transition = screenTransition;
+		StartCoroutine(DoTransition());
+	}
+	
+	private IEnumerator DoTransition() {
+		TransitionToBlack(transition);
+		yield return new WaitUntil(() => !isTransitioningToBlack);
+		yield return new WaitForSeconds(1);
+		TransitionFromBlack(transition);
+		yield return new WaitUntil(() => !isTransitioningFromBlack);
+		transitioning = false;
+	}
+
+	public void TransitionToBlack(Transition screenTransition) {
+		transition = screenTransition;
+		transitioning = true;
+		isTransitioningToBlack = true;
+	}
+	
+	public void TransitionFromBlack(Transition screenTransition) {
+		transition = screenTransition;
+		transitioning = true;
+		isTransitioningFromBlack = true;
+	}
+
+	public bool IsTransitioning() {
+		return transitioning;
 	}
 	
 	private void TestButtons() {

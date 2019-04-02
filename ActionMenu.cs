@@ -64,6 +64,7 @@ public class ActionMenu : MonoBehaviour {
 //	private Direction currentDirection;
 	private bool axisDown;
 	private bool inSubMenu;
+	private bool initializedMenu;
 
 	private GameObject attackOption;
 	private GameObject runOption;
@@ -173,10 +174,16 @@ public class ActionMenu : MonoBehaviour {
 		basicAttacks.InitMenuItems(new object[2]);
 		basicAttacks.AddItem(new Attack(AttackOption.A, attackAName), 0);
 		basicAttacks.AddItem(new Attack(AttackOption.B, attackBName), 1);
+		if (Mathf.RoundToInt(Input.GetAxisRaw("Horizontal")) != 0 ||
+		    Mathf.RoundToInt(Input.GetAxisRaw("Vertical")) != 0) {
+			axisDown = true;
+		}
+
+		initializedMenu = true;
 	}
 
 	private void Update() {
-		if (BattleManager.bm.InBattle() && BattleManager.bm.GetBattlePhase() == BattlePhase.Action) {
+		if (BattleManager.bm.InBattle() && BattleManager.bm.GetBattlePhase() == BattlePhase.Action && initializedMenu) {
 			UseMenu();
 		}
 
@@ -185,85 +192,6 @@ public class ActionMenu : MonoBehaviour {
 //		} else if (Input.GetButtonDown("Test") && currentActionImage.CompareTag("RunAction")) {
 //			BattleManager.bm.EndBattle(WinStatus.Escape);
 //		}
-	}
-	
-	private void NavigateMenu<T>(MenuGraph<T> menu, Direction direction) {
-		Type menuType = typeof(T);
-		if(menuType == typeof(ActionCategoryContainer)) {
-			menu.TraverseOptions(direction);
-			ActionCategoryContainer currentItem = menu.GetCurrentItem() as ActionCategoryContainer;
-			if (currentItem != null) {
-				currentActionImage.color = Color.grey; // Change previous action to white
-				menuOptionState = currentItem.MenuOptionState();
-				currentActionImage = currentItem.OptionRender().GetComponent<Image>();
-				currentActionImage.color = Color.white; // Change current action to grey
-				Debug.LogFormat("Current category = {0}", currentItem.MenuOptionState());
-			} else {
-				Debug.LogWarning("Current item was null.");
-			}
-		} else if (menuType == typeof(GameObject)) {
-			menu.TraverseOptions(direction);
-			GameObject currentTarget = menu.GetCurrentItem() as GameObject;
-			Debug.LogFormat("Current target: {0}", currentTarget.name);
-		} else if (menuType == typeof(object)) {
-			menu.TraverseOptions(direction);
-			Attack currentAttack = menu.GetCurrentItem() as Attack;
-			Debug.LogFormat("Current attack: {0}", currentAttack.Name());
-		}
-//		Debug.Log("direction: " + direction);
-////		currentMenu.TraverseOptions(direction);
-//		menu.TraverseOptions(direction);
-//		currentActionImage.color = Color.grey; // Change previous action to white
-////		currentActionImage = mainMenu.GetCurrentItem();
-////		Debug.Log("asdasda: " + currentMenu.GetCurrentItem().name);
-//		menuOptionState = menu.GetCurrentItem().MenuOptionState();
-//		currentActionImage = menu.GetCurrentItem().OptionRender().GetComponent<Image>();
-//		currentActionImage.color = Color.white; // Change current action to grey
-//		currentBattleOptionRender = menu.GetCurrentItem().OptionRender();
-//		currentActionImage = currentBattleOptionRender.GetComponent<Image>();
-	}
-
-	private void GetAxisDown<T>(MenuGraph<T> menu) {
-		if (axisDown) {
-//			currentDirection = Direction.Null;
-			if (!(Mathf.Abs(Input.GetAxisRaw("Horizontal")) < Mathf.Epsilon) ||
-			    !(Mathf.Abs(Input.GetAxisRaw("Vertical")) < Mathf.Epsilon)) return;
-//			Debug.Log("Reset axis down");
-			axisDown = false;
-			return;
-		}
-		if(Input.GetAxisRaw ("Horizontal") > 0) {
-//			Debug.Log ("Right");
-			axisDown = true;
-			const Direction dir = Direction.Right;
-			DoSoundEffect(menu.GetMenuType(), dir);
-			NavigateMenu(menu, dir);
-//			NavigateMenu(Direction.Right);
-		} else if(Input.GetAxisRaw ("Horizontal") < 0) {
-//			Debug.Log ("Left");
-			axisDown = true;
-			const Direction dir = Direction.Left;
-			DoSoundEffect(menu.GetMenuType(), dir);
-			NavigateMenu(menu, dir);
-//			NavigateMenu(Direction.Left);
-		} else if(Input.GetAxisRaw ("Vertical") > 0) {
-//			Debug.Log ("Up");
-			axisDown = true;
-			const Direction dir = Direction.Up;
-			DoSoundEffect(menu.GetMenuType(), dir);
-			NavigateMenu(menu, dir);
-//			NavigateMenu(Direction.Up);
-		} else if(Input.GetAxisRaw ("Vertical") < 0) {
-//			Debug.Log ("Down");
-			axisDown = true;
-			const Direction dir = Direction.Down;
-			DoSoundEffect(menu.GetMenuType(), dir);
-			NavigateMenu(menu, dir);
-//			NavigateMenu(Direction.Down);
-		} else {
-//			Debug.Log("Reset axis down");
-			axisDown = false;
-		}
 	}
 	
 	private void UseMenu() {
@@ -341,10 +269,10 @@ public class ActionMenu : MonoBehaviour {
 		GameObject target = currentTargets.GetCurrentItem();
 		Debug.Log("Chose target " + BattleManager.bm.GetCurrentTarget());
 		subMenuState = SubMenuState.BasicAttack;
-		ResolveMenuAction();
+		ResolveActionSelection();
 	}
 	
-	private void ResolveMenuAction() {
+	private void ResolveActionSelection() {
 		switch (subMenuState) {
 			case SubMenuState.Nil:
 				break;
@@ -353,9 +281,6 @@ public class ActionMenu : MonoBehaviour {
 				Debug.LogFormat("Using {0}", currentAttack.Name());
 				BattleManager.bm.SetCurrentTarget(currentTargets.GetCurrentItem());
 				BattleManager.bm.SetBattlePhase(BattlePhase.Battle);
-				subMenuState = SubMenuState.Nil;
-				menuOptionState = MenuOptionState.BasicAttack;
-				menuState = MenuState.Main;
 				break;
 			case SubMenuState.Support:
 				break;
@@ -369,6 +294,90 @@ public class ActionMenu : MonoBehaviour {
 				break;
 			default:
 				throw new ArgumentOutOfRangeException();
+		}
+		// Reset menu state
+		subMenuState = SubMenuState.Nil;
+		menuOptionState = MenuOptionState.BasicAttack;
+		menuState = MenuState.Main;
+		initializedMenu = false;
+	}
+	
+	private void NavigateMenu<T>(MenuGraph<T> menu, Direction direction) {
+		Type menuType = typeof(T);
+		if(menuType == typeof(ActionCategoryContainer)) {
+			menu.TraverseOptions(direction);
+			ActionCategoryContainer currentItem = menu.GetCurrentItem() as ActionCategoryContainer;
+			if (currentItem != null) {
+				currentActionImage.color = Color.grey; // Change previous action to white
+				menuOptionState = currentItem.MenuOptionState();
+				currentActionImage = currentItem.OptionRender().GetComponent<Image>();
+				currentActionImage.color = Color.white; // Change current action to grey
+				Debug.LogFormat("Current category = {0}", currentItem.MenuOptionState());
+			} else {
+				Debug.LogWarning("Current item was null.");
+			}
+		} else if (menuType == typeof(GameObject)) {
+			menu.TraverseOptions(direction);
+			GameObject currentTarget = menu.GetCurrentItem() as GameObject;
+			Debug.LogFormat("Current target: {0}", currentTarget.name);
+		} else if (menuType == typeof(object)) {
+			menu.TraverseOptions(direction);
+			Attack currentAttack = menu.GetCurrentItem() as Attack;
+			Debug.LogFormat("Current attack: {0}", currentAttack.Name());
+		}
+//		Debug.Log("direction: " + direction);
+////		currentMenu.TraverseOptions(direction);
+//		menu.TraverseOptions(direction);
+//		currentActionImage.color = Color.grey; // Change previous action to white
+////		currentActionImage = mainMenu.GetCurrentItem();
+////		Debug.Log("asdasda: " + currentMenu.GetCurrentItem().name);
+//		menuOptionState = menu.GetCurrentItem().MenuOptionState();
+//		currentActionImage = menu.GetCurrentItem().OptionRender().GetComponent<Image>();
+//		currentActionImage.color = Color.white; // Change current action to grey
+//		currentBattleOptionRender = menu.GetCurrentItem().OptionRender();
+//		currentActionImage = currentBattleOptionRender.GetComponent<Image>();
+	}
+
+	private void GetAxisDown<T>(MenuGraph<T> menu) {
+		if (axisDown) {
+//			currentDirection = Direction.Null;
+			if (!(Mathf.Abs(Input.GetAxisRaw("Horizontal")) < Mathf.Epsilon) ||
+			    !(Mathf.Abs(Input.GetAxisRaw("Vertical")) < Mathf.Epsilon)) return;
+//			Debug.Log("Reset axis down");
+			axisDown = false;
+			return;
+		}
+		if(Input.GetAxisRaw ("Horizontal") > 0) {
+//			Debug.Log ("Right");
+			axisDown = true;
+			const Direction dir = Direction.Right;
+//			DoSoundEffect(menu.GetMenuType(), dir);
+			NavigateMenu(menu, dir);
+//			NavigateMenu(Direction.Right);
+		} else if(Input.GetAxisRaw ("Horizontal") < 0) {
+//			Debug.Log ("Left");
+			axisDown = true;
+			const Direction dir = Direction.Left;
+//			DoSoundEffect(menu.GetMenuType(), dir);
+			NavigateMenu(menu, dir);
+//			NavigateMenu(Direction.Left);
+		} else if(Input.GetAxisRaw ("Vertical") > 0) {
+//			Debug.Log ("Up");
+			axisDown = true;
+			const Direction dir = Direction.Up;
+//			DoSoundEffect(menu.GetMenuType(), dir);
+			NavigateMenu(menu, dir);
+//			NavigateMenu(Direction.Up);
+		} else if(Input.GetAxisRaw ("Vertical") < 0) {
+//			Debug.Log ("Down");
+			axisDown = true;
+			const Direction dir = Direction.Down;
+//			DoSoundEffect(menu.GetMenuType(), dir);
+			NavigateMenu(menu, dir);
+//			NavigateMenu(Direction.Down);
+		} else {
+//			Debug.Log("Reset axis down");
+			axisDown = false;
 		}
 	}
 
