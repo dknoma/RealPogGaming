@@ -91,6 +91,11 @@ public class PlayerController : MonoBehaviour {
 	private RaycastHit2D[] floorHits = new RaycastHit2D[2];
 	private RaycastHit2D[] wallHits = new RaycastHit2D[2];
 
+	private RaycastHit2D upHit;
+	private RaycastHit2D downHit;
+	private RaycastHit2D leftHit;
+	private RaycastHit2D rightHit;
+
 	// Raycast stuff
 	private RaycastHit2D currentLeftBase;
 	private RaycastHit2D nextLeftBase;
@@ -276,6 +281,42 @@ public class PlayerController : MonoBehaviour {
 			ObjectInfo platValues = coll.gameObject.GetComponent<ObjectInfo>();
 			nextPlatform = platValues;
 		}
+//		if (coll.gameObject.CompareTag("Base") || coll.gameObject.CompareTag("Bounds") || coll.gameObject.CompareTag("SolidDeco")) {
+////			TryBlockDirections(shadow.transform);
+//			switch (facingDirection) {
+//				case Direction.Null:
+//					break;
+//				case Direction.Down:
+//					MoveInDirection(Direction.Up, overworldSpeed); 
+////					isDirectionBlocked[(int) facingDirection] = true;
+//					break;
+//				case Direction.DownRight:
+////					isDirectionBlocked[(int) facingDirection] = true;
+//					break;
+//				case Direction.Right:
+////					isDirectionBlocked[(int) facingDirection] = true;
+//					break;
+//				case Direction.UpRight:
+////					isDirectionBlocked[(int) facingDirection] = true;
+//					break;
+//				case Direction.Up:
+////					isDirectionBlocked[(int) facingDirection] = true;
+//					break;
+//				case Direction.UpLeft:
+////					isDirectionBlocked[(int) facingDirection] = true;
+//					break;
+//				case Direction.Left:
+////					isDirectionBlocked[(int) facingDirection] = true;
+//					break;
+//				case Direction.DownLeft:
+////					isDirectionBlocked[(int) facingDirection] = true;
+//					break;
+//				default:
+//					throw new ArgumentOutOfRangeException();
+//			}
+//		}
+		
+		// Start battle if run into an enemy
 		if(coll.gameObject.CompareTag("Enemy")) {
 			if (Vector2.Distance(coll.GetContact(0).point, shadow.transform.position) <= shadow.GetComponent<Collider2D>().bounds.size.x) {
 				Debug.Log(string.Format("\t\tcurrent enemy {0}, {1}", coll.gameObject.name, Vector2.Distance(coll.GetContact(0).point, shadow.transform.position)));
@@ -290,8 +331,144 @@ public class PlayerController : MonoBehaviour {
 			ObjectInfo baseValues = coll.gameObject.GetComponent<ObjectInfo>();
 //			nextPlatform = platValues;
 		}
+
+		if (coll.gameObject.CompareTag("Base") || coll.gameObject.CompareTag("Bounds") ||
+		    coll.gameObject.CompareTag("SolidDeco")) {
+//			TryBlockDirections(shadow.transform);
+			switch (facingDirection) {
+				case Direction.Null:
+					break;
+				case Direction.Down:
+					MoveInDirection(Direction.Up, overworldSpeed);
+//					isDirectionBlocked[(int) facingDirection] = true;
+					break;
+				case Direction.DownRight:
+//					isDirectionBlocked[(int) facingDirection] = true;
+					break;
+				case Direction.Right:
+					MoveInDirection(Direction.Left, overworldSpeed);
+//					isDirectionBlocked[(int) facingDirection] = true;
+					break;
+				case Direction.UpRight:
+//					RaycastHit2D upHit = RaycastInDirection(Direction.Up);
+//					RaycastHit2D rightHit = RaycastInDirection(Direction.Right);
+					if (Mathf.Abs(upHit.distance) < Mathf.Epsilon && 
+					    Mathf.Abs(rightHit.distance) > Mathf.Epsilon) {
+						MoveInDirection(Direction.Down, overworldSpeed);
+					} else if (Mathf.Abs(upHit.distance) > Mathf.Epsilon &&
+					           Mathf.Abs(rightHit.distance) < Mathf.Epsilon) {
+						MoveInDirection(Direction.Left, overworldSpeed);
+					} else if(Mathf.Abs(upHit.distance) < Mathf.Epsilon && 
+					          Mathf.Abs(rightHit.distance) < Mathf.Epsilon) {
+						MoveInDirection(Direction.DownLeft, diagonalMovementSpeed);
+					}
+//					isDirectionBlocked[(int) facingDirection] = true;
+					break;
+				case Direction.Up:
+					MoveInDirection(Direction.Down, overworldSpeed);
+//					isDirectionBlocked[(int) facingDirection] = true;
+					break;
+				case Direction.UpLeft:
+//					isDirectionBlocked[(int) facingDirection] = true;
+					break;
+				case Direction.Left:
+					MoveInDirection(Direction.Right, overworldSpeed);
+//					isDirectionBlocked[(int) facingDirection] = true;
+					break;
+				case Direction.DownLeft:
+//					isDirectionBlocked[(int) facingDirection] = true;
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
+
 	}
-	
+
+	private void OnCollisionExit2D(Collision2D coll) {
+		if (coll.gameObject.CompareTag("Base") || coll.gameObject.CompareTag("Bounds") || coll.gameObject.CompareTag("SolidDeco")) {
+			Debug.Log("Exiting blocking collider.");
+//			switch (facingDirection) {
+//				case Direction.Null:
+//					break;
+//				case Direction.Down:
+//					isDirectionBlocked[(int) Direction.Up] = false;
+//					isDirectionBlocked[(int) Direction.Left] = false;
+//					isDirectionBlocked[(int) Direction.Right] = false;
+//					isDirectionBlocked[(int) Direction.UpLeft] = false;
+//					isDirectionBlocked[(int) Direction.UpRight] = false;
+////					isDirectionBlocked[(int) Direction.DownLeft] = false;
+////					isDirectionBlocked[(int) Direction.DownRight] = false;
+//					break;
+//				case Direction.DownRight:
+//					isDirectionBlocked[(int) Direction.Up] = false;
+////					isDirectionBlocked[(int) Direction.Down] = false;
+//					isDirectionBlocked[(int) Direction.Left] = false;
+//					isDirectionBlocked[(int) Direction.Right] = false;
+//					isDirectionBlocked[(int) Direction.UpLeft] = false;
+//					isDirectionBlocked[(int) Direction.UpRight] = false;
+////					isDirectionBlocked[(int) Direction.DownLeft] = false;
+//					break;
+//				case Direction.Right:
+//					isDirectionBlocked[(int) Direction.Up] = false;
+//					isDirectionBlocked[(int) Direction.Down] = false;
+//					isDirectionBlocked[(int) Direction.Left] = false;
+//					isDirectionBlocked[(int) Direction.UpLeft] = false;
+////					isDirectionBlocked[(int) Direction.UpRight] = false;
+//					isDirectionBlocked[(int) Direction.DownLeft] = false;
+////					isDirectionBlocked[(int) Direction.DownRight] = false;
+//					break;
+//				case Direction.UpRight:
+////					isDirectionBlocked[(int) Direction.Up] = false;
+//					isDirectionBlocked[(int) Direction.Down] = false;
+//					isDirectionBlocked[(int) Direction.Left] = false;
+//					isDirectionBlocked[(int) Direction.Right] = false;
+////					isDirectionBlocked[(int) Direction.UpLeft] = false;
+//					isDirectionBlocked[(int) Direction.DownLeft] = false;
+//					isDirectionBlocked[(int) Direction.DownRight] = false;
+//					break;
+//				case Direction.Up:
+//					isDirectionBlocked[(int) Direction.Down] = false;
+//					isDirectionBlocked[(int) Direction.Left] = false;
+//					isDirectionBlocked[(int) Direction.Right] = false;
+////					isDirectionBlocked[(int) Direction.UpLeft] = false;
+////					isDirectionBlocked[(int) Direction.UpRight] = false;
+//					isDirectionBlocked[(int) Direction.DownLeft] = false;
+//					isDirectionBlocked[(int) Direction.DownRight] = false;
+//					break;
+//				case Direction.UpLeft:
+//					isDirectionBlocked[(int) Direction.Up] = false;
+//					isDirectionBlocked[(int) Direction.Down] = false;
+//					isDirectionBlocked[(int) Direction.Left] = false;
+//					isDirectionBlocked[(int) Direction.Right] = false;
+//					isDirectionBlocked[(int) Direction.UpRight] = false;
+//					isDirectionBlocked[(int) Direction.DownLeft] = false;
+//					isDirectionBlocked[(int) Direction.DownRight] = false;
+//					break;
+//				case Direction.Left:
+//					isDirectionBlocked[(int) Direction.Up] = false;
+//					isDirectionBlocked[(int) Direction.Down] = false;
+//					isDirectionBlocked[(int) Direction.Right] = false;
+////					isDirectionBlocked[(int) Direction.UpLeft] = false;
+//					isDirectionBlocked[(int) Direction.UpRight] = false;
+////					isDirectionBlocked[(int) Direction.DownLeft] = false;
+//					isDirectionBlocked[(int) Direction.DownRight] = false;
+//					break;
+//				case Direction.DownLeft:
+//					isDirectionBlocked[(int) Direction.Up] = false;
+////					isDirectionBlocked[(int) Direction.Down] = false;
+//					isDirectionBlocked[(int) Direction.Left] = false;
+//					isDirectionBlocked[(int) Direction.Right] = false;
+//					isDirectionBlocked[(int) Direction.UpLeft] = false;
+//					isDirectionBlocked[(int) Direction.UpRight] = false;
+////					isDirectionBlocked[(int) Direction.DownRight] = false;
+//					break;
+//				default:
+//					throw new ArgumentOutOfRangeException();
+//			}
+		}
+	}
+
 	/// <summary>
 	/// Reset animation settings when main player is changed
 	/// </summary>
@@ -316,6 +493,10 @@ public class PlayerController : MonoBehaviour {
 
 	private void FixedUpdate() {
 		MovePlayer();
+		upHit = RaycastInDirection(Direction.Up);
+		downHit = RaycastInDirection(Direction.Down);
+		leftHit = RaycastInDirection(Direction.Left);
+		rightHit = RaycastInDirection(Direction.Right);
 //		groundPosition = shadow.transform.position;
 		velocity += gravityModifier * Physics2D.gravity * Time.deltaTime;
 //		Debug.Log("height " + currentHeight);
@@ -517,10 +698,10 @@ public class PlayerController : MonoBehaviour {
 //		}
 //	}
 
-	/// <summary>
-	///	Check the height of the floor that the player is trying to fall down to
-	/// </summary>
-	/// <returns>Height to displace current height by</returns>
+//	/// <summary>
+//	///	Check the height of the floor that the player is trying to fall down to
+//	/// </summary>
+//	/// <returns>Height to displace current height by</returns>
 //	private float CalculateFallingHeight(Direction direction) {
 ////		if (previousPlatform != null 
 ////		    && shadow.GetComponent<Collider2D>().Raycast(Vector2.down, floorContactFilter, floorHits, Mathf.Infinity) > 0) {
@@ -1589,7 +1770,7 @@ public class PlayerController : MonoBehaviour {
 		if (Input.GetAxisRaw("Vertical") > 0 && Mathf.Abs(Input.GetAxisRaw("Horizontal")) < Mathf.Epsilon) {
 			// Facing up
 			StartDirection(Direction.Up);
-			TryBlockDirections(shadow.transform);
+//			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.Up] 
 				&& !isDirectionBlocked[(int)Direction.UpLeft] 
 				&& !isDirectionBlocked[(int)Direction.UpRight]) {
@@ -1607,7 +1788,7 @@ public class PlayerController : MonoBehaviour {
 		} else if (Input.GetAxisRaw("Vertical") < 0 && Mathf.Abs(Input.GetAxisRaw("Horizontal")) < Mathf.Epsilon) {
 			// Facing down
 			StartDirection(Direction.Down);
-			TryBlockDirections(shadow.transform);
+//			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.Down]
 				&& !isDirectionBlocked[(int)Direction.DownLeft]
 				&& !isDirectionBlocked[(int)Direction.DownRight]) {
@@ -1626,7 +1807,7 @@ public class PlayerController : MonoBehaviour {
 		} else if (Input.GetAxisRaw("Horizontal") > 0 && Mathf.Abs(Input.GetAxisRaw("Vertical")) < Mathf.Epsilon) {
 			// Facing right
 			StartDirection(Direction.Right);
-			TryBlockDirections(shadow.transform);
+//			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.Right]
 				&& !isDirectionBlocked[(int)Direction.UpRight]
 				&& !isDirectionBlocked[(int)Direction.DownRight]) { 
@@ -1643,7 +1824,7 @@ public class PlayerController : MonoBehaviour {
 		} else if (Input.GetAxisRaw("Horizontal") < 0 && Mathf.Abs(Input.GetAxisRaw("Vertical")) < Mathf.Epsilon) {
 			// Facing left
 			StartDirection(Direction.Left);
-			TryBlockDirections(shadow.transform);
+//			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.Left]
 				&& !isDirectionBlocked[(int)Direction.UpLeft]
 				&& !isDirectionBlocked[(int)Direction.DownLeft]) {
@@ -1662,7 +1843,7 @@ public class PlayerController : MonoBehaviour {
 		} else if (Input.GetAxisRaw("Vertical") > 0 && Input.GetAxisRaw("Horizontal") > 0) {
 			// TODO: Facing up-right
 			StartDirection(Direction.UpRight);
-			TryBlockDirections(shadow.transform);
+//			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.UpRight]) {
 				//Debug.Log("Moving up right...");
 				MoveInDirection(Direction.UpRight, diagonalMovementSpeed);
@@ -1676,7 +1857,7 @@ public class PlayerController : MonoBehaviour {
 		} else if (Input.GetAxisRaw("Vertical") > 0 && Input.GetAxisRaw("Horizontal") < 0) {
 			// TODO: Facing up-left
 			StartDirection(Direction.UpLeft);
-			TryBlockDirections(shadow.transform);
+//			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.UpLeft]) {
 				Debug.Log("UL: up left");
 				MoveInDirection(Direction.UpLeft, diagonalMovementSpeed);
@@ -1694,7 +1875,7 @@ public class PlayerController : MonoBehaviour {
 		} else if (Input.GetAxisRaw("Vertical") < 0 && Input.GetAxisRaw("Horizontal") < 0) {
 			// Facing down-left
 			StartDirection(Direction.DownLeft);
-			TryBlockDirections(shadow.transform);
+//			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.DownLeft]) {
 				//transform.Translate(-0.35f, -0.35f, 0);
 				MoveInDirection(Direction.DownLeft, diagonalMovementSpeed);
@@ -1708,7 +1889,7 @@ public class PlayerController : MonoBehaviour {
 		} else if (Input.GetAxisRaw("Vertical") < 0 && Input.GetAxisRaw("Horizontal") > 0) {
 			// Facing down-right
 			StartDirection(Direction.DownRight);
-			TryBlockDirections(shadow.transform);
+//			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.DownRight]) {
 				//transform.Translate(0.35f, -0.35f, 0);
 				MoveInDirection(Direction.DownRight, diagonalMovementSpeed);
@@ -1725,6 +1906,30 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
+//	private void TryBlockDirections(Transform targetTransform) {
+//		switch (facingDirection) {
+//			case Direction.Null:
+//				break;
+//			case Direction.Down:
+//				break;
+//			case Direction.DownRight:
+//				break;
+//			case Direction.Right:
+//				break;
+//			case Direction.UpRight:
+//				break;
+//			case Direction.Up:
+//				break;
+//			case Direction.UpLeft:
+//				break;
+//			case Direction.Left:
+//				break;
+//			case Direction.DownLeft:
+//				break;
+//			default:
+//				throw new ArgumentOutOfRangeException();
+//		}
+//	}
 
 	//TODO: handle case where more than half of collider is past the wall
 	//Need to correct this and move player diagonally until they are no longer blocked
