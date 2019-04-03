@@ -6,6 +6,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Object = System.Object;
+// ReSharper disable CommentTypo
+// ReSharper disable IdentifierTypo
 #pragma warning disable 649
 
 public enum Direction { 
@@ -275,6 +277,7 @@ public class PlayerController : MonoBehaviour {
 //		}
 //	}
 
+	// TODO: cast down ray from top of collider to check wall collider. compare the walls height to ray distance
 	private void OnCollisionEnter2D(Collision2D coll) {
 		if(coll.gameObject.CompareTag("Platform")) {
 			Debug.Log(string.Format("\t\ttouched next plat {0}", coll.gameObject.name));
@@ -332,57 +335,56 @@ public class PlayerController : MonoBehaviour {
 //			nextPlatform = platValues;
 		}
 
-		if (coll.gameObject.CompareTag("Base") || coll.gameObject.CompareTag("Bounds") ||
-		    coll.gameObject.CompareTag("SolidDeco")) {
-//			TryBlockDirections(shadow.transform);
-			switch (facingDirection) {
-				case Direction.Null:
-					break;
-				case Direction.Down:
-					MoveInDirection(Direction.Up, overworldSpeed);
-//					isDirectionBlocked[(int) facingDirection] = true;
-					break;
-				case Direction.DownRight:
-//					isDirectionBlocked[(int) facingDirection] = true;
-					break;
-				case Direction.Right:
-					MoveInDirection(Direction.Left, overworldSpeed);
-//					isDirectionBlocked[(int) facingDirection] = true;
-					break;
-				case Direction.UpRight:
-//					RaycastHit2D upHit = RaycastInDirection(Direction.Up);
-//					RaycastHit2D rightHit = RaycastInDirection(Direction.Right);
-					if (Mathf.Abs(upHit.distance) < Mathf.Epsilon && 
-					    Mathf.Abs(rightHit.distance) > Mathf.Epsilon) {
-						MoveInDirection(Direction.Down, overworldSpeed);
-					} else if (Mathf.Abs(upHit.distance) > Mathf.Epsilon &&
-					           Mathf.Abs(rightHit.distance) < Mathf.Epsilon) {
-						MoveInDirection(Direction.Left, overworldSpeed);
-					} else if(Mathf.Abs(upHit.distance) < Mathf.Epsilon && 
-					          Mathf.Abs(rightHit.distance) < Mathf.Epsilon) {
-						MoveInDirection(Direction.DownLeft, diagonalMovementSpeed);
-					}
-//					isDirectionBlocked[(int) facingDirection] = true;
-					break;
-				case Direction.Up:
-					MoveInDirection(Direction.Down, overworldSpeed);
-//					isDirectionBlocked[(int) facingDirection] = true;
-					break;
-				case Direction.UpLeft:
-//					isDirectionBlocked[(int) facingDirection] = true;
-					break;
-				case Direction.Left:
-					MoveInDirection(Direction.Right, overworldSpeed);
-//					isDirectionBlocked[(int) facingDirection] = true;
-					break;
-				case Direction.DownLeft:
-//					isDirectionBlocked[(int) facingDirection] = true;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
-		}
-
+//		if (coll.gameObject.CompareTag("Base") || coll.gameObject.CompareTag("Bounds") ||
+//		    coll.gameObject.CompareTag("SolidDeco")) {
+////			TryBlockDirections(shadow.transform);
+//			switch (facingDirection) {
+//				case Direction.Null:
+//					break;
+//				case Direction.Down:
+//					MoveInDirection(Direction.Up, overworldSpeed);
+////					isDirectionBlocked[(int) facingDirection] = true;
+//					break;
+//				case Direction.DownRight:
+////					isDirectionBlocked[(int) facingDirection] = true;
+//					break;
+//				case Direction.Right:
+//					MoveInDirection(Direction.Left, overworldSpeed);
+////					isDirectionBlocked[(int) facingDirection] = true;
+//					break;
+//				case Direction.UpRight:
+////					RaycastHit2D upHit = RaycastInDirection(Direction.Up);
+////					RaycastHit2D rightHit = RaycastInDirection(Direction.Right);
+//					if (Mathf.Abs(upHit.distance) < Mathf.Epsilon && 
+//					    Mathf.Abs(rightHit.distance) > Mathf.Epsilon) {
+//						MoveInDirection(Direction.Down, overworldSpeed);
+//					} else if (Mathf.Abs(upHit.distance) > Mathf.Epsilon &&
+//					           Mathf.Abs(rightHit.distance) < Mathf.Epsilon) {
+//						MoveInDirection(Direction.Left, overworldSpeed);
+//					} else if(Mathf.Abs(upHit.distance) < Mathf.Epsilon && 
+//					          Mathf.Abs(rightHit.distance) < Mathf.Epsilon) {
+//						MoveInDirection(Direction.DownLeft, diagonalMovementSpeed);
+//					}
+////					isDirectionBlocked[(int) facingDirection] = true;
+//					break;
+//				case Direction.Up:
+//					MoveInDirection(Direction.Down, overworldSpeed);
+////					isDirectionBlocked[(int) facingDirection] = true;
+//					break;
+//				case Direction.UpLeft:
+////					isDirectionBlocked[(int) facingDirection] = true;
+//					break;
+//				case Direction.Left:
+//					MoveInDirection(Direction.Right, overworldSpeed);
+////					isDirectionBlocked[(int) facingDirection] = true;
+//					break;
+//				case Direction.DownLeft:
+////					isDirectionBlocked[(int) facingDirection] = true;
+//					break;
+//				default:
+//					throw new ArgumentOutOfRangeException();
+//			}
+//		}
 	}
 
 	private void OnCollisionExit2D(Collision2D coll) {
@@ -1770,7 +1772,7 @@ public class PlayerController : MonoBehaviour {
 		if (Input.GetAxisRaw("Vertical") > 0 && Mathf.Abs(Input.GetAxisRaw("Horizontal")) < Mathf.Epsilon) {
 			// Facing up
 			StartDirection(Direction.Up);
-//			TryBlockDirections(shadow.transform);
+			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.Up] 
 				&& !isDirectionBlocked[(int)Direction.UpLeft] 
 				&& !isDirectionBlocked[(int)Direction.UpRight]) {
@@ -1788,7 +1790,7 @@ public class PlayerController : MonoBehaviour {
 		} else if (Input.GetAxisRaw("Vertical") < 0 && Mathf.Abs(Input.GetAxisRaw("Horizontal")) < Mathf.Epsilon) {
 			// Facing down
 			StartDirection(Direction.Down);
-//			TryBlockDirections(shadow.transform);
+			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.Down]
 				&& !isDirectionBlocked[(int)Direction.DownLeft]
 				&& !isDirectionBlocked[(int)Direction.DownRight]) {
@@ -1807,7 +1809,7 @@ public class PlayerController : MonoBehaviour {
 		} else if (Input.GetAxisRaw("Horizontal") > 0 && Mathf.Abs(Input.GetAxisRaw("Vertical")) < Mathf.Epsilon) {
 			// Facing right
 			StartDirection(Direction.Right);
-//			TryBlockDirections(shadow.transform);
+			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.Right]
 				&& !isDirectionBlocked[(int)Direction.UpRight]
 				&& !isDirectionBlocked[(int)Direction.DownRight]) { 
@@ -1824,7 +1826,7 @@ public class PlayerController : MonoBehaviour {
 		} else if (Input.GetAxisRaw("Horizontal") < 0 && Mathf.Abs(Input.GetAxisRaw("Vertical")) < Mathf.Epsilon) {
 			// Facing left
 			StartDirection(Direction.Left);
-//			TryBlockDirections(shadow.transform);
+			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.Left]
 				&& !isDirectionBlocked[(int)Direction.UpLeft]
 				&& !isDirectionBlocked[(int)Direction.DownLeft]) {
@@ -1843,7 +1845,7 @@ public class PlayerController : MonoBehaviour {
 		} else if (Input.GetAxisRaw("Vertical") > 0 && Input.GetAxisRaw("Horizontal") > 0) {
 			// TODO: Facing up-right
 			StartDirection(Direction.UpRight);
-//			TryBlockDirections(shadow.transform);
+			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.UpRight]) {
 				//Debug.Log("Moving up right...");
 				MoveInDirection(Direction.UpRight, diagonalMovementSpeed);
@@ -1857,7 +1859,7 @@ public class PlayerController : MonoBehaviour {
 		} else if (Input.GetAxisRaw("Vertical") > 0 && Input.GetAxisRaw("Horizontal") < 0) {
 			// TODO: Facing up-left
 			StartDirection(Direction.UpLeft);
-//			TryBlockDirections(shadow.transform);
+			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.UpLeft]) {
 				Debug.Log("UL: up left");
 				MoveInDirection(Direction.UpLeft, diagonalMovementSpeed);
@@ -1875,7 +1877,7 @@ public class PlayerController : MonoBehaviour {
 		} else if (Input.GetAxisRaw("Vertical") < 0 && Input.GetAxisRaw("Horizontal") < 0) {
 			// Facing down-left
 			StartDirection(Direction.DownLeft);
-//			TryBlockDirections(shadow.transform);
+			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.DownLeft]) {
 				//transform.Translate(-0.35f, -0.35f, 0);
 				MoveInDirection(Direction.DownLeft, diagonalMovementSpeed);
@@ -1889,7 +1891,7 @@ public class PlayerController : MonoBehaviour {
 		} else if (Input.GetAxisRaw("Vertical") < 0 && Input.GetAxisRaw("Horizontal") > 0) {
 			// Facing down-right
 			StartDirection(Direction.DownRight);
-//			TryBlockDirections(shadow.transform);
+			TryBlockDirections(shadow.transform);
 			if (!isDirectionBlocked[(int)Direction.DownRight]) {
 				//transform.Translate(0.35f, -0.35f, 0);
 				MoveInDirection(Direction.DownRight, diagonalMovementSpeed);
@@ -2323,10 +2325,10 @@ public class PlayerController : MonoBehaviour {
 
 				//Debug.Log("u:" + nextUpBase.point + ", right:" + nextRightBase.point);
 				//Debug.Log("u, r: " + nextUpBase.distance + ", " + nextRightBase.distance);
-				if (resultsUp.Length > 0 && resultsRight.Length > 0
+				if (nextUpBase.collider != null && nextRightBase.collider != null
+//					resultsUp.Length > 0 && resultsRight.Length > 0
 					&& isDirectionBlocked[(int)Direction.Up] && isDirectionBlocked[(int)Direction.Right]
 					//&& nextUpBase.transform == nextRightBase.transform	//TODO: Handle what happens when touch corner
-					&& nextUpBase.collider != null
 					&& currentHeight <= nextUpBase.transform.GetComponent<ObjectInfo>().height
 					&& currentHeight <= nextRightBase.transform.GetComponent<ObjectInfo>().height) {
 					//Debug.Log("\t\tMoving down...");
@@ -2435,10 +2437,10 @@ public class PlayerController : MonoBehaviour {
 					}
 				);
 				//Debug.Log("currentL: " + currentLeftBase.transform.name + ", nextL: " + nextLeftBase.transform.name);
-				if (resultsUp.Length > 0 && resultsLeft.Length > 0
+				if (nextUpBase.collider != null && nextLeftBase.collider != null
+//					resultsUp.Length > 0 && resultsLeft.Length > 0
 					&& isDirectionBlocked[(int)Direction.Up] && isDirectionBlocked[(int)Direction.Left]
 					//&& nextUpBase.transform == nextRightBase.transform	//TODO: Handle what happens when touch corner
-					&& nextUpBase.collider != null
 					&& currentHeight <= nextUpBase.transform.GetComponent<ObjectInfo>().height
 					&& currentHeight <= nextLeftBase.transform.GetComponent<ObjectInfo>().height) {
 
@@ -2536,10 +2538,10 @@ public class PlayerController : MonoBehaviour {
 				);
 				//Debug.Log("u:" + nextUpBase.point + ", right:" + nextRightBase.point);
 				//Debug.Log("u, r: " + nextUpBase.distance + ", " + nextRightBase.distance);
-				if (resultsDown.Length > 0 && resultsRight.Length > 0
+				if (nextDownBase.collider != null && nextRightBase.collider != null
+//					resultsDown.Length > 0 && resultsRight.Length > 0
 					&& isDirectionBlocked[(int)Direction.Down] && isDirectionBlocked[(int)Direction.Right]
 					//&& nextUpBase.transform == nextRightBase.transform	//TODO: Handle what happens when touch corner
-					&& nextDownBase.collider != null
 					&& currentHeight <= nextDownBase.transform.GetComponent<ObjectInfo>().height
 					&& currentHeight <= nextRightBase.transform.GetComponent<ObjectInfo>().height) {
 
@@ -2653,10 +2655,10 @@ public class PlayerController : MonoBehaviour {
 				);
 				//Debug.Log("u:" + nextUpBase.point + ", right:" + nextRightBase.point);
 				//Debug.Log("u, r: " + nextUpBase.distance + ", " + nextRightBase.distance);
-				if (resultsDown.Length > 0 && resultsLeft.Length > 0
+				if (nextDownBase.collider != null && nextLeftBase.collider != null
+//					resultsDown.Length > 0 && resultsLeft.Length > 0
 					&& isDirectionBlocked[(int)Direction.Down] && isDirectionBlocked[(int)Direction.Left]
 					//&& nextUpBase.transform == nextRightBase.transform	
-					&& nextDownBase.collider != null
 					&& currentHeight <= nextDownBase.transform.GetComponent<ObjectInfo>().height
 					&& currentHeight <= nextLeftBase.transform.GetComponent<ObjectInfo>().height) {
 					if (nextDownLeftBase.collider != null && Mathf.Abs(nextDownLeftBase.distance) < diagonalBoundCorrection
@@ -2688,50 +2690,34 @@ public class PlayerController : MonoBehaviour {
 			case Direction.Up:
 				transform.position += new Vector3(0, speed, 0) * Time.fixedDeltaTime;
 				shadow.transform.position += new Vector3(0, speed, 0) * Time.fixedDeltaTime;
-//				transform.Translate(0, speed, 0);
-//				shadow.transform.Translate(0, speed, 0);
 				break;
 			case Direction.Down:
 				transform.position += new Vector3(0, -speed, 0) * Time.fixedDeltaTime;
 				shadow.transform.position += new Vector3(0, -speed, 0) * Time.fixedDeltaTime;
-//				transform.Translate(0, -speed, 0);
-//				shadow.transform.Translate(0, -speed, 0);
 				break;
 			case Direction.Left:
 				transform.position += new Vector3(-speed,0, 0) * Time.fixedDeltaTime;
 				shadow.transform.position += new Vector3(-speed,0, 0) * Time.fixedDeltaTime;
-//				transform.Translate(-speed, 0, 0);
-//				shadow.transform.Translate(-speed, 0, 0);
 				break;
 			case Direction.Right:
 				transform.position += new Vector3(speed,0, 0) * Time.fixedDeltaTime;
 				shadow.transform.position += new Vector3(speed,0, 0) * Time.fixedDeltaTime;
-//				transform.Translate(speed, 0, 0);
-//				shadow.transform.Translate(speed, 0, 0);
 				break;
 			case Direction.UpRight:
 				transform.position += new Vector3(speed,speed, 0) * Time.fixedDeltaTime;
 				shadow.transform.position += new Vector3(speed,speed, 0) * Time.fixedDeltaTime;
-//				transform.Translate(speed, speed, 0);
-//				shadow.transform.Translate(speed, speed, 0);
 				break;
 			case Direction.UpLeft:
 				transform.position += new Vector3(-speed,speed, 0) * Time.fixedDeltaTime;
 				shadow.transform.position += new Vector3(-speed,speed, 0) * Time.fixedDeltaTime;
-//				transform.Translate(-speed, speed, 0);
-//				shadow.transform.Translate(-speed, speed, 0);
 				break;
 			case Direction.DownRight:
 				transform.position += new Vector3(speed,-speed, 0) * Time.fixedDeltaTime;
 				shadow.transform.position += new Vector3(speed,-speed, 0) * Time.fixedDeltaTime;
-//				transform.Translate(speed, -speed, 0);
-//				shadow.transform.Translate(speed, -speed, 0);
 				break;
 			case Direction.DownLeft:
 				transform.position += new Vector3(-speed,-speed, 0) * Time.fixedDeltaTime;
 				shadow.transform.position += new Vector3(-speed,-speed, 0) * Time.fixedDeltaTime;
-//				transform.Translate(-speed, -speed, 0);
-//				shadow.transform.Translate(-speed, -speed, 0);
 				break;
 			case Direction.Null:
 				break;
@@ -2880,14 +2866,15 @@ public class PlayerController : MonoBehaviour {
 //			if (nextUpBase.collider != null && Mathf.Abs(nextUpBase.distance + currentHeight) < boundCorrection && CheckIfBlockPlayerByHeight(nextUpBase)
 //			    && fallingDirection != Direction.Up) {
 			if (nextUpBase.collider != null) {
-				ObjectInfo platBase = nextUpBase.transform.GetComponent<ObjectInfo>();
+//				ObjectInfo platBase = nextUpBase.transform.GetComponent<ObjectInfo>();
 				// Check if current pos is next to the next wall, taking height into account.
 //				Debug.Log("y: " + targetTransform.position.y);
 //				Debug.Log("bot: " + obj.bottomBound);
 //				Debug.Log("upupuppup: " + (Mathf.Abs(shadow.transform.position.y - obj.bottomBound - currentHeight) < boundCorrection));
 //				if (Mathf.Abs(targetTransform.position.y - obj.bottomBound - currentHeight) < BOUND_CORRECTION 
 //				if (Mathf.Abs(targetTransform.position.y - platBase.bottomBound - (currentPlatform != null ? currentPlatform.height : 0)) < BOUND_CORRECTION 
-				if (Mathf.Abs(targetTransform.position.y - 4 - currentPlatform.height) < BOUND_CORRECTION 
+//				if (Mathf.Abs(targetTransform.position.y - 4 - currentPlatform.height) < BOUND_CORRECTION 
+				if(Mathf.Abs(Vector2.Distance(targetTransform.position, nextUpBase.point)) < BOUND_CORRECTION
 				    && CheckIfBlockPlayerByHeight(nextUpBase) &&
 				    fallingDirection != Direction.Up) {
 					Debug.Log("normal blocking up...");
@@ -3009,7 +2996,7 @@ public class PlayerController : MonoBehaviour {
 //				if (Mathf.Abs(targetTransform.position.y - obj.bottomBound - (currentPlatform != null ? currentPlatform.height : 0)) < BOUND_CORRECTION 
 //				    && CheckIfBlockPlayerByHeight(nextUpBase) &&
 //				    fallingDirection != Direction.Up) {
-				if (Mathf.Abs(targetTransform.position.y - 4) < BOUND_CORRECTION && CheckIfBlockPlayerByHeight(nextDownBase) &&
+				if (Mathf.Abs(Vector2.Distance(targetTransform.position, nextDownBase.point)) < BOUND_CORRECTION && CheckIfBlockPlayerByHeight(nextDownBase) &&
 				    fallingDirection != Direction.Down) {
 					Debug.Log("normal blocking down...");
 					blockSide();
@@ -3169,7 +3156,7 @@ public class PlayerController : MonoBehaviour {
 			if (nextRightBase.collider != null) {
 				ObjectInfo obj = nextRightBase.transform.GetComponent<ObjectInfo>();
 				// Check if current pos is next to the next wall, taking height into account.
-				if (Mathf.Abs(targetTransform.position.x - 4) < BOUND_CORRECTION && CheckIfBlockPlayerByHeight(nextRightBase) &&
+				if (Mathf.Abs(Vector2.Distance(targetTransform.position, nextRightBase.point)) < BOUND_CORRECTION && CheckIfBlockPlayerByHeight(nextRightBase) &&
 				    fallingDirection != Direction.Right) {
 					Debug.Log("normal blocking right...");
 					blockSide();
@@ -3257,6 +3244,7 @@ public class PlayerController : MonoBehaviour {
 			blockSide();
 			return;
 		}
+		Debug.LogFormat("LEFT HIT POINT = {0}", resultsLeft[0].point);
 		if (hits > 0) {
 			if (hits > 1) {
 				if (currentLeftBase.collider != null) {
@@ -3287,8 +3275,9 @@ public class PlayerController : MonoBehaviour {
 			if (nextLeftBase.collider != null) {
 				ObjectInfo obj = nextLeftBase.transform.GetComponent<ObjectInfo>();
 				// Check if current pos is next to the next wall, taking height into account.
-				if (Mathf.Abs(targetTransform.position.x - 4) < BOUND_CORRECTION && CheckIfBlockPlayerByHeight(nextLeftBase) &&
-				    fallingDirection != Direction.UpLeft) {
+//				if (Mathf.Abs(targetTransform.position.x - 4) < BOUND_CORRECTION && CheckIfBlockPlayerByHeight(nextLeftBase) &&
+				if (Mathf.Abs(Vector2.Distance(targetTransform.position, nextLeftBase.point)) < BOUND_CORRECTION && CheckIfBlockPlayerByHeight(nextLeftBase) &&
+				    fallingDirection != Direction.Left) {
 					Debug.Log("normal blocking left...");
 					blockSide();
 				} else {
@@ -3363,11 +3352,13 @@ public class PlayerController : MonoBehaviour {
 //				    && CheckIfBlockPlayerByHeight(nextUpBase) &&
 //				    fallingDirection != Direction.Up) {
 				if ((
-				    targetTransform.position.x <= 4 && targetTransform.position.x >= 4 
-				    && Mathf.Abs(targetTransform.position.y - 4 - (currentPlatform != null ? currentPlatform.height : 0)) < BOUND_CORRECTION
-				    || 
-				    targetTransform.position.y <= 4 && targetTransform.position.y >= 4 + currentHeight
-				    && Mathf.Abs(targetTransform.position.x - 4) < BOUND_CORRECTION
+//				    targetTransform.position.x <= 4 && targetTransform.position.x >= 4 
+//				    && Mathf.Abs(targetTransform.position.y - 4 - (currentPlatform != null ? currentPlatform.height : 0)) < BOUND_CORRECTION
+//				    || 
+//				    targetTransform.position.y <= 4 && targetTransform.position.y >= 4 + currentHeight
+//				    && Mathf.Abs(targetTransform.position.x - 4) < BOUND_CORRECTION
+//                    && 
+					Mathf.Abs(Vector2.Distance(targetTransform.position, nextUpRightBase.point)) < diagonalBoundCorrection
 				    )
 				    && CheckIfBlockPlayerByHeight(nextUpRightBase) &&
 				    fallingDirection != Direction.UpRight) {
@@ -3500,11 +3491,13 @@ public class PlayerController : MonoBehaviour {
 				ObjectInfo obj = nextUpLeftBase.transform.GetComponent<ObjectInfo>(); 
 				// Check if current pos is next to the next wall, taking height into account.
 				if ((
-					targetTransform.position.x <= 4 && targetTransform.position.x >= 4 
-					&& Mathf.Abs(targetTransform.position.y - 4 - (currentPlatform != null ? currentPlatform.height : 0)) < BOUND_CORRECTION
-					|| 
-					targetTransform.position.y <= 4 && targetTransform.position.y >= 4 + currentHeight
-					&& Mathf.Abs(targetTransform.position.x - 4) < BOUND_CORRECTION
+//					targetTransform.position.x <= 4 && targetTransform.position.x >= 4 
+//					&& Mathf.Abs(targetTransform.position.y - 4 - (currentPlatform != null ? currentPlatform.height : 0)) < BOUND_CORRECTION
+//					|| 
+//					targetTransform.position.y <= 4 && targetTransform.position.y >= 4 + currentHeight
+//					&& Mathf.Abs(targetTransform.position.x - 4) < BOUND_CORRECTION
+//					&& 
+					Mathf.Abs(Vector2.Distance(targetTransform.position, nextUpLeftBase.point)) < diagonalBoundCorrection
 				    )
 				    && CheckIfBlockPlayerByHeight(nextUpLeftBase) &&
 				    fallingDirection != Direction.UpLeft) {
@@ -3641,11 +3634,12 @@ public class PlayerController : MonoBehaviour {
 				ObjectInfo obj = nextDownLeftBase.transform.GetComponent<ObjectInfo>();
 				// Check if current pos is next to the next wall, taking height into account.
 				if ((
-				    targetTransform.position.x <= 4 && targetTransform.position.x >= 4 
-				    && Mathf.Abs(targetTransform.position.y - 4) < BOUND_CORRECTION
-				    || 
-				    targetTransform.position.y <= 4 && targetTransform.position.y >= 4 
-					 && Mathf.Abs(targetTransform.position.x - 4) < BOUND_CORRECTION
+//				    targetTransform.position.x <= 4 && targetTransform.position.x >= 4 
+//				    && Mathf.Abs(targetTransform.position.y - 4) < BOUND_CORRECTION
+//				    || 
+//				    targetTransform.position.y <= 4 && targetTransform.position.y >= 4 
+//					 && Mathf.Abs(targetTransform.position.x - 4) < BOUND_CORRECTION
+					Mathf.Abs(Vector2.Distance(targetTransform.position, nextDownLeftBase.point)) < diagonalBoundCorrection
 				    )
 				    && CheckIfBlockPlayerByHeight(nextDownLeftBase) &&
 				    fallingDirection != Direction.DownLeft) {
@@ -3779,11 +3773,12 @@ public class PlayerController : MonoBehaviour {
 				var obj = nextDownRightBase.transform.GetComponent<ObjectInfo>();
 				// Check if current pos is next to the next wall, taking height into account.
 				if ((
-					    targetTransform.position.x <= 4 && targetTransform.position.x >= 4 
-				    && Mathf.Abs(targetTransform.position.y - 4) < BOUND_CORRECTION
-				    || 
-					    targetTransform.position.y <= 4 && targetTransform.position.y >= 4 
-					&& Mathf.Abs(targetTransform.position.x - 4) < BOUND_CORRECTION
+//					    targetTransform.position.x <= 4 && targetTransform.position.x >= 4 
+//				    && Mathf.Abs(targetTransform.position.y - 4) < BOUND_CORRECTION
+//				    || 
+//					    targetTransform.position.y <= 4 && targetTransform.position.y >= 4 
+//					&& Mathf.Abs(targetTransform.position.x - 4) < BOUND_CORRECTION
+				    Mathf.Abs(Vector2.Distance(targetTransform.position, nextDownRightBase.point)) < diagonalBoundCorrection
 				    )
 				    && CheckIfBlockPlayerByHeight(nextDownRightBase) &&
 				    fallingDirection != Direction.DownRight) {

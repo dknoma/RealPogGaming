@@ -68,82 +68,82 @@ public class PlayerShadow : MonoBehaviour {
 		groundedHeight = player.currentPlatform.height;
 	}
 
-	private void OnCollisionEnter2D(Collision2D coll) {
-		if(coll.gameObject.CompareTag("Platform")) {
-			Debug.Log(string.Format("\t\ttouched next plat {0}", coll.gameObject.name));
-			ObjectInfo platValues = coll.gameObject.GetComponent<ObjectInfo>();
-//			player.nextPlatform = platValues;
-			if (player.nextPlatform != player.currentPlatform) {
-				overAnotherPlat = true;
-			}
-		}
-	}
+//	private void OnCollisionEnter2D(Collision2D coll) {
+//		if(coll.gameObject.CompareTag("Platform")) {
+//			Debug.Log(string.Format("\t\ttouched next plat {0}", coll.gameObject.name));
+//			ObjectInfo platValues = coll.gameObject.GetComponent<ObjectInfo>();
+////			player.nextPlatform = platValues;
+//			if (player.nextPlatform != player.currentPlatform) {
+//				overAnotherPlat = true;
+//			}
+//		}
+//	}
 	
-	private void OnCollisionStay2D(Collision2D coll) {
-		if(coll.gameObject.CompareTag("Platform")) {
-			ObjectInfo platValues = coll.gameObject.GetComponent<ObjectInfo>();
-			if (player.currentHeight < platValues.height && !player.grounded) {
-				Debug.Log("returning...");
-				return;
-			}
-			if (!overAnotherPlat) {
-				player.currentPlatform = platValues;
-			}
-//			Debug.Log(string.Format("\t\tinside plat {0}", player.currentPlatform.name));
-			if(player.isWalking && player.nextPlatform != currentPlatform 
-			                    && Mathf.RoundToInt(player.nextPlatform.height) - Mathf.RoundToInt(groundedHeight) != 0
-			                    && HigherThanPlatform(player.nextPlatform) 
-			                    && !rising) {
-				Debug.Log("UP: trying to jump onto " + player.nextPlatform.name);
-				Debug.Log(string.Format("Inside {0}", player.nextPlatform.name));
-				overAnotherPlat = false;
-				currentPlatform = player.nextPlatform;
-				isOnPlatform = true;
-				leftCurrentPlatform = false;
-				rising = true;
-				lowering = false;
-//				nextPlatform = ground;
-				RaisePlayerObjects(); // happens multiple
-			}
-		}
-	}
+//	private void OnCollisionStay2D(Collision2D coll) {
+//		if(coll.gameObject.CompareTag("Platform")) {
+//			ObjectInfo platValues = coll.gameObject.GetComponent<ObjectInfo>();
+//			if (player.currentHeight < platValues.height && !player.grounded) {
+//				Debug.Log("returning...");
+//				return;
+//			}
+//			if (!overAnotherPlat) {
+//				player.currentPlatform = platValues;
+//			}
+////			Debug.Log(string.Format("\t\tinside plat {0}", player.currentPlatform.name));
+//			if(player.isWalking && player.nextPlatform != currentPlatform 
+//			                    && Mathf.RoundToInt(player.nextPlatform.height) - Mathf.RoundToInt(groundedHeight) != 0
+//			                    && HigherThanPlatform(player.nextPlatform) 
+//			                    && !rising) {
+//				Debug.Log("UP: trying to jump onto " + player.nextPlatform.name);
+//				Debug.Log(string.Format("Inside {0}", player.nextPlatform.name));
+//				overAnotherPlat = false;
+//				currentPlatform = player.nextPlatform;
+//				isOnPlatform = true;
+//				leftCurrentPlatform = false;
+//				rising = true;
+//				lowering = false;
+////				nextPlatform = ground;
+//				RaisePlayerObjects(); // happens multiple
+//			}
+//		}
+//	}
 	
-	private void OnCollisionExit2D(Collision2D coll) {
-		if(coll.gameObject.CompareTag("Platform")) {
-			Debug.Log(string.Format("\t\texiting plat {0}", coll.gameObject.name));
-			overAnotherPlat = false;
-			ObjectInfo platValues = coll.gameObject.GetComponent<ObjectInfo>();
-			previousPlatform = platValues;
-			if(fallingDirection == Direction.Down) {
-				int hits = myColl.Cast(Vector2.down, platformContactFilter, pResultsDown, Mathf.Infinity);
-				if(hits > 0) {
-					Debug.Log("DOWN GROUND");
-					ObjectInfo plat = pResultsDown[0].transform.GetComponent<ObjectInfo>();
-					player.nextPlatform = plat;
-				} 
-//				else {
-//					shadow.gameObject.GetComponent<Collider2D>().Cast(Vector2.down, floorContactFilter, pResultsDown);
-//					ObjectValues plat = pResultsDown[0].transform.GetComponent<ObjectInfo>().values;
-//					nextPlatform = plat;
-//				}
-			}
-			Debug.Log("\tnextPlatform: " + player.nextPlatform.name + ", prev: " + previousPlatform.name);
-			if (Mathf.Round(player.nextPlatform.height) < Mathf.Round(previousPlatform.height)
-			    && player.isWalking && !lowering) {
-				Debug.Log("normal falling - " + previousPlatform.name + " to " + player.nextPlatform.name);
-				fallingHeight = CalculateFallingHeight(fallingDirection);
-				lowering = true;
-				rising = false;
-//				isOnPlatform = false;
-//				transitionToCurrentPlatform = false;
-				leftCurrentPlatform = true;
-				Fall();
-//				currentPlatform = nextPlatform;
-			}
-//			currentPlatform = ground;
-//			player.nextPlatform = ground;
-		}
-	}
+//	private void OnCollisionExit2D(Collision2D coll) {
+//		if(coll.gameObject.CompareTag("Platform")) {
+//			Debug.Log(string.Format("\t\texiting plat {0}", coll.gameObject.name));
+//			overAnotherPlat = false;
+//			ObjectInfo platValues = coll.gameObject.GetComponent<ObjectInfo>();
+//			previousPlatform = platValues;
+//			if(fallingDirection == Direction.Down) {
+//				int hits = myColl.Cast(Vector2.down, platformContactFilter, pResultsDown, Mathf.Infinity);
+//				if(hits > 0) {
+//					Debug.Log("DOWN GROUND");
+//					ObjectInfo plat = pResultsDown[0].transform.GetComponent<ObjectInfo>();
+//					player.nextPlatform = plat;
+//				} 
+////				else {
+////					shadow.gameObject.GetComponent<Collider2D>().Cast(Vector2.down, floorContactFilter, pResultsDown);
+////					ObjectValues plat = pResultsDown[0].transform.GetComponent<ObjectInfo>().values;
+////					nextPlatform = plat;
+////				}
+//			}
+//			Debug.Log("\tnextPlatform: " + player.nextPlatform.name + ", prev: " + previousPlatform.name);
+//			if (Mathf.Round(player.nextPlatform.height) < Mathf.Round(previousPlatform.height)
+//			    && player.isWalking && !lowering) {
+//				Debug.Log("normal falling - " + previousPlatform.name + " to " + player.nextPlatform.name);
+//				fallingHeight = CalculateFallingHeight(fallingDirection);
+//				lowering = true;
+//				rising = false;
+////				isOnPlatform = false;
+////				transitionToCurrentPlatform = false;
+//				leftCurrentPlatform = true;
+//				Fall();
+////				currentPlatform = nextPlatform;
+//			}
+////			currentPlatform = ground;
+////			player.nextPlatform = ground;
+//		}
+//	}
 	
 	private bool HigherThanPlatform(ObjectInfo platform) {
 		return player.currentHeight > platform.height;
