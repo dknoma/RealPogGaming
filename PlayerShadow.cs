@@ -52,12 +52,12 @@ public class PlayerShadow : MonoBehaviour {
 		player = gameObject.FindComponentInSiblingsWithTag<PlayerController>("Player");
 		myColl = gameObject.GetComponent<Collider2D>();
 		
-		Debug.LogFormat("player {0}", player.transform.name);
+//		Debug.LogFormat("player {0}", player.transform.name);
 		RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, Mathf.Infinity, platformMask);
-		Debug.LogFormat("hit {0}", hit.transform.name);
-		Debug.LogFormat("aslkfhasflkjasfl;kj: {0}", hit.transform.GetComponent<ObjectInfo>());
+//		Debug.LogFormat("hit {0}", hit.transform.name);
+//		Debug.LogFormat("aslkfhasflkjasfl;kj: {0}", hit.transform.GetComponent<ObjectInfo>());
 		player.currentPlatform = hit.transform.GetComponent<ObjectInfo>();
-		Debug.LogFormat("Initial platform: {0}", player.currentPlatform.name);
+//		Debug.LogFormat("Initial platform: {0}", player.currentPlatform.name);
 		previousPlatform = player.currentPlatform;
 //		ground = new ObjectValues("ground", 0, Vector3.zero, -9999999);
 //		previousPlatform = ground;

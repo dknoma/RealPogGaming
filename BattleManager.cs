@@ -115,6 +115,7 @@ public class BattleManager : MonoBehaviour {
 			Destroy(gameObject);
 		}
 		DontDestroyOnLoad(gameObject);
+		
 		party = GameObject.FindGameObjectWithTag("Party").GetComponent<Party>();
 		party.InitPartyMembers ();
 	}
@@ -237,7 +238,7 @@ public class BattleManager : MonoBehaviour {
 						calculatingBattle = true;
 						switch (currentActionType) {
 							case ActionType.Attack:
-//								GameObject target = currentUnit.CompareTag("Enemy") ? party.frontUnit : enemies[0];
+//								GameObject target = currentUnit.CompareTag("EnemyPrefab") ? party.frontUnit : enemies[0];
 //								int dmg = CalculateDamage(currentUnit, target);
 //								TryDamage(dmg, target);
 								int dmg = CalculateDamage(currentUnit, currentTarget);
@@ -392,7 +393,7 @@ public class BattleManager : MonoBehaviour {
 			// Remove unit from the list if no more HP
 			units.Remove(target);
 			// TODO: if party member, make incapacitated: can be revived
-			if(target.CompareTag("Enemy")) {
+			if(target.CompareTag("EnemyPrefab")) {
 				Debug.Log(string.Format("ending the battleeeeeeeeeeeee"));
 				enemies.Remove(target);
 				expToGive += target.GetComponent<Character>().expToGrant;

@@ -328,12 +328,12 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 	
-	private void OnCollisionStay2D(Collision2D coll) {
-		if(coll.gameObject.CompareTag("Base")) {
-			Debug.Log(string.Format("\t\tcurrent base {0}", coll.gameObject.name));
-			ObjectInfo baseValues = coll.gameObject.GetComponent<ObjectInfo>();
-//			nextPlatform = platValues;
-		}
+//	private void OnCollisionStay2D(Collision2D coll) {
+//		if(coll.gameObject.CompareTag("Base")) {
+//			Debug.Log(string.Format("\t\tcurrent base {0}", coll.gameObject.name));
+//			ObjectInfo baseValues = coll.gameObject.GetComponent<ObjectInfo>();
+////			nextPlatform = platValues;
+//		}
 
 //		if (coll.gameObject.CompareTag("Base") || coll.gameObject.CompareTag("Bounds") ||
 //		    coll.gameObject.CompareTag("SolidDeco")) {
@@ -385,91 +385,91 @@ public class PlayerController : MonoBehaviour {
 //					throw new ArgumentOutOfRangeException();
 //			}
 //		}
-	}
+//	}
 
-	private void OnCollisionExit2D(Collision2D coll) {
-		if (coll.gameObject.CompareTag("Base") || coll.gameObject.CompareTag("Bounds") || coll.gameObject.CompareTag("SolidDeco")) {
-			Debug.Log("Exiting blocking collider.");
-//			switch (facingDirection) {
-//				case Direction.Null:
-//					break;
-//				case Direction.Down:
-//					isDirectionBlocked[(int) Direction.Up] = false;
-//					isDirectionBlocked[(int) Direction.Left] = false;
-//					isDirectionBlocked[(int) Direction.Right] = false;
-//					isDirectionBlocked[(int) Direction.UpLeft] = false;
-//					isDirectionBlocked[(int) Direction.UpRight] = false;
-////					isDirectionBlocked[(int) Direction.DownLeft] = false;
-////					isDirectionBlocked[(int) Direction.DownRight] = false;
-//					break;
-//				case Direction.DownRight:
-//					isDirectionBlocked[(int) Direction.Up] = false;
-////					isDirectionBlocked[(int) Direction.Down] = false;
-//					isDirectionBlocked[(int) Direction.Left] = false;
-//					isDirectionBlocked[(int) Direction.Right] = false;
-//					isDirectionBlocked[(int) Direction.UpLeft] = false;
-//					isDirectionBlocked[(int) Direction.UpRight] = false;
-////					isDirectionBlocked[(int) Direction.DownLeft] = false;
-//					break;
-//				case Direction.Right:
-//					isDirectionBlocked[(int) Direction.Up] = false;
-//					isDirectionBlocked[(int) Direction.Down] = false;
-//					isDirectionBlocked[(int) Direction.Left] = false;
-//					isDirectionBlocked[(int) Direction.UpLeft] = false;
-////					isDirectionBlocked[(int) Direction.UpRight] = false;
-//					isDirectionBlocked[(int) Direction.DownLeft] = false;
-////					isDirectionBlocked[(int) Direction.DownRight] = false;
-//					break;
-//				case Direction.UpRight:
+//	private void OnCollisionExit2D(Collision2D coll) {
+//		if (coll.gameObject.CompareTag("Base") || coll.gameObject.CompareTag("Bounds") || coll.gameObject.CompareTag("SolidDeco")) {
+//			Debug.Log("Exiting blocking collider.");
+////			switch (facingDirection) {
+////				case Direction.Null:
+////					break;
+////				case Direction.Down:
 ////					isDirectionBlocked[(int) Direction.Up] = false;
-//					isDirectionBlocked[(int) Direction.Down] = false;
-//					isDirectionBlocked[(int) Direction.Left] = false;
-//					isDirectionBlocked[(int) Direction.Right] = false;
-////					isDirectionBlocked[(int) Direction.UpLeft] = false;
-//					isDirectionBlocked[(int) Direction.DownLeft] = false;
-//					isDirectionBlocked[(int) Direction.DownRight] = false;
-//					break;
-//				case Direction.Up:
-//					isDirectionBlocked[(int) Direction.Down] = false;
-//					isDirectionBlocked[(int) Direction.Left] = false;
-//					isDirectionBlocked[(int) Direction.Right] = false;
+////					isDirectionBlocked[(int) Direction.Left] = false;
+////					isDirectionBlocked[(int) Direction.Right] = false;
 ////					isDirectionBlocked[(int) Direction.UpLeft] = false;
 ////					isDirectionBlocked[(int) Direction.UpRight] = false;
-//					isDirectionBlocked[(int) Direction.DownLeft] = false;
-//					isDirectionBlocked[(int) Direction.DownRight] = false;
-//					break;
-//				case Direction.UpLeft:
-//					isDirectionBlocked[(int) Direction.Up] = false;
-//					isDirectionBlocked[(int) Direction.Down] = false;
-//					isDirectionBlocked[(int) Direction.Left] = false;
-//					isDirectionBlocked[(int) Direction.Right] = false;
-//					isDirectionBlocked[(int) Direction.UpRight] = false;
-//					isDirectionBlocked[(int) Direction.DownLeft] = false;
-//					isDirectionBlocked[(int) Direction.DownRight] = false;
-//					break;
-//				case Direction.Left:
-//					isDirectionBlocked[(int) Direction.Up] = false;
-//					isDirectionBlocked[(int) Direction.Down] = false;
-//					isDirectionBlocked[(int) Direction.Right] = false;
+//////					isDirectionBlocked[(int) Direction.DownLeft] = false;
+//////					isDirectionBlocked[(int) Direction.DownRight] = false;
+////					break;
+////				case Direction.DownRight:
+////					isDirectionBlocked[(int) Direction.Up] = false;
+//////					isDirectionBlocked[(int) Direction.Down] = false;
+////					isDirectionBlocked[(int) Direction.Left] = false;
+////					isDirectionBlocked[(int) Direction.Right] = false;
 ////					isDirectionBlocked[(int) Direction.UpLeft] = false;
-//					isDirectionBlocked[(int) Direction.UpRight] = false;
-////					isDirectionBlocked[(int) Direction.DownLeft] = false;
-//					isDirectionBlocked[(int) Direction.DownRight] = false;
-//					break;
-//				case Direction.DownLeft:
-//					isDirectionBlocked[(int) Direction.Up] = false;
+////					isDirectionBlocked[(int) Direction.UpRight] = false;
+//////					isDirectionBlocked[(int) Direction.DownLeft] = false;
+////					break;
+////				case Direction.Right:
+////					isDirectionBlocked[(int) Direction.Up] = false;
 ////					isDirectionBlocked[(int) Direction.Down] = false;
-//					isDirectionBlocked[(int) Direction.Left] = false;
-//					isDirectionBlocked[(int) Direction.Right] = false;
-//					isDirectionBlocked[(int) Direction.UpLeft] = false;
-//					isDirectionBlocked[(int) Direction.UpRight] = false;
+////					isDirectionBlocked[(int) Direction.Left] = false;
+////					isDirectionBlocked[(int) Direction.UpLeft] = false;
+//////					isDirectionBlocked[(int) Direction.UpRight] = false;
+////					isDirectionBlocked[(int) Direction.DownLeft] = false;
+//////					isDirectionBlocked[(int) Direction.DownRight] = false;
+////					break;
+////				case Direction.UpRight:
+//////					isDirectionBlocked[(int) Direction.Up] = false;
+////					isDirectionBlocked[(int) Direction.Down] = false;
+////					isDirectionBlocked[(int) Direction.Left] = false;
+////					isDirectionBlocked[(int) Direction.Right] = false;
+//////					isDirectionBlocked[(int) Direction.UpLeft] = false;
+////					isDirectionBlocked[(int) Direction.DownLeft] = false;
 ////					isDirectionBlocked[(int) Direction.DownRight] = false;
-//					break;
-//				default:
-//					throw new ArgumentOutOfRangeException();
-//			}
-		}
-	}
+////					break;
+////				case Direction.Up:
+////					isDirectionBlocked[(int) Direction.Down] = false;
+////					isDirectionBlocked[(int) Direction.Left] = false;
+////					isDirectionBlocked[(int) Direction.Right] = false;
+//////					isDirectionBlocked[(int) Direction.UpLeft] = false;
+//////					isDirectionBlocked[(int) Direction.UpRight] = false;
+////					isDirectionBlocked[(int) Direction.DownLeft] = false;
+////					isDirectionBlocked[(int) Direction.DownRight] = false;
+////					break;
+////				case Direction.UpLeft:
+////					isDirectionBlocked[(int) Direction.Up] = false;
+////					isDirectionBlocked[(int) Direction.Down] = false;
+////					isDirectionBlocked[(int) Direction.Left] = false;
+////					isDirectionBlocked[(int) Direction.Right] = false;
+////					isDirectionBlocked[(int) Direction.UpRight] = false;
+////					isDirectionBlocked[(int) Direction.DownLeft] = false;
+////					isDirectionBlocked[(int) Direction.DownRight] = false;
+////					break;
+////				case Direction.Left:
+////					isDirectionBlocked[(int) Direction.Up] = false;
+////					isDirectionBlocked[(int) Direction.Down] = false;
+////					isDirectionBlocked[(int) Direction.Right] = false;
+//////					isDirectionBlocked[(int) Direction.UpLeft] = false;
+////					isDirectionBlocked[(int) Direction.UpRight] = false;
+//////					isDirectionBlocked[(int) Direction.DownLeft] = false;
+////					isDirectionBlocked[(int) Direction.DownRight] = false;
+////					break;
+////				case Direction.DownLeft:
+////					isDirectionBlocked[(int) Direction.Up] = false;
+//////					isDirectionBlocked[(int) Direction.Down] = false;
+////					isDirectionBlocked[(int) Direction.Left] = false;
+////					isDirectionBlocked[(int) Direction.Right] = false;
+////					isDirectionBlocked[(int) Direction.UpLeft] = false;
+////					isDirectionBlocked[(int) Direction.UpRight] = false;
+//////					isDirectionBlocked[(int) Direction.DownRight] = false;
+////					break;
+////				default:
+////					throw new ArgumentOutOfRangeException();
+////			}
+//		}
+//	}
 
 	/// <summary>
 	/// Reset animation settings when main player is changed

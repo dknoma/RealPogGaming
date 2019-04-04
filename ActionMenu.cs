@@ -94,7 +94,7 @@ public class ActionMenu : MonoBehaviour {
 //				Debug.Log("Current unit is an ally.");
 //				InitMenu();
 //				break;
-//			case Affiliation.Enemy:
+//			case Affiliation.EnemyPrefab:
 //				Debug.Log("Current unit is an enemy.");
 //				List<GameObject> allies = BattleManager.bm.GetAllies();
 //				int randomTarget = Random.Range(0, allies.Count);
