@@ -3244,7 +3244,7 @@ public class PlayerController : MonoBehaviour {
 			blockSide();
 			return;
 		}
-		Debug.LogFormat("LEFT HIT POINT = {0}", resultsLeft[0].point);
+//		Debug.LogFormat("LEFT HIT POINT = {0}", resultsLeft[0].point);
 		if (hits > 0) {
 			if (hits > 1) {
 				if (currentLeftBase.collider != null) {

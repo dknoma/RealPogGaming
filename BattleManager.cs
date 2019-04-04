@@ -393,7 +393,7 @@ public class BattleManager : MonoBehaviour {
 			// Remove unit from the list if no more HP
 			units.Remove(target);
 			// TODO: if party member, make incapacitated: can be revived
-			if(target.CompareTag("EnemyPrefab")) {
+			if(target.CompareTag("Enemy")) {
 				Debug.Log(string.Format("ending the battleeeeeeeeeeeee"));
 				enemies.Remove(target);
 				expToGive += target.GetComponent<Character>().expToGrant;

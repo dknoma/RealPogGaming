@@ -20,6 +20,8 @@ public class BattleSceneDataManager : MonoBehaviour {
 
 	private const string AREA_TABLE_FILE = "enemies/battle/areaTable.json";
 	private const string ENEMY_TABLE_FILE = "enemies/battle/enemyTable.json";
+	private const string AREA_TABLE_FILE_COPY = "enemies/battle/areaTable_Copy.json";
+	private const string ENEMY_TABLE_FILE_COPY = "enemies/battle/enemyTable_Copy.json";
 	private const int MAX_LEVELS = 100;
 	public Dictionary<string, EnemyTableEntry> enemyTable = new Dictionary<string, EnemyTableEntry>();
 	public Dictionary<WorldArea,EnemyAreaTableEntry> areaTable = new Dictionary<WorldArea, EnemyAreaTableEntry>();
@@ -45,6 +47,13 @@ public class BattleSceneDataManager : MonoBehaviour {
 		}
 	}
 
+	public void SaveAreaTableToFile() {
+		string areaTableToJson = AreaDictionaryToJson(areaTable);
+		Debug.LogFormat("to json:\t{0}", areaTableToJson);
+		string filePath = Path.Combine (Application.streamingAssetsPath, AREA_TABLE_FILE);
+		File.WriteAllText(filePath, areaTableToJson);
+	}
+
 	public void SaveEnemyTableToFile() {
 		string enemyTableToJson = EnemyDictionaryToJson(enemyTable);
 		Debug.LogFormat("to json:\t{0}", enemyTableToJson);
@@ -52,12 +61,20 @@ public class BattleSceneDataManager : MonoBehaviour {
 		File.WriteAllText(filePath, enemyTableToJson);
 	}
 	
-	public void SaveAreaTableToFile() {
+	public void SaveAreaTableCopyToFile() {
 		string areaTableToJson = AreaDictionaryToJson(areaTable);
 		Debug.LogFormat("to json:\t{0}", areaTableToJson);
-		string filePath = Path.Combine (Application.streamingAssetsPath, AREA_TABLE_FILE);
+		string filePath = Path.Combine (Application.streamingAssetsPath, AREA_TABLE_FILE_COPY);
 		File.WriteAllText(filePath, areaTableToJson);
 	}
+	
+	public void SaveEnemyTableCopyToFile() {
+		string enemyTableToJson = EnemyDictionaryToJson(enemyTable);
+		Debug.LogFormat("to json:\t{0}", enemyTableToJson);
+		string filePath = Path.Combine (Application.streamingAssetsPath, ENEMY_TABLE_FILE_COPY);
+		File.WriteAllText(filePath, enemyTableToJson);
+	}
+	
 
 	private void TestAddToTable() {
 		AddEnemyToEnemyTable(WorldArea.TestHub, 1, "Enemy1");
@@ -160,7 +177,6 @@ public class BattleSceneDataManager : MonoBehaviour {
 	/// </summary>
 	/// <param name="dictionary"></param>
 	/// <returns></returns>
-//	public static string AreaDictionaryToJson(Dictionary<WorldArea, List<string>[]> dictionary) {
 	public static string AreaDictionaryToJson(Dictionary<WorldArea, EnemyAreaTableEntry> dictionary) {
 		StringBuilder sb = new StringBuilder();
 		sb.Append("{\"areaTableEntries\":[");
@@ -169,7 +185,6 @@ public class BattleSceneDataManager : MonoBehaviour {
 			sb.Append("{\"area\":");
 			sb.Append((int) pair.Key);
 			sb.Append(",\"enemyTiers\":[");
-//			int tierCount = pair.Value[i].Count;
 			EnemyTierEntry[] tierEntries = pair.Value.enemyTierListEntries;
 			int tierCount = tierEntries.Length;
 			for (int j = 0; j < tierCount; j++) {
@@ -204,9 +219,7 @@ public class BattleSceneDataManager : MonoBehaviour {
 		if (File.Exists (filePath)) {
 			string jsonData = File.ReadAllText (filePath);
 			EnemyAreaTableData enemyAreaTableData = JsonToEnemyAreaTableData(jsonData);
-			Debug.LogFormat("enemyAreaTableData: {0}", enemyAreaTableData);
-//			EnemyAreaTableData enemyAreaTableData = JsonUtility.FromJson<EnemyAreaTableData>(jsonData);
-//			Debug.LogFormat("EnemyAreaTableData: {0}, {1}",enemyAreaTableData, jsonData);
+//			Debug.LogFormat("enemyAreaTableData: {0}", enemyAreaTableData);
 			// For each table entry, add the enemy to their designated area(s).
 			for (int i = 0; i < enemyAreaTableData.enemyAreaTableEntries.Length; i++) {
 				EnemyAreaTableEntry entry = enemyAreaTableData.enemyAreaTableEntries[i];
@@ -218,7 +231,7 @@ public class BattleSceneDataManager : MonoBehaviour {
 					}
 				} 
 			}
-			Debug.LogFormat("area table: {0}", AreaDictionaryToJson(areaTable));
+			Debug.LogFormat("loaded area table: {0}", AreaDictionaryToJson(areaTable));
 		} else {
 			Debug.LogFormat("File {0} was not found.", fileName);
 		}
@@ -234,14 +247,30 @@ public class BattleSceneDataManager : MonoBehaviour {
 			for (int i = 0; i < enemyTableData.enemyTableEntries.Length; i++) {
 				EnemyTableEntry entry = enemyTableData.enemyTableEntries[i];
 				enemyTable.Add(entry.enemyPrefab, entry);
-				// For each area the enemy is a part of, add the gameobject to that areas list
-//				for (int j = 0; j < entry.areas.Count; j++) {
-//					Debug.LogFormat("{0} is part of area {1}", entry.enemyPrefab, entry.areas[j]);
-//					AddEnemyToAreaTable(entry.areas[j], entry.tier, entry.enemyPrefab);
-//				}   
 			}
-			Debug.LogFormat("enemy table: {0}", EnemyDictionaryToJson(enemyTable));
-//			Debug.LogFormat("area table: {0}, enemy table: {1}", AreaDictionaryToJson(areaTable), EnemyDictionaryToJson(enemyTable));
+			Debug.LogFormat("loaded enemy table: {0}", EnemyDictionaryToJson(enemyTable));
+		} else {
+			Debug.LogFormat("File {0} was not found.", fileName);
+		}
+	}
+	
+	public void LoadEnemyAndAreaTableFromFile(string fileName) {
+		string filePath = Path.Combine (Application.streamingAssetsPath, fileName);
+		if (File.Exists (filePath)) {
+			string jsonData = File.ReadAllText (filePath);
+			EnemyTableData enemyTableData = JsonUtility.FromJson<EnemyTableData>(jsonData);
+//			Debug.LogFormat("EnemyTableData: {0}",enemyTableData);
+			// For each table entry, add the enemy to their designated area(s).
+			for (int i = 0; i < enemyTableData.enemyTableEntries.Length; i++) {
+				EnemyTableEntry entry = enemyTableData.enemyTableEntries[i];
+				enemyTable.Add(entry.enemyPrefab, entry);
+				// For each area the enemy is a part of, add the gameobject to that areas list
+				for (int j = 0; j < entry.areas.Count; j++) {
+					Debug.LogFormat("{0} is part of area {1}", entry.enemyPrefab, entry.areas[j]);
+					AddEnemyToAreaTable(entry.areas[j], entry.tier, entry.enemyPrefab);
+				}   
+			}
+			Debug.LogFormat("loaded enemy table: {0}", EnemyDictionaryToJson(enemyTable));
 		} else {
 			Debug.LogFormat("File {0} was not found.", fileName);
 		}
@@ -300,7 +329,7 @@ public class BattleSceneDataManager : MonoBehaviour {
 		enemyTable[prefabName].enemyPrefab = prefabName;
 	}
 
-	public GameObject GetEnemyPrefab(string enemyPrefabName) {
-		return Resources.Load<GameObject>("enemies/prefabs/" +enemyPrefabName);
+	public GameObject GetEnemyPrefab(string enemyPrefabName) { 
+		return Resources.Load<GameObject>(string.Format("enemies/prefabs/",enemyPrefabName));
 	}
 }
