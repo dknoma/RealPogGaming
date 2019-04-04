@@ -3,11 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using SimpleJSON;
 using UnityEditor;
 using UnityEngine;
 
 [Serializable]
 public enum WorldArea {
+	TestHub,
 	CelestialCanopy,
 	MalaMeadows,
 }
@@ -16,11 +18,11 @@ public class BattleSceneDataManager : MonoBehaviour {
 
 	public static BattleSceneDataManager bsdm;
 
+	private const string AREA_TABLE_FILE = "enemies/battle/areaTable.json";
 	private const string ENEMY_TABLE_FILE = "enemies/battle/enemyTable.json";
 	private const int MAX_LEVELS = 100;
-//	List<GameObject>[] enemiesByTier = new List<GameObject>[MAX_LEVELS];
 	public Dictionary<string, EnemyTableEntry> enemyTable = new Dictionary<string, EnemyTableEntry>();
-	public Dictionary<WorldArea, List<string>[]> areaTable = new Dictionary<WorldArea, List<string>[]>();
+	public Dictionary<WorldArea,EnemyAreaTableEntry> areaTable = new Dictionary<WorldArea, EnemyAreaTableEntry>();
 
 	private void OnEnable() {
 		if (bsdm == null) {
@@ -30,11 +32,13 @@ public class BattleSceneDataManager : MonoBehaviour {
 		}
 		DontDestroyOnLoad(gameObject);
 		LoadEnemyTableFromFile(ENEMY_TABLE_FILE);
+		LoadAreaTableFromFile(AREA_TABLE_FILE);
 	}
 
 	private void Update() {
 		if (Input.GetKeyDown("q")) {
 			SaveEnemyTableToFile();
+			SaveAreaTableToFile();
 		}
 		if (Input.GetKeyDown("p")) {
 			TestAddToTable();
@@ -47,51 +51,16 @@ public class BattleSceneDataManager : MonoBehaviour {
 		string filePath = Path.Combine (Application.streamingAssetsPath, ENEMY_TABLE_FILE);
 		File.WriteAllText(filePath, enemyTableToJson);
 	}
+	
+	public void SaveAreaTableToFile() {
+		string areaTableToJson = AreaDictionaryToJson(areaTable);
+		Debug.LogFormat("to json:\t{0}", areaTableToJson);
+		string filePath = Path.Combine (Application.streamingAssetsPath, AREA_TABLE_FILE);
+		File.WriteAllText(filePath, areaTableToJson);
+	}
 
 	private void TestAddToTable() {
-//		foreach (WorldArea area in Enum.GetValues(typeof(WorldArea))) {
-////			Debug.LogFormat("Area: {0}",area);
-//			areaTable[area] = InitList();
-//			Debug.LogFormat("\tidk {0}",areaTable[area]);
-//		}
-//		AddEnemyToAreaTable(WorldArea.CelestialCanopy, 1, "NEW ENEMY");
-//		AddEnemyToAreaTable(WorldArea.CelestialCanopy, 1, "chep");
-//		AddEnemyToAreaTable(WorldArea.CelestialCanopy, 10, "NEW STRONGER ENEMY");
-//		AddEnemyToAreaTable(WorldArea.MalaMeadows, 2, "malasada");
-//		foreach(var pair in areaTable) {
-////			Debug.LogFormat("\tkey: {0}, value: {1}", pair.Key, pair.Value);
-//			// i = tier
-//			for (int i = 0; i < pair.Value.Length; i++) {
-////				Debug.LogFormat("\tidk {0}, {1}", pair.Value[i], areaTable[WorldArea.CelestialCanopy][i]);
-//				if (pair.Value[i] == null || pair.Value[i].Count == 0) continue;
-//				for (int j = 0; j < pair.Value[i].Count; j++) {
-//					Debug.LogFormat("\tarea: {0}, tier: {1}, enemy: {2}", pair.Key, i, pair.Value[i][j]);
-//				}
-//			}
-//		}
-//
-//		EnemyTableData data = new EnemyTableData {enemyTableEntries = new EnemyTableEntry[1]};
-//		data.enemyTableEntries[0] = new EnemyTableEntry {areas = new List<WorldArea>()};
-//		data.enemyTableEntries[0].areas.Add(WorldArea.CelestialCanopy);
-//		data.enemyTableEntries[0].areas.Add(WorldArea.MalaMeadows);
-//		data.enemyTableEntries[0].tier = 1;
-//		data.enemyTableEntries[0].enemyPrefab = "star";
-////		Debug.LogFormat("DICTIONARY: {0}", areaTable);
-////		string enemyTableJson = JsonUtility.ToJson(areaTable);
-//		string enemyTableJson = JsonUtility.ToJson(data);
-//		Debug.LogFormat("\tDictionary json: {0}",enemyTableJson);
-//		EnemyTableData enemyTableData = JsonUtility.FromJson<EnemyTableData>(enemyTableJson);
-//		Debug.LogFormat("\tEnemyTableData: {0}", enemyTableData);
-//		Dictionary<string, EnemyTableEntry> enemies = new Dictionary<string, EnemyTableEntry>();
-//		EnemyTableEntry ent = new EnemyTableEntry{areas = new List<WorldArea>()};
-//		ent.areas.Add(WorldArea.CelestialCanopy);
-//		ent.areas.Add(WorldArea.MalaMeadows);
-//		ent.tier = 1;
-//		enemyTable.Add("star", ent);
-//		AddEnemyToEnemyTable(WorldArea.CelestialCanopy, 1, "star");
-//		AddEnemyToEnemyTable(WorldArea.MalaMeadows, 1, "star");
-//		AddEnemyToEnemyTable(WorldArea.MalaMeadows, 1, "bobby");
-//		AddEnemyToEnemyTable(WorldArea.MalaMeadows, 1, "nobu");
+		AddEnemyToEnemyTable(WorldArea.TestHub, 1, "Enemy1");
 		AddEnemyToEnemyTable(WorldArea.CelestialCanopy, 1, "star");
 		AddEnemyToEnemyTable(WorldArea.CelestialCanopy, 1, "Ardf");
 		AddEnemyToEnemyTable(WorldArea.CelestialCanopy, 31, "HNGGG");
@@ -99,6 +68,11 @@ public class BattleSceneDataManager : MonoBehaviour {
 		AddEnemyToEnemyTable(WorldArea.MalaMeadows, 1, "bobby");
 		AddEnemyToEnemyTable(WorldArea.MalaMeadows, 15, "Yorru");
 		AddEnemyToEnemyTable(WorldArea.MalaMeadows, 1, "nobu");
+		
+		AddEnemyToAreaTable(WorldArea.CelestialCanopy, 1, "star");
+		AddEnemyToAreaTable(WorldArea.CelestialCanopy, 31, "HNGGG");
+		AddEnemyToAreaTable(WorldArea.TestHub, 1, "Enemy1");
+		AddEnemyToAreaTable(WorldArea.MalaMeadows, 15, "Yorru");
 	}
 	
 	/// <summary>
@@ -134,7 +108,6 @@ public class BattleSceneDataManager : MonoBehaviour {
 			sb.Append("{\"areas\":[");
 			int areaCount = pair.Value.areas.Count;
 			for (int j = 0; j < areaCount; j++) {
-//				sb.Append(string.Format("\"{0}\"", pair.Value.areas[j]));
 				sb.Append((int)pair.Value.areas[j]);
 				if (j < areaCount - 1) {
 					sb.Append(",");
@@ -154,7 +127,41 @@ public class BattleSceneDataManager : MonoBehaviour {
 		return sb.ToString();
 	}
 	
-	public static string AreaDictionaryToJson(Dictionary<WorldArea, List<string>[]> dictionary) {
+	/// <summary>
+	/// Serializes the area table Dictionary to JSON format.
+	/// Format:
+	/// 	{
+	///			"areaTableEntries": [
+	/// 			{
+	///					"area": 0,
+	///					"enemies": [
+	/// 					{
+	///							"tier": 1,
+	///							"enemies": ["star", "Ardf"]
+	///						}, {
+	///							"tier": 31,
+	///							"enemies": ["HNGGG"]
+	///						}
+	/// 				]
+	///				}, {
+	///					"area": 1,
+	///					"enemies": [
+	/// 					{
+	///							"tier": 1,
+	///							"enemies": ["star", "bobby", "nobu"]
+	///						}, {
+	///							"tier": 15,
+	///							"enemies": ["Yorru"]
+	///						}
+	/// 				]
+	///				}
+	/// 		]
+	///		}
+	/// </summary>
+	/// <param name="dictionary"></param>
+	/// <returns></returns>
+//	public static string AreaDictionaryToJson(Dictionary<WorldArea, List<string>[]> dictionary) {
+	public static string AreaDictionaryToJson(Dictionary<WorldArea, EnemyAreaTableEntry> dictionary) {
 		StringBuilder sb = new StringBuilder();
 		sb.Append("{\"areaTableEntries\":[");
 		int i = 0;
@@ -162,16 +169,19 @@ public class BattleSceneDataManager : MonoBehaviour {
 			sb.Append("{\"area\":");
 			sb.Append((int) pair.Key);
 			sb.Append(",\"enemyTiers\":[");
-			int tierCount = pair.Value.Length;
+//			int tierCount = pair.Value[i].Count;
+			EnemyTierEntry[] tierEntries = pair.Value.enemyTierListEntries;
+			int tierCount = tierEntries.Length;
 			for (int j = 0; j < tierCount; j++) {
 				// If not enemies on tier, continue
-				if (pair.Value[j] == null) continue;
+				if (tierEntries[j] == null) continue;
 				sb.Append("{");
 				sb.Append(string.Format("\"tier\":{0},\"enemies\":[", j));
 				// Else, add this list of enemy names to the json
-				int enemyCount = pair.Value[j].Count;
+				List<string> enemies = tierEntries[j].enemies;
+				int enemyCount = enemies.Count;
 				for (int k = 0; k < enemyCount; k++) {
-					sb.Append(string.Format("\"{0}\"",pair.Value[j][k]));
+					sb.Append(string.Format("\"{0}\"",enemies[k]));
 					if (k < enemyCount - 1) {
 						sb.Append(",");
 					}
@@ -188,13 +198,30 @@ public class BattleSceneDataManager : MonoBehaviour {
 		sb.Append("]}");
 		return sb.ToString();
 	}
-
-	private List<string>[] InitList() {
-		List<string>[] list = new List<string>[MAX_LEVELS];
-		for (int i = 0; i < MAX_LEVELS; i++) {
-			list[0] = new List<string>();
+	
+	public void LoadAreaTableFromFile(string fileName) {
+		string filePath = Path.Combine (Application.streamingAssetsPath, fileName);
+		if (File.Exists (filePath)) {
+			string jsonData = File.ReadAllText (filePath);
+			EnemyAreaTableData enemyAreaTableData = JsonToEnemyAreaTableData(jsonData);
+			Debug.LogFormat("enemyAreaTableData: {0}", enemyAreaTableData);
+//			EnemyAreaTableData enemyAreaTableData = JsonUtility.FromJson<EnemyAreaTableData>(jsonData);
+//			Debug.LogFormat("EnemyAreaTableData: {0}, {1}",enemyAreaTableData, jsonData);
+			// For each table entry, add the enemy to their designated area(s).
+			for (int i = 0; i < enemyAreaTableData.enemyAreaTableEntries.Length; i++) {
+				EnemyAreaTableEntry entry = enemyAreaTableData.enemyAreaTableEntries[i];
+				EnemyTierEntry[] tierEntries = entry.enemyTierListEntries;
+				for (int j = 0; j < tierEntries.Length; j++) {
+					if(tierEntries[j] == null) continue;
+					for (int k = 0; k < tierEntries[j].enemies.Count; k++) {
+						AddEnemyToAreaTable(entry.area, j, entry.enemyTierListEntries[j].enemies[k]);
+					}
+				} 
+			}
+			Debug.LogFormat("area table: {0}", AreaDictionaryToJson(areaTable));
+		} else {
+			Debug.LogFormat("File {0} was not found.", fileName);
 		}
-		return list;
 	}
 	
 	public void LoadEnemyTableFromFile(string fileName) {
@@ -203,47 +230,65 @@ public class BattleSceneDataManager : MonoBehaviour {
 			string jsonData = File.ReadAllText (filePath);
 			EnemyTableData enemyTableData = JsonUtility.FromJson<EnemyTableData>(jsonData);
 //			Debug.LogFormat("EnemyTableData: {0}",enemyTableData);
-			// Instantiate new lists for each world area
-			foreach (WorldArea area in Enum.GetValues(typeof(WorldArea))) {
-//				Debug.LogFormat("Area: {0}",area);
-				areaTable[area] = new List<string>[MAX_LEVELS];
-			}
 			// For each table entry, add the enemy to their designated area(s).
 			for (int i = 0; i < enemyTableData.enemyTableEntries.Length; i++) {
 				EnemyTableEntry entry = enemyTableData.enemyTableEntries[i];
 				enemyTable.Add(entry.enemyPrefab, entry);
 				// For each area the enemy is a part of, add the gameobject to that areas list
-				for (int j = 0; j < entry.areas.Count; j++) {
+//				for (int j = 0; j < entry.areas.Count; j++) {
 //					Debug.LogFormat("{0} is part of area {1}", entry.enemyPrefab, entry.areas[j]);
-					AddEnemyToAreaTable(entry.areas[j], entry.tier, entry.enemyPrefab);
-				}   
+//					AddEnemyToAreaTable(entry.areas[j], entry.tier, entry.enemyPrefab);
+//				}   
 			}
-			Debug.LogFormat("area table: {0}, enemy table: {1}", AreaDictionaryToJson(areaTable), EnemyDictionaryToJson(enemyTable));
-			
-//			LocalizationData loadedData = JsonUtility.FromJson<LocalizationData> (jsonData);
-//
-//			for (int i = 0; i < loadedData.items.Length; i++) 
-//			{
-//				localizedText.Add (loadedData.items [i].key, loadedData.items [i].value);   
-//			}
-//
-//			Debug.Log ("Data loaded, dictionary contains: " + localizedText.Count + " entries");
-			
+			Debug.LogFormat("enemy table: {0}", EnemyDictionaryToJson(enemyTable));
+//			Debug.LogFormat("area table: {0}, enemy table: {1}", AreaDictionaryToJson(areaTable), EnemyDictionaryToJson(enemyTable));
 		} else {
 			Debug.LogFormat("File {0} was not found.", fileName);
 		}
 	}
 
+	private EnemyAreaTableData JsonToEnemyAreaTableData(string jsonData) {
+		JSONNode node = JSON.Parse(jsonData);
+		JSONArray areas = node["areaTableEntries"].AsArray;
+		EnemyAreaTableData result = new EnemyAreaTableData{enemyAreaTableEntries = new EnemyAreaTableEntry[areas.Count]};
+		// For each area in the json file...
+		foreach (var area in areas) {
+			JSONNode areaInfo = area.Value; 						
+			WorldArea areaName = (WorldArea)areaInfo["area"].AsInt; // Get area
+			JSONArray tierList = areaInfo["enemyTiers"].AsArray;	// Get the areas tier list
+			EnemyAreaTableEntry enemyAreaTableEntry 
+				= new EnemyAreaTableEntry {area = areaName,enemyTierListEntries = new EnemyTierEntry[MAX_LEVELS]};
+			// For each table entry
+			foreach (var tierListInfo in tierList) {
+				JSONNode tierInfo = tierListInfo.Value;
+				int tier = tierInfo["tier"];						// Get the tier
+				JSONArray enemies = tierInfo["enemies"].AsArray;	// Get the enemy list
+				enemyAreaTableEntry.enemyTierListEntries[tier] = new EnemyTierEntry{enemies = new List<string>()};
+				foreach (var enemy in enemies) {
+					enemyAreaTableEntry.enemyTierListEntries[tier].enemies.Add(enemy.Value);	// Add enemies to the list
+				}
+			}
+			result.enemyAreaTableEntries[(int) areaName] = enemyAreaTableEntry;	// Add the table entry to the area
+		}
+		return result;
+	}
+
 	public void AddEnemyToAreaTable(WorldArea area, int tier, string prefabName) {
 		if (!areaTable.ContainsKey(area) || areaTable[area] == null) {
-			areaTable[area] = new List<string>[MAX_LEVELS];
+			areaTable.Add(area, new EnemyAreaTableEntry {
+				                                            area = area, 
+				                                            enemyTierListEntries = new EnemyTierEntry[MAX_LEVELS]
+			                                            });
+			areaTable[area].enemyTierListEntries[tier] = new EnemyTierEntry {enemies = new List<string>()};
+//			Debug.Log("Made new table entry");
+		} else if (areaTable[area].enemyTierListEntries[tier] == null) {
+			areaTable[area].enemyTierListEntries[tier] = new EnemyTierEntry {enemies = new List<string>()};
+		} else if (areaTable[area].enemyTierListEntries[tier].enemies == null) {
+//			Debug.LogFormat("Initializing lists for {0}", area);
+			areaTable[area].enemyTierListEntries[tier].enemies = new List<string>();
 		}
-		if (areaTable[area][tier] == null) {
-			Debug.LogFormat("Initializing lists for {0}", area);
-			areaTable[area][tier] = new List<string>();
-		}
-		areaTable[area][tier].Add(prefabName);
-		Debug.LogFormat("added {0}", areaTable[area][tier][areaTable[area][tier].Count-1]);
+		areaTable[area].enemyTierListEntries[tier].enemies.Add(prefabName);
+//		Debug.LogFormat("added {0}", areaTable[area].enemyTierListEntries[tier].enemies[areaTable[area].enemyTierListEntries[tier].enemies.Count-1]);
 	}
 	
 	public void AddEnemyToEnemyTable(WorldArea area, int tier, string prefabName) {
