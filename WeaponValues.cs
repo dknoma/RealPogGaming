@@ -9,9 +9,9 @@ public class WeaponValues : ScriptableObject {
 
 	// Can choose stats for the weapon in the inspector.
 	[SerializeField] private Element weaponElement = Element.None;
-	private HandType handType;
+//	private HandType handType;
 	[SerializeField] private WeaponType weaponType;
-	private WeaponSlot weaponSlot;
+//	private WeaponSlot weaponSlot;
 	[SerializeField] private int hp;
 	[SerializeField] private int atk;
 	[SerializeField] private int def;

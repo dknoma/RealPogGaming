@@ -11,18 +11,17 @@ public enum Affiliation {
 public class Character : CharacterStats, IComparable {
 	
 	[SerializeField] private Affiliation affiliation;
-	private int partySlot;
-
-	private CharacterEquipement equipement;
-	private Weapon weapon;
+//	private int partySlot;
+//	private CharacterEquipement equipement;
+//	private Weapon weapon;
 	private Element attackElement;
 
 	// Use this for initialization
-	private void OnEnable () {
-		equipement = gameObject.GetComponent<CharacterEquipement>();
-		Debug.LogFormat("{0} weapon {1}", name, equipement.GetWeapon());
-		SetWeapon(equipement.GetWeapon());
-	}
+//	private void OnEnable () {
+//		equipement = gameObject.GetComponent<CharacterEquipement>();
+//		Debug.LogFormat("{0} weapon {1}", name, equipement.GetWeapon());
+//		SetWeapon(equipement.GetWeapon());
+//	}
 
 	/**
 	 * Compare to method that helps sort units by speed.
@@ -45,15 +44,6 @@ public class Character : CharacterStats, IComparable {
 	public bool CanCharacterAct() {
 		return canAct;
 	}
-	
-	public Weapon GetWeapon() {
-		return weapon;
-	}
-
-	public void SetWeapon(Weapon newWeapon) {
-		weapon = newWeapon;
-		SetAttackElement(weapon.GetWeaponElement());
-	}
 
 	public Element GetAttackElement() {
 		return attackElement;
@@ -61,13 +51,5 @@ public class Character : CharacterStats, IComparable {
 	
 	public void SetAttackElement(Element ele) {
 		attackElement = ele;
-	}
-	
-	public int GetPartySlot() {
-		return partySlot;
-	}
-
-	public void SetPartySlot(int slot) {
-		partySlot = slot;
 	}
 }

@@ -12,10 +12,10 @@ public class Party : MonoBehaviour {
 		
 	// Use this for initialization
 	private void OnEnable () {
-		frontUnit.GetComponent<Character> ().SetPartySlot ((int) Slot.Front);
+		frontUnit.GetComponent<Player> ().SetPartySlot ((int) Slot.Front);
 		partyMembers.Add(frontUnit);
 		if(backUnit != null) {
-			backUnit.GetComponent<Character> ().SetPartySlot ((int) Slot.Back);
+			backUnit.GetComponent<Player> ().SetPartySlot ((int) Slot.Back);
 			partyMembers.Add(backUnit);
 		}
 		Debug.Log ("Party length: " + partyMembers.Count);
@@ -27,10 +27,10 @@ public class Party : MonoBehaviour {
 
 	public void InitPartyMembers() {
 		if (partyMembers.Count == 0) {
-			frontUnit.GetComponent<Character>().SetPartySlot((int) Slot.Front);
+			frontUnit.GetComponent<Player>().SetPartySlot((int) Slot.Front);
 			partyMembers.Add(frontUnit);
 			if (backUnit != null) {
-				backUnit.GetComponent<Character>().SetPartySlot((int) Slot.Back);
+				backUnit.GetComponent<Player>().SetPartySlot((int) Slot.Back);
 				partyMembers.Add(backUnit);
 			}
 			Debug.Log("Party length: " + partyMembers.Count);

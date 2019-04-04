@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 
-public enum HandType { 
-	TwoHanded, 
-	OneHanded 
-}
+//public enum HandType { 
+//	TwoHanded, 
+//	OneHanded 
+//}
 
 public enum WeaponType { 
 	GreatSword, 
@@ -15,17 +15,17 @@ public enum WeaponType {
 	Spear
 }
 
-public enum WeaponSlot { 
-	MainHand, 
-	OffHand 
-}
+//public enum WeaponSlot { 
+//	MainHand, 
+//	OffHand 
+//}
 public class Weapon : MonoBehaviour {
 
 //	[SerializeField] protected WeaponValues values;	// could use weaponvalues to store updated values and json
 	[SerializeField] protected Element weaponElement = Element.None;
-	private HandType handType;
+//	private HandType handType;
 	[SerializeField] protected WeaponType weaponType;
-	private WeaponSlot weaponSlot;
+//	private WeaponSlot weaponSlot;
 	[SerializeField] protected int hp;
 	[SerializeField] protected int atk;
 	[SerializeField] protected int def;

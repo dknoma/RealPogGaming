@@ -167,7 +167,10 @@ public class ActionMenu : MonoBehaviour {
 		for(int i = 0; i < enemyCount; i++) {
 			enemies.AddItem(BattleManager.bm.GetEnemies()[i], i);
 		}
-		currentUnitWeaponType = BattleManager.bm.GetCurrentUnit().GetWeapon().GetWeaponType();
+		Character currentChar = BattleManager.bm.GetCurrentUnit();
+		currentUnitWeaponType = currentChar.GetAffiliation() == Affiliation.Ally 
+			? currentChar.GetComponent<Player>().GetWeapon().GetWeaponType() 
+			: currentChar.GetComponent<Enemy>().GetWeaponType();
 		InitAttackOptions(currentUnitWeaponType);
 		Debug.Log("Unit's weapon ====== " + currentUnitWeaponType);
 		basicAttacks = new MenuGraph<object>(2, MenuType.Vertical);
@@ -178,7 +181,6 @@ public class ActionMenu : MonoBehaviour {
 		    Mathf.RoundToInt(Input.GetAxisRaw("Vertical")) != 0) {
 			axisDown = true;
 		}
-
 		initializedMenu = true;
 	}
 
