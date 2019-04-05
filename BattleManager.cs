@@ -115,9 +115,6 @@ public class BattleManager : MonoBehaviour {
 			Destroy(gameObject);
 		}
 		DontDestroyOnLoad(gameObject);
-		
-		party = GameObject.FindGameObjectWithTag("Party").GetComponent<Party>();
-		party.InitPartyMembers ();
 	}
 
 	private void Update() {
@@ -361,10 +358,10 @@ public class BattleManager : MonoBehaviour {
 	 ***************************/ 
 	private void AddPartyToList() {
 		// Get party members from sibling component
-		List<GameObject> partyMembers = party.GetPartyMembers();
-		foreach(GameObject member in partyMembers) {
-			units.Add(member);
-            allies.Add(member);
+		List<Player> partyMembers = PlayerManager.pm.GetParty();
+		foreach(Player member in partyMembers) {
+			units.Add(member.gameObject);
+            allies.Add(member.gameObject);
 		}
 	}
 
@@ -396,6 +393,7 @@ public class BattleManager : MonoBehaviour {
 			if(target.CompareTag("Enemy")) {
 				Debug.Log(string.Format("ending the battleeeeeeeeeeeee"));
 				enemies.Remove(target);
+				target.SetActive(false);
 				expToGive += target.GetComponent<Character>().expToGrant;
 				if(enemies.Count == 0) {
 					EndBattle(WinStatus.Win);

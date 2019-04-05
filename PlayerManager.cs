@@ -6,8 +6,14 @@ public class PlayerManager : MonoBehaviour {
     
     public static PlayerManager pm;
     
-    private List<Character> characters = new List<Character>();
+    [SerializeField] private GameObject mainCharacter;
+    
+    private readonly List<Player> characters = new List<Player>();
+    private readonly List<Player> partyMembers = new List<Player>();
+    
     private Dictionary<string, CharacterEquipement> characterEquipements = new Dictionary<string, CharacterEquipement>();
+//    private List<PartyMember> allyReserves = new List<PartyMember>();
+    private const int MAX_PARTY_MEMBERS = 3;
     
     private void OnEnable() {
         if (pm == null) {
@@ -16,29 +22,52 @@ public class PlayerManager : MonoBehaviour {
             Destroy(gameObject);
         }
         DontDestroyOnLoad(gameObject);
-        Character mc = GameObject.Find("MC").GetComponent<Character>();
-        AddPlayableCharacter(mc);
-        CreateAllCharacterEquipmentObject();
+        AddPlayableCharacter(mainCharacter.GetComponent<Player>());
+        AddAllyToParty(mainCharacter.GetComponent<Player>());
+//        CreateAllCharacterEquipmentObject();
     }
 
-    public void AddPlayableCharacter(Character character) {
-        characters.Add(character);
+    public void AddPlayableCharacter(Player player) {
+        characters.Add(player);
     }
     
-    public List<Character> GetCharacters() {
+    public void AddAllyToParty(Player newAlly) {
+        if(partyMembers.Count > MAX_PARTY_MEMBERS) {
+            // If party member count > MAX_PARTY_MEMBERS, move those members to the reserves
+            for (int i = partyMembers.Count - 1; i >= MAX_PARTY_MEMBERS; i--) {
+                partyMembers.RemoveAt(i);
+            }
+            characters.Add(newAlly);
+            return;
+        }
+        if (partyMembers.Count == MAX_PARTY_MEMBERS) {
+            // If party count == MAX_PARTY_MEMBERS, add new ally to reserves
+            characters.Add(newAlly);
+            return;
+        }
+        newAlly.SetInParty(true);
+        partyMembers.Add(newAlly);
+        newAlly.SetPartySlot(partyMembers.Count-1);
+        characters.Add(newAlly);
+    }
+    
+    public List<Player> GetCharacters() {
         Debug.Log("GETTING LIST "+characters[0]);
         return characters;
     }
     
-    public void CreateAllCharacterEquipmentObject() {
-        List<Character> chars = GetCharacters();
-        foreach (Character character in chars) {
-            characterEquipements.Add(character.name, character.GetComponent<CharacterEquipement>());
-        }
+    public List<Player> GetParty() {
+        return partyMembers;
     }
-
-    public void AddCharacterEquipmentObject(Character character) {
-        characterEquipements.Add(character.name, character.GetComponent<CharacterEquipement>());
-    }
-
+    
+//    public void CreateAllCharacterEquipmentObject() {
+//        List<Player> chars = GetCharacters();
+//        foreach (Player character in chars) {
+//            characterEquipements.Add(character.name, character.GetComponent<CharacterEquipement>());
+//        }
+//    }
+//
+//    public void AddCharacterEquipmentObject(Player character) {
+//        characterEquipements.Add(character.name, character.GetComponent<CharacterEquipement>());
+//    }
 }

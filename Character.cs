@@ -11,9 +11,6 @@ public enum Affiliation {
 public class Character : CharacterStats, IComparable {
 	
 	[SerializeField] private Affiliation affiliation;
-//	private int partySlot;
-//	private CharacterEquipement equipement;
-//	private Weapon weapon;
 	private Element attackElement;
 
 	// Use this for initialization

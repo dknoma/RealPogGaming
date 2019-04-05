@@ -13,18 +13,21 @@ public enum MenuType {
 public class MenuGraph<T> {
 
 	public int optionNum;
-	private readonly MenuType menuType;
+	private MenuType menuType;
 
 	// Init menu items via inspector, or add them in via code
 	private T[] menuItems;
-	private readonly MenuNode[] menuNodes;
-	private readonly int size;
-	private readonly int width;
+	private MenuNode[] menuNodes;
+	private int size;
+	private int width;
 	private int height;
 	private int currentOptionIndex;
+	private bool symmetricalRectMenu;
 
-	private readonly bool symmetricalRectMenu;
-
+	public MenuGraph() {
+		menuNodes = new MenuNode[0];
+	}
+	
 	public MenuGraph(int size, MenuType type) {
 		this.size = size;
 		width = size;
@@ -38,6 +41,24 @@ public class MenuGraph<T> {
 		size = width * height;
 		this.width = width;
 		this.height = height;
+		menuType = MenuType.Both;
+		menuNodes = new MenuNode[size];
+		symmetricalRectMenu = true;
+	}
+
+	public void InitMenu(int menuSize, MenuType type) {
+		size = menuSize;
+		width = size;
+		height = size;
+		menuType = type;
+		menuNodes = new MenuNode[size];
+		symmetricalRectMenu = false;
+	}
+	
+	public void InitMenu(int menuWidth, int menuHeight) {
+		size = menuWidth * menuHeight;
+		width = menuWidth;
+		height = menuHeight;
 		menuType = MenuType.Both;
 		menuNodes = new MenuNode[size];
 		symmetricalRectMenu = true;
@@ -311,7 +332,7 @@ public class MenuGraph<T> {
 				}
 				break;
 			} else {
-				// Menu is NOT a n x m menu, is only a one dimensional menu.
+				// MenuObject is NOT a n x m menu, is only a one dimensional menu.
 				switch (direction) {
 					case Direction.Right:
 						MenuNode rightNeighbor = menuNodes[currentOptionIndex].rightNeighbor;
@@ -518,7 +539,7 @@ public class MenuGraph<T> {
 	//			} else  if (direction == (int) Direction.Down) {
 	//				int bottomNeighbor = this.neighborOptions [this.currentOptionIndex].bottomNeighbor;
 	//				if(bottomNeighbor < 0) {
-	//					int newNeighbor = (this.currentOptionIndex + this.width) % this.size;
+	//					int newNeighbor = (this.currentOptionIndex + this.menuWidth) % this.size;
 	//					this.neighborOptions [this.currentOptionIndex].bottomNeighbor = newNeighbor;
 	//					this.currentOptionIndex = newNeighbor;
 	//				} else {
@@ -527,7 +548,7 @@ public class MenuGraph<T> {
 	//			} else if (direction == (int) Direction.Up) {
 	//				int topNeighbor = this.neighborOptions [this.currentOptionIndex].topNeighbor;
 	//				if(topNeighbor < 0) {
-	//					int newNeighbor = (this.currentOptionIndex + (this.size-this.width)) % this.size;
+	//					int newNeighbor = (this.currentOptionIndex + (this.size-this.menuWidth)) % this.size;
 	//					this.neighborOptions [this.currentOptionIndex].topNeighbor = newNeighbor;
 	//					this.currentOptionIndex = newNeighbor;
 	//				} else {
@@ -540,9 +561,9 @@ public class MenuGraph<T> {
 //	} else if (direction == (int) Direction.Left) {
 //		this.currentOptionIndex = (this.currentOptionIndex + this.size - 1) % this.size;
 //	} else  if (direction == (int) Direction.Down) {
-//		this.currentOptionIndex = (this.currentOptionIndex + this.width) % this.size;
+//		this.currentOptionIndex = (this.currentOptionIndex + this.menuWidth) % this.size;
 //	} else if (direction == (int) Direction.Up) {
-//		this.currentOptionIndex = (this.currentOptionIndex + (this.width*2)) % this.size;
+//		this.currentOptionIndex = (this.currentOptionIndex + (this.menuWidth*2)) % this.size;
 //	}
 //		public int topNeighbor = -1;
 //		public int bottomNeighbor = -1;

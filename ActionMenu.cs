@@ -250,7 +250,7 @@ public class ActionMenu : MonoBehaviour {
 			case MenuOptionState.BasicAttack:
 				Debug.Log("Choosing target.");
 				currentTargets = enemies;
-				Debug.LogFormat("current taget: {0}",currentTargets.GetCurrentItem().name);
+				Debug.LogFormat("current target: {0}",currentTargets.GetCurrentItem().name);
 				menuState = MenuState.Target;
 				subMenuState = SubMenuState.BasicAttack;
 				// Current targets = enemies
@@ -319,10 +319,12 @@ public class ActionMenu : MonoBehaviour {
 				Debug.LogWarning("Current item was null.");
 			}
 		} else if (menuType == typeof(GameObject)) {
+			// Choosing a target
 			menu.TraverseOptions(direction);
 			GameObject currentTarget = menu.GetCurrentItem() as GameObject;
 			Debug.LogFormat("Current target: {0}", currentTarget.name);
 		} else if (menuType == typeof(object)) {
+			// Choosing an attack
 			menu.TraverseOptions(direction);
 			Attack currentAttack = menu.GetCurrentItem() as Attack;
 			Debug.LogFormat("Current attack: {0}", currentAttack.Name());
@@ -472,7 +474,7 @@ public class ActionMenu : MonoBehaviour {
 		}
 	}
 
-	private class ActionCategoryContainer {
+	public class ActionCategoryContainer {
 
 		private readonly GameObject optionRender;
 		private readonly MenuOptionState menuOptionState;

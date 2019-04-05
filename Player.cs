@@ -5,6 +5,7 @@ public class Player : Character {
     private int partySlot;
     private CharacterEquipement equipement;
     private Weapon weapon;
+    private bool inParty;
     
     private void OnEnable () {
         equipement = gameObject.GetComponent<CharacterEquipement>();
@@ -20,6 +21,15 @@ public class Player : Character {
         weapon = newWeapon;
         SetAttackElement(weapon.GetWeaponElement());
     }
+
+    public void SetInParty(bool isInParty) {
+        inParty = isInParty;
+    }
+    
+    public bool IsInParty() {
+        return inParty;
+    }
+    
     public int GetPartySlot() {
         return partySlot;
     }
