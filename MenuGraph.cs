@@ -87,6 +87,10 @@ public class MenuGraph<T> {
 	public int Size() {
 		return size;
 	}
+	
+	public void ResetCurrentIndex() {
+		currentOptionIndex = 0;
+	}
 
 	// Node based graph traversal for neighbor system
 	public void TraverseOptions(Direction direction) {

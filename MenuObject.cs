@@ -9,7 +9,8 @@ public class MenuObject<T> : ScriptableObject {
 	public bool symmetricalRectMenu;
 	public int width;
 	public int height;
-	public Canvas canvas;
+	
+	protected Transform parent;
 	
 	protected readonly MenuGraph<T> menu = new MenuGraph<T>();
 
@@ -57,5 +58,9 @@ public class MenuObject<T> : ScriptableObject {
 	
 	public virtual int Size() {
 		return menu.Size();
+	}
+
+	public virtual void setParentTransform(Transform transform) {
+		parent = transform;
 	}
 }
