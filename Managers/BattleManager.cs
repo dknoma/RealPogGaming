@@ -67,7 +67,7 @@ public class BattleManager : MonoBehaviour {
 	private Party party;
 	// List of units to be part of the battle
 	private List<GameObject> units = new List<GameObject>();
-	private List<GameObject> allies = new List<GameObject>();
+//	private List<GameObject> allies = new List<GameObject>();
 	private List<GameObject> enemies = new List<GameObject>();
 	private Character currentUnit;
 	private GameObject currentTarget;
@@ -164,7 +164,7 @@ public class BattleManager : MonoBehaviour {
 				inBattle = false;
 				expToGive = 0;
 				units = new List<GameObject>();
-				allies = new List<GameObject>();
+//				allies = new List<GameObject>();
 				enemies = new List<GameObject>();
 				Debug.Log("Ending battle.");
 				actionMenu.gameObject.SetActive(false);
@@ -362,7 +362,6 @@ public class BattleManager : MonoBehaviour {
 		List<Player> partyMembers = PlayerManager.pm.GetParty();
 		foreach(Player member in partyMembers) {
 			units.Add(member.gameObject);
-            allies.Add(member.gameObject);
 		}
 	}
 
@@ -424,8 +423,8 @@ public class BattleManager : MonoBehaviour {
 		return damage;
 	}
 	private void GrantExpToParty() {
-		foreach(GameObject ally in allies) {
-			ally.GetComponent<Character>().GrantExp(expToGive);
+		foreach(Player ally in PlayerManager.pm.GetParty()) {
+			ally.GrantExp(expToGive);
 		}
 	}
 
@@ -478,10 +477,7 @@ public class BattleManager : MonoBehaviour {
 	public GameObject GetCurrentTarget() {
 		return currentTarget;
 	}
-	
-	public List<GameObject> GetAllies() {
-		return allies;
-	}
+
 	
 	public List<GameObject> GetEnemies() {
 		return enemies;

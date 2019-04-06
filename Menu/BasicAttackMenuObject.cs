@@ -5,95 +5,106 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [CreateAssetMenu(fileName = "BasicAttackMenu", menuName = "Menu/BasicAttacks", order = 1)]
-public class BasicAttackMenuObject : MenuObject<BasicAttackOption> {
+public class BasicAttackMenuObject : MenuObject<AttackButton> {
 
 	public GameObject basicAttackMenuPrefab;
 	public Sprite inactive;
 	public Sprite active;
 
 	private GameObject menuRender;
-	private BasicAttackOption optionA;
-	private BasicAttackOption optionB;
-
-	private void OnEnable() {
-//		GameObject childA = menuRender.transform.GetChild(0).gameObject;
-//		GameObject childB = menuRender.transform.GetChild(1).gameObject;
-//		optionA = new BasicAttackOption(childA, MenuOptionState.BasicAttack, AttackOption.A);
-//		optionB = new BasicAttackOption(childB, MenuOptionState.BasicAttack, AttackOption.B);
-//		menu.InitMenu(2, MenuType.Vertical);
-//		menu.InitMenuItems(new[]{optionA, optionB});
-//		Debug.LogFormat("A: {0}", optionA.Text.text);
-//		Debug.LogFormat("B: {0}", optionB.Text.text);
-	}
-	
-//	public void InitAttackMenu() {
-//		menu.InitMenu(2, menuType);
-//		menu.InitMenuItems(new []{optionA, optionB});
-//	}
+	private AttackButton buttonA;
+	private AttackButton buttonB;
+	private string attackAName;
+	private string attackBName;
 	
 	public void ShowMenu() {
 		if (menuRender == null) {
+			// If menu doesnt exist in scene, initialize it
 			menuRender = Instantiate(basicAttackMenuPrefab, parent.transform, false);
 			GameObject childA = menuRender.transform.GetChild(0).gameObject;
 			GameObject childB = menuRender.transform.GetChild(1).gameObject;
-			optionA = new BasicAttackOption(childA, MenuOptionState.BasicAttack, AttackOption.A);
-			optionB = new BasicAttackOption(childB, MenuOptionState.BasicAttack, AttackOption.B);
-			menu.InitMenu(2, MenuType.Vertical);
-			menu.InitMenuItems(new[]{optionA, optionB});
-			Debug.LogFormat("A: {0}", optionA.Text.text);
-			Debug.LogFormat("B: {0}", optionB.Text.text);
+			buttonA = new AttackButton(childA, MenuOptionState.BasicAttack, AttackOption.A);
+			buttonB = new AttackButton(childB, MenuOptionState.BasicAttack, AttackOption.B);
 		} 
 		menuRender.SetActive(true);
+		buttonA.Text.text = attackAName;
+		buttonB.Text.text = attackBName;
+		menu.InitMenu(2, MenuType.Vertical);
+		menu.InitMenuItems(new[]{buttonA, buttonB});
+		Debug.LogFormat("A: {0}", buttonA.Text.text);
+		Debug.LogFormat("B: {0}", buttonB.Text.text);
 		menu.GetCurrentItem().OptionRender().GetComponent<SpriteRenderer>().sprite = active;
-		Vector3 textPos = menu.GetItem(0).Text.transform.position;
-		menu.GetItem(0).Text.transform.position = new Vector3(textPos.x - 0.25f, textPos.y + 0.25f, textPos.z);
+		menu.GetItem(0).Text.transform.position 
+			= new Vector3(buttonA.OrigTextPos.x - 0.25f, buttonA.OrigTextPos.y + 0.25f, buttonA.OrigTextPos.z);
 	}
 
 	public void HideMenu() {
 		if (menuRender == null) {
 			menuRender = Instantiate(basicAttackMenuPrefab, parent.transform, false);
 		} 
+		DeactivateCurrentButton();
 		menu.ResetCurrentIndex();
 		menuRender.SetActive(false);
 	}
 	
 	public override void NavigateMenu(Direction direction) {
-		menu.GetCurrentItem().Renderer.sprite = inactive;
-		Debug.LogFormat("previous render: {0}",
-		                menu.GetCurrentItem().Renderer.sprite.name);
-		
-		Vector3 textPos = menu.GetCurrentItem().Text.transform.position;
-		menu.GetCurrentItem().Text.transform.position = new Vector3(textPos.x + 0.25f, textPos.y - 0.25f, textPos.z);
-		
+		DeactivateCurrentButton();
 		menu.TraverseOptions(direction);
-		
-		menu.GetCurrentItem().Renderer.sprite = active;
-		textPos = menu.GetCurrentItem().Text.transform.position;
-		menu.GetCurrentItem().Text.transform.position = new Vector3(textPos.x - 0.25f, textPos.y + 0.25f, textPos.z);
-		
-		Debug.LogFormat("current render: {0}",
-		                menu.GetCurrentItem().Renderer.sprite.name);
+		ActivateCurrentButton();
+//		menu.GetCurrentItem().Renderer.sprite = inactive;
+//		Vector3 textPos = menu.GetCurrentItem().Text.transform.position;
+//		menu.GetCurrentItem().Text.transform.position = new Vector3(textPos.x + 0.25f, textPos.y - 0.25f, textPos.z);
+//		
+//		menu.TraverseOptions(direction);
+//		
+//		menu.GetCurrentItem().Renderer.sprite = active;
+//		textPos = menu.GetCurrentItem().Text.transform.position;
+//		menu.GetCurrentItem().Text.transform.position = new Vector3(textPos.x - 0.25f, textPos.y + 0.25f, textPos.z);
 		Debug.LogFormat("Current attack: {0}", menu.GetCurrentItem().Text.text);
+	}
+
+	// TODO: Maybe actually make a button class?
+	private void ActivateCurrentButton() {
+		AttackButton opt = menu.GetCurrentItem();
+		opt.Renderer.sprite = active;
+		Vector3 texPost = opt.Text.transform.position;
+		opt.Text.transform.position = new Vector3(texPost.x - 0.25f, texPost.y + 0.25f, texPost.z);
+	}
+
+	private void DeactivateCurrentButton() {
+		AttackButton opt = menu.GetCurrentItem();
+		opt.Renderer.sprite = inactive;
+		opt.Text.transform.position = opt.OrigTextPos;
 	}
 
 	public string AttackName() {
 		return menu.GetCurrentItem().Text.text;
 	}
+
+	public void SetAttackAName(string attackName) {
+		attackAName = attackName;
+	}
+	
+	public void SetAttackBName(string attackName) {
+		attackBName = attackName;
+	}
 }
 
-public class BasicAttackOption : ActionCategoryContainer {
+public class AttackButton : ActionCategoryContainer {
 		
 //	private GameObject button;
 	private SpriteRenderer renderer;
 	private TextMeshProUGUI text;
 	private AttackOption attackOption;
+	private Vector3 origTextPos;
 
-	public BasicAttackOption(GameObject obj, MenuOptionState option, AttackOption attack) {
+	public AttackButton(GameObject obj, MenuOptionState option, AttackOption attack) {
 		optionObject = obj;
 		renderer = obj.GetComponent<SpriteRenderer>();
 		text = obj.GetComponentInChildren<TextMeshProUGUI>();
 		attackOption = attack;
 		menuOptionState = option;
+		origTextPos = text.transform.position;
 	}
 
 	public GameObject Button {
@@ -114,6 +125,11 @@ public class BasicAttackOption : ActionCategoryContainer {
 	public AttackOption AttackOption {
 		get { return attackOption; }
 		set { attackOption = value; }
+	}
+
+	public Vector3 OrigTextPos {
+		get { return origTextPos; }
+		set { origTextPos = value; }
 	}
 }
 

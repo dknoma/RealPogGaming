@@ -64,8 +64,8 @@ public class ActionMenu : MonoBehaviour {
 	private bool inSubMenu;
 	private bool initializedMenu;
 
-	private string attackAName = "";
-	private string attackBName = "";
+//	private string attackAName = "";
+//	private string attackBName = "";
 	private const string SWORD_A = "Power Strike";
 	private const string SWORD_B = "Armor Piercer";
 	private const string GREATSWORD_A = "Greater Cleave";
@@ -112,9 +112,9 @@ public class ActionMenu : MonoBehaviour {
 				break;
 			case Affiliation.Enemy:
 				Debug.Log("Current unit is an enemy.");
-				List<GameObject> allies = BattleManager.bm.GetAllies();
+				List<Player> allies = PlayerManager.pm.GetParty();
 				int randomTarget = Random.Range(0, allies.Count);
-				BattleManager.bm.SetCurrentTarget(allies[randomTarget]);
+				BattleManager.bm.SetCurrentTarget(allies[randomTarget].gameObject);
 				BattleManager.bm.SetCurrentActionType(ActionType.Attack);
 				BattleManager.bm.SetBattlePhase(BattlePhase.Battle);
 				break;
@@ -160,6 +160,7 @@ public class ActionMenu : MonoBehaviour {
 			? currentChar.GetComponent<Player>().GetWeapon().GetWeaponType() 
 			: currentChar.GetComponent<Enemy>().GetWeaponType();
 		InitAttackOptions(currentUnitWeaponType);
+		Debug.LogFormat("name: {0}, {1}", currentChar.GetComponent<Player>().name, currentChar.GetComponent<Player>().GetWeapon().name);
 		Debug.Log("Unit's weapon ====== " + currentUnitWeaponType);
 		if (Mathf.RoundToInt(Input.GetAxisRaw("Horizontal")) != 0 ||
 		    Mathf.RoundToInt(Input.GetAxisRaw("Vertical")) != 0) {
@@ -304,7 +305,7 @@ public class ActionMenu : MonoBehaviour {
 
 	private void NavigateMenu<T>(MenuObject<T> menuObject, Direction direction) {
 		Type menuType = typeof(T);
-		if (menuType == typeof(BasicAttackOption)) {
+		if (menuType == typeof(AttackButton)) {
 			// Choosing an attack
 			menuObject.NavigateMenu(direction);
 //			Debug.LogFormat("Current attack: {0}", basicAttackMenu.AttackName());
@@ -393,32 +394,34 @@ public class ActionMenu : MonoBehaviour {
 	private void InitAttackOptions(WeaponType type) {
 		switch (type) {
 			case WeaponType.GreatSword:
-				attackAName = GREATSWORD_A;
-				attackBName = GREATSWORD_B;
+				basicAttackMenu.SetAttackAName(GREATSWORD_A);
+				basicAttackMenu.SetAttackBName(GREATSWORD_B);
 				break;
 			case WeaponType.Sword:
-				attackAName = SWORD_A;
-				attackBName = SWORD_B;
+				basicAttackMenu.SetAttackAName(SWORD_A);
+				basicAttackMenu.SetAttackBName(SWORD_B);
 				break;
 			case WeaponType.Dagger:
-				attackAName = DAGGER_A;
-				attackBName = DAGGER_B;
+				basicAttackMenu.SetAttackAName(DAGGER_A);
+				basicAttackMenu.SetAttackBName(DAGGER_B);
 				break;
 			case WeaponType.Rod:
-				attackAName = ROD_A;
-				attackBName = ROD_B;
+				basicAttackMenu.SetAttackAName(ROD_A);
+				basicAttackMenu.SetAttackBName(ROD_B);
 				break;
 			case WeaponType.Staff:
-				attackAName = STAFF_A;
-				attackBName = STAFF_B;
+				basicAttackMenu.SetAttackAName(STAFF_A);
+				basicAttackMenu.SetAttackBName(STAFF_B);
 				break;
 			case WeaponType.Bow:
-				attackAName = BOW_A;
-				attackBName = BOW_B;
+				basicAttackMenu.SetAttackAName(BOW_A);
+				basicAttackMenu.SetAttackBName(BOW_B);
 				break;
 			case WeaponType.Spear:
-				attackAName = SPEAR_A;
-				attackBName = SPEAR_B;
+//				attackAName = SPEAR_A;
+//				attackBName = SPEAR_B;
+				basicAttackMenu.SetAttackAName(SPEAR_A);
+				basicAttackMenu.SetAttackBName(SPEAR_B);
 				break;
 			default:
 				throw new ArgumentOutOfRangeException();

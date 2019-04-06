@@ -7,6 +7,7 @@ public class PlayerManager : MonoBehaviour {
     public static PlayerManager pm;
     
     [SerializeField] private GameObject mainCharacter;
+    [SerializeField] private GameObject otherCharacter;
     
     private readonly List<Player> characters = new List<Player>();
     private readonly List<Player> partyMembers = new List<Player>();
@@ -22,8 +23,9 @@ public class PlayerManager : MonoBehaviour {
             Destroy(gameObject);
         }
         DontDestroyOnLoad(gameObject);
-        AddPlayableCharacter(mainCharacter.GetComponent<Player>());
+//        AddPlayableCharacter(mainCharacter.GetComponent<Player>());
         AddAllyToParty(mainCharacter.GetComponent<Player>());
+        AddAllyToParty(otherCharacter.GetComponent<Player>());
 //        CreateAllCharacterEquipmentObject();
     }
 
