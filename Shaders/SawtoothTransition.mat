@@ -51,7 +51,7 @@ Material:
     - _Cutoff: 0
     - _Distort: 0
     - _Fade: 1
-    - _Reverse: 0
+    - _Reverse: 1
     m_Colors:
     - _Color: {r: 0, g: 0, b: 0, a: 1}
     - _LoadingColor: {r: 0, g: 0, b: 0, a: 0}

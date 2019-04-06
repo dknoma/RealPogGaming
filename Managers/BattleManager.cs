@@ -115,6 +115,7 @@ public class BattleManager : MonoBehaviour {
 			Destroy(gameObject);
 		}
 		DontDestroyOnLoad(gameObject);
+		
 	}
 
 	private void Update() {

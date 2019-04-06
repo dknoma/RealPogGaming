@@ -6,6 +6,7 @@ using Random = UnityEngine.Random;
 
 public enum MenuState {
 	Main,			// Main menu: where player selects what option they wanna take
+	AttackSubMenu,
 	SubMenu,
 	Target
 }
@@ -46,16 +47,19 @@ public class ActionMenu : MonoBehaviour {
 	
 	public GameObject attackOptionPrefab;
 	public GameObject runOptionPrefab;
+	[SerializeField] private ActionCategoryContainerMenuObject basicAttackMenu;
+	[SerializeField] private MainMenu main;
+	[SerializeField] private EnemyTargetChooseMenu enemyTargets;
 
 	private Image currentActionImage;
 	private WeaponType currentUnitWeaponType;
 
 	private List<ActionCategoryContainer> actions;
-	private MenuGraph<ActionCategoryContainer> mainMenu;
-	private MenuGraph<GameObject> enemies;
-	private MenuGraph<object> basicAttacks;
-	private MenuGraph<object> currentSubMenu;
-	private MenuGraph<GameObject> currentTargets;
+//	private MenuGraph<ActionCategoryContainer> mainMenu;
+//	private MenuGraph<GameObject> enemies;
+////	private MenuGraph<BasicAttackOption> basicAttacks;
+////	private MenuGraph<object> currentSubMenu;
+//	private MenuGraph<GameObject> currentTargets;
 	
 	private MenuState menuState;
 	private MenuOptionState menuOptionState;
@@ -129,7 +133,7 @@ public class ActionMenu : MonoBehaviour {
 	}
 
 	private void InitMenu() {
-		Debug.Log("Init action menu.");
+		Debug.Log("Init action menuObject.");
 		if (attackOption == null) {
 			Debug.Log("Instantiate attack option.");
 			attackOption = Instantiate(attackOptionPrefab, transform, false);
@@ -145,27 +149,38 @@ public class ActionMenu : MonoBehaviour {
 				};
 
 		int actionCount = actions.Count;
-		Debug.Log("action menu size: " + actionCount);
-		mainMenu = new MenuGraph<ActionCategoryContainer>(actionCount, MenuType.Horizontal);
-		mainMenu.InitMenuItems(new ActionCategoryContainer[actionCount]);
+		Debug.Log("action menuObject size: " + actionCount);
+//		mainMenu = new MenuGraph<ActionCategoryContainer>(actionCount, MenuType.Horizontal);
+//		mainMenu.InitMenuItems(new ActionCategoryContainer[actionCount]);
+//		main.Menu().InitMenuItems(new ActionCategoryContainer[actionCount]);
+		main.InitMainMenu(actionCount);
 		for(int i = 0; i < actionCount; i++) {
-			mainMenu.AddItem(actions[i], i);
-			mainMenu.GetItem(i).OptionRender().GetComponent<Image>().color = Color.grey;
+			main.AddItem(actions[i], i);
+//			mainMenu.AddItem(actions[i], i);
+//			mainMenu.GetItem(i).OptionRender().GetComponent<Image>().color = Color.grey;
+//			main.GetCurrentItem().OptionRender().GetComponent<Image>().color = Color.grey;
+			main.DeactivateButton(i);
 		}
+//		main.GetItem(main.Size()-1).OptionRender().GetComponent<Image>().color = Color.grey;
+//		main.GetItem(0).OptionRender().GetComponent<Image>().color = Color.white;
+		main.ActivateCurrentButton();
+		menuOptionState = main.GetCurrentItem().MenuOptionState();
 //		currentMenu = mainMenu;
 //		currentBattleOptionRender = mainMenu.GetCurrentItem().OptionRender();
 //		currentActionImage = currentBattleOptionRender.GetComponent<Image>();
-		currentActionImage = mainMenu.GetCurrentItem().OptionRender().GetComponent<Image>();
-		currentActionImage.color = Color.white;
+//		currentActionImage = mainMenu.GetCurrentItem().OptionRender().GetComponent<Image>();
+//		currentActionImage.color = Color.white;
 
-		menuOptionState = mainMenu.GetCurrentItem().MenuOptionState();
+//		menuOptionState = mainMenu.GetCurrentItem().MenuOptionState();
 		
 		// Get current enemy list. Useful for targeting enemies
 		int enemyCount = BattleManager.bm.GetEnemies().Count;
-		enemies = new MenuGraph<GameObject>(enemyCount, MenuType.Both);
-		enemies.InitMenuItems(new GameObject[enemyCount]);
+//		enemies = new MenuGraph<GameObject>(enemyCount, MenuType.Both);
+//		enemies.InitMenuItems(new GameObject[enemyCount]);
+		enemyTargets.InitTargetMenu(enemyCount);
 		for(int i = 0; i < enemyCount; i++) {
-			enemies.AddItem(BattleManager.bm.GetEnemies()[i], i);
+//			enemies.AddItem(BattleManager.bm.GetEnemies()[i], i);
+			enemyTargets.AddItem(BattleManager.bm.GetEnemies()[i], i);
 		}
 		Character currentChar = BattleManager.bm.GetCurrentUnit();
 		currentUnitWeaponType = currentChar.GetAffiliation() == Affiliation.Ally 
@@ -173,10 +188,14 @@ public class ActionMenu : MonoBehaviour {
 			: currentChar.GetComponent<Enemy>().GetWeaponType();
 		InitAttackOptions(currentUnitWeaponType);
 		Debug.Log("Unit's weapon ====== " + currentUnitWeaponType);
-		basicAttacks = new MenuGraph<object>(2, MenuType.Vertical);
-		basicAttacks.InitMenuItems(new object[2]);
-		basicAttacks.AddItem(new Attack(AttackOption.A, attackAName), 0);
-		basicAttacks.AddItem(new Attack(AttackOption.B, attackBName), 1);
+		
+//		basicAttacks = new MenuGraph<object>(2, MenuType.Vertical);
+//		basicAttacks.InitMenuItems(new object[2]);
+//		basicAttacks.AddItem(new Attack(AttackOption.A, attackAName), 0);
+//		basicAttacks.AddItem(new Attack(AttackOption.B, attackBName), 1);
+
+//		basicAttacks = basicAttackMenu.Menu();
+		
 		if (Mathf.RoundToInt(Input.GetAxisRaw("Horizontal")) != 0 ||
 		    Mathf.RoundToInt(Input.GetAxisRaw("Vertical")) != 0) {
 			axisDown = true;
@@ -199,26 +218,36 @@ public class ActionMenu : MonoBehaviour {
 	private void UseMenu() {
 		switch (menuState) {
 			case MenuState.Main:
-//				Debug.Log("Choosing menu category.");
-				GetAxisDown(mainMenu);
+//				Debug.Log("Choosing menuObject category.");
+//				GetAxisDown(mainMenu);
+				GetAxisDown(main);
 				if (Input.GetButtonDown("Test")) {
 					ChangeMenu();
 				}
 				break;
-			case MenuState.SubMenu:
-//				Debug.Log("Choosing sub menu category.");
-				GetAxisDown(currentSubMenu);
+			case MenuState.AttackSubMenu:
+				GetAxisDown(basicAttackMenu);
 				if (Input.GetButtonDown("Test")) {
 					DoMenuAction();
 				}
-				// TODO: If hit cancel, go back to main
 				break;
+//			case MenuState.SubMenu:
+////				Debug.Log("Choosing sub menuObject category.");
+//				GetAxisDown(currentSubMenu);
+//				if (Input.GetButtonDown("Test")) {
+//					DoMenuAction();
+//				}
+//				// TODO: If hit cancel, go back to main
+//				break;
 			case MenuState.Target:
 //				Debug.Log("Choosing target.");
-				GetAxisDown(currentTargets);
+				GetAxisDown(enemyTargets);
 				if (Input.GetButtonDown("Test")) {
 					ChooseTarget();
 				}
+				break;
+			case MenuState.SubMenu:
+				Debug.Log("DEPRACTED");
 				break;
 			default:
 				throw new ArgumentOutOfRangeException();
@@ -226,16 +255,16 @@ public class ActionMenu : MonoBehaviour {
 	}
 
 	private void ChangeMenu() {
-		Debug.LogFormat("menu option state: {0}", menuOptionState);
+		Debug.LogFormat("menuObject option state: {0}", menuOptionState);
 		switch (menuOptionState) {
 			case MenuOptionState.BasicAttack:
 				Debug.Log("Chose  basic attack.");
-				currentSubMenu = basicAttacks;
-				Debug.LogFormat("Current attack: {0}", currentSubMenu.GetCurrentItem() as string);
-				menuState = MenuState.SubMenu;
+//				currentSubMenu = basicAttacks;
+				Debug.LogFormat("Current attack: {0}", basicAttackMenu.GetCurrentItem().Text.text);
+				menuState = MenuState.AttackSubMenu;
 				break;
 			case MenuOptionState.Support:
-				menuState = MenuState.SubMenu;
+//				menuState = MenuState.SubMenu;
 				break;
 			case MenuOptionState.Escape:
 				BattleManager.bm.EndBattle(WinStatus.Escape);
@@ -249,15 +278,16 @@ public class ActionMenu : MonoBehaviour {
 		switch (menuOptionState) {
 			case MenuOptionState.BasicAttack:
 				Debug.Log("Choosing target.");
-				currentTargets = enemies;
-				Debug.LogFormat("current target: {0}",currentTargets.GetCurrentItem().name);
+//				currentTargets = enemies;
+//				Debug.LogFormat("current target: {0}",currentTargets.GetCurrentItem().name);
+				Debug.LogFormat("current target: {0}",enemyTargets.GetCurrentItem().name);
 				menuState = MenuState.Target;
 				subMenuState = SubMenuState.BasicAttack;
 				// Current targets = enemies
 				break;
 			case MenuOptionState.Support:
 //				menuState = MenuState.SubMenu;
-				// Change menu to submenu of items and defense
+				// Change menuObject to submenu of items and defense
 				break;
 			case MenuOptionState.Escape:
 				BattleManager.bm.EndBattle(WinStatus.Escape);
@@ -268,7 +298,8 @@ public class ActionMenu : MonoBehaviour {
 	}
 
 	private void ChooseTarget() {
-		GameObject target = currentTargets.GetCurrentItem();
+//		GameObject target = currentTargets.GetCurrentItem();
+//		GameObject target = enemyTargets.GetCurrentItem();
 		Debug.Log("Chose target " + BattleManager.bm.GetCurrentTarget());
 		subMenuState = SubMenuState.BasicAttack;
 		ResolveActionSelection();
@@ -279,9 +310,11 @@ public class ActionMenu : MonoBehaviour {
 			case SubMenuState.Nil:
 				break;
 			case SubMenuState.BasicAttack:
-				Attack currentAttack = currentSubMenu.GetCurrentItem() as Attack;
-				Debug.LogFormat("Using {0}", currentAttack.Name());
-				BattleManager.bm.SetCurrentTarget(currentTargets.GetCurrentItem());
+//				Attack currentAttack = currentSubMenu.GetCurrentItem() as Attack;
+				Debug.LogFormat("Using {0}, {1}", basicAttackMenu.GetCurrentItem().AttackOption, 
+				                basicAttackMenu.AttackName());
+//				BattleManager.bm.SetCurrentTarget(currentTargets.GetCurrentItem());
+				BattleManager.bm.SetCurrentTarget(enemyTargets.GetCurrentItem());
 				BattleManager.bm.SetBattlePhase(BattlePhase.Battle);
 				break;
 			case SubMenuState.Support:
@@ -297,52 +330,91 @@ public class ActionMenu : MonoBehaviour {
 			default:
 				throw new ArgumentOutOfRangeException();
 		}
-		// Reset menu state
+		// Reset menuObject state
 		subMenuState = SubMenuState.Nil;
 		menuOptionState = MenuOptionState.BasicAttack;
 		menuState = MenuState.Main;
 		initializedMenu = false;
 	}
 	
-	private void NavigateMenu<T>(MenuGraph<T> menu, Direction direction) {
+//	private void NavigateMenu<T>(MenuGraph<T> menuObject, Direction direction) {
+//		Type menuType = typeof(T);
+//		if(menuType == typeof(ActionCategoryContainer)) {
+//			menuObject.TraverseOptions(direction);
+//			ActionCategoryContainer currentItem = menuObject.GetCurrentItem() as ActionCategoryContainer;
+//			if (currentItem != null) {
+//				currentActionImage.color = Color.grey; // Change previous action to white
+//				menuOptionState = currentItem.MenuOptionState();
+//				currentActionImage = currentItem.OptionRender().GetComponent<Image>();
+//				currentActionImage.color = Color.white; // Change current action to grey
+//				Debug.LogFormat("Current category = {0}", currentItem.MenuOptionState());
+//			} else {
+//				Debug.LogWarning("Current item was null.");
+//			}
+//		} else if (menuType == typeof(GameObject)) {
+//			// Choosing a target
+//			menuObject.TraverseOptions(direction);
+//			GameObject currentTarget = menuObject.GetCurrentItem() as GameObject;
+//			Debug.LogFormat("Current target: {0}", currentTarget.name);
+//		} else if (menuType == typeof(object)) {
+//			// Choosing an attack
+//			menuObject.TraverseOptions(direction);
+//			Debug.LogFormat("Current attack: {0}", basicAttackMenu.AttackName());
+//		}
+////		Debug.Log("direction: " + direction);
+//////		currentMenu.TraverseOptions(direction);
+////		menuObject.TraverseOptions(direction);
+////		currentActionImage.color = Color.grey; // Change previous action to white
+//////		currentActionImage = mainMenu.GetCurrentItem();
+//////		Debug.Log("asdasda: " + currentMenu.GetCurrentItem().name);
+////		menuOptionState = menuObject.GetCurrentItem().MenuOptionState();
+////		currentActionImage = menuObject.GetCurrentItem().OptionRender().GetComponent<Image>();
+////		currentActionImage.color = Color.white; // Change current action to grey
+////		currentBattleOptionRender = menuObject.GetCurrentItem().OptionRender();
+////		currentActionImage = currentBattleOptionRender.GetComponent<Image>();
+//	}
+
+
+//	private void GetAxisDown<T>(MenuGraph<T> menuObject) {
+
+	private void NavigateMenu<T>(MenuObject<T> menuObject, Direction direction) {
 		Type menuType = typeof(T);
 		if(menuType == typeof(ActionCategoryContainer)) {
-			menu.TraverseOptions(direction);
-			ActionCategoryContainer currentItem = menu.GetCurrentItem() as ActionCategoryContainer;
+			menuObject.NavigateMenu(direction);
+			ActionCategoryContainer currentItem = menuObject.GetCurrentItem() as ActionCategoryContainer;
 			if (currentItem != null) {
-				currentActionImage.color = Color.grey; // Change previous action to white
+//				currentActionImage.color = Color.grey; // Change previous action to white
 				menuOptionState = currentItem.MenuOptionState();
-				currentActionImage = currentItem.OptionRender().GetComponent<Image>();
-				currentActionImage.color = Color.white; // Change current action to grey
-				Debug.LogFormat("Current category = {0}", currentItem.MenuOptionState());
+//				currentActionImage = currentItem.OptionRender().GetComponent<Image>();
+//				currentActionImage.color = Color.white; // Change current action to grey
+				Debug.LogFormat("Current category = {0}", menuOptionState);
 			} else {
 				Debug.LogWarning("Current item was null.");
 			}
 		} else if (menuType == typeof(GameObject)) {
 			// Choosing a target
-			menu.TraverseOptions(direction);
-			GameObject currentTarget = menu.GetCurrentItem() as GameObject;
+			menuObject.NavigateMenu(direction);
+			GameObject currentTarget = menuObject.GetCurrentItem() as GameObject;
 			Debug.LogFormat("Current target: {0}", currentTarget.name);
 		} else if (menuType == typeof(object)) {
 			// Choosing an attack
-			menu.TraverseOptions(direction);
-			Attack currentAttack = menu.GetCurrentItem() as Attack;
-			Debug.LogFormat("Current attack: {0}", currentAttack.Name());
+			menuObject.NavigateMenu(direction);
+			Debug.LogFormat("Current attack: {0}", basicAttackMenu.AttackName());
 		}
 //		Debug.Log("direction: " + direction);
 ////		currentMenu.TraverseOptions(direction);
-//		menu.TraverseOptions(direction);
+//		menuObject.TraverseOptions(direction);
 //		currentActionImage.color = Color.grey; // Change previous action to white
 ////		currentActionImage = mainMenu.GetCurrentItem();
 ////		Debug.Log("asdasda: " + currentMenu.GetCurrentItem().name);
-//		menuOptionState = menu.GetCurrentItem().MenuOptionState();
-//		currentActionImage = menu.GetCurrentItem().OptionRender().GetComponent<Image>();
+//		menuOptionState = menuObject.GetCurrentItem().MenuOptionState();
+//		currentActionImage = menuObject.GetCurrentItem().OptionRender().GetComponent<Image>();
 //		currentActionImage.color = Color.white; // Change current action to grey
-//		currentBattleOptionRender = menu.GetCurrentItem().OptionRender();
+//		currentBattleOptionRender = menuObject.GetCurrentItem().OptionRender();
 //		currentActionImage = currentBattleOptionRender.GetComponent<Image>();
 	}
-
-	private void GetAxisDown<T>(MenuGraph<T> menu) {
+	
+	private void GetAxisDown<T>(MenuObject<T> menu) {
 		if (axisDown) {
 //			currentDirection = Direction.Null;
 			if (!(Mathf.Abs(Input.GetAxisRaw("Horizontal")) < Mathf.Epsilon) ||
@@ -355,28 +427,32 @@ public class ActionMenu : MonoBehaviour {
 //			Debug.Log ("Right");
 			axisDown = true;
 			const Direction dir = Direction.Right;
-//			DoSoundEffect(menu.GetMenuType(), dir);
+//			menuObject.NavigateMenu(dir);
+//			DoSoundEffect(menuObject.GetMenuType(), dir);
 			NavigateMenu(menu, dir);
 //			NavigateMenu(Direction.Right);
 		} else if(Input.GetAxisRaw ("Horizontal") < 0) {
 //			Debug.Log ("Left");
 			axisDown = true;
 			const Direction dir = Direction.Left;
-//			DoSoundEffect(menu.GetMenuType(), dir);
+//			menuObject.NavigateMenu(dir);
+//			DoSoundEffect(menuObject.GetMenuType(), dir);
 			NavigateMenu(menu, dir);
 //			NavigateMenu(Direction.Left);
 		} else if(Input.GetAxisRaw ("Vertical") > 0) {
 //			Debug.Log ("Up");
 			axisDown = true;
 			const Direction dir = Direction.Up;
-//			DoSoundEffect(menu.GetMenuType(), dir);
+//			menuObject.NavigateMenu(dir);
+//			DoSoundEffect(menuObject.GetMenuType(), dir);
 			NavigateMenu(menu, dir);
 //			NavigateMenu(Direction.Up);
 		} else if(Input.GetAxisRaw ("Vertical") < 0) {
 //			Debug.Log ("Down");
 			axisDown = true;
 			const Direction dir = Direction.Down;
-//			DoSoundEffect(menu.GetMenuType(), dir);
+//			menuObject.NavigateMenu(dir);
+//			DoSoundEffect(menuObject.GetMenuType(), dir);
 			NavigateMenu(menu, dir);
 //			NavigateMenu(Direction.Down);
 		} else {
@@ -471,44 +547,6 @@ public class ActionMenu : MonoBehaviour {
 				break;
 			default:
 				throw new ArgumentOutOfRangeException("menuType", menuType, null);
-		}
-	}
-
-	public class ActionCategoryContainer {
-
-		private readonly GameObject optionRender;
-		private readonly MenuOptionState menuOptionState;
-
-		public ActionCategoryContainer(GameObject obj, MenuOptionState option) {
-			optionRender = obj;
-			menuOptionState = option;
-		}
-
-		public GameObject OptionRender() {
-			return optionRender;
-		}
-
-		public MenuOptionState MenuOptionState() {
-			return menuOptionState;
-		}
-	}
-
-	private class Attack {
-
-		private readonly AttackOption attackOption;
-		private readonly string name;
-
-		public Attack(AttackOption atk, string name) {
-			attackOption = atk;
-			this.name = name;
-		}
-
-		public AttackOption Option() {
-			return attackOption;
-		}
-
-		public string Name() {
-			return name;
 		}
 	}
 }

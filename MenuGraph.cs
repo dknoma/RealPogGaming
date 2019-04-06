@@ -84,6 +84,10 @@ public class MenuGraph<T> {
 		return menuType;
 	}
 
+	public int Size() {
+		return size;
+	}
+
 	// Node based graph traversal for neighbor system
 	public void TraverseOptions(Direction direction) {
 		if (menuItems.Length == 1) return;

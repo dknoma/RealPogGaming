@@ -2,9 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-
-[ExecuteInEditMode]
-public class MenuObject<T> : MonoBehaviour {
+public class MenuObject<T> : ScriptableObject {
 
 	public int optionCount;
 	public MenuType menuType;
@@ -13,7 +11,7 @@ public class MenuObject<T> : MonoBehaviour {
 	public int height;
 	public Canvas canvas;
 	
-	private MenuGraph<T> menu = new MenuGraph<T>();
+	protected readonly MenuGraph<T> menu = new MenuGraph<T>();
 
 	private void OnEnable() {
 		switch (menuType) {
@@ -37,7 +35,27 @@ public class MenuObject<T> : MonoBehaviour {
 		}
 	}
 
-	public void NavigateMenu(Direction direction) {
+	public MenuGraph<T> Menu() {
+		return menu;
+	}
+
+	public virtual void NavigateMenu(Direction direction) {
 		menu.TraverseOptions(direction);
+	}
+	
+	public virtual T GetCurrentItem() {
+		return menu.GetCurrentItem();
+	}
+	
+	public virtual T GetItem(int index) {
+		return menu.GetItem(index);
+	}
+	
+	public virtual void AddItem(T item, int index) {
+		menu.AddItem(item, index);
+	}
+	
+	public virtual int Size() {
+		return menu.Size();
 	}
 }
