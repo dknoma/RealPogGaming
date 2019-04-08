@@ -99,7 +99,7 @@ public class BattleManager : MonoBehaviour {
 	private bool axisDown;
 
 //	private GameObject testMenu;
-	private ActionMenu actionMenu;	// Get options from units Character component
+//	private ActionMenu actionMenu;	// Get options from units Character component
 	//private int currentOption = 0;
 
 	private Direction currentDirection;
@@ -167,7 +167,7 @@ public class BattleManager : MonoBehaviour {
 //				allies = new List<GameObject>();
 				enemies = new List<GameObject>();
 				Debug.Log("Ending battle.");
-				actionMenu.gameObject.SetActive(false);
+//				actionMenu.gameObject.SetActive(false);
 				Destroy(battleCanvas);
 				break;
 			default:
@@ -221,8 +221,9 @@ public class BattleManager : MonoBehaviour {
 					// TODO [x]: have a bool that will change from the action menu depending on the action
 					if (!menuActivated && !ScreenTransitionManager.screenTransitionManager.IsTransitioning()) {
 						menuActivated = true;
-						actionMenu.gameObject.SetActive(true);
-						actionMenu.TryInitMenu();
+						ActionMenuManager.amm.TryActionsSpawn();	// Spawn buttons after done transitioning
+//						actionMenu.gameObject.SetActive(true);
+//						actionMenu.TryInitMenu();
 					}
 
 //					if (finishedActing) {
@@ -265,7 +266,7 @@ public class BattleManager : MonoBehaviour {
 						resolvingTurn = true;
 						currentUnit.GetComponent<Character>().ResolveStatusAfflictions();
 					}
-					actionMenu.gameObject.SetActive(false);
+//					actionMenu.gameObject.SetActive(false);
 					BattlePhase = BattlePhase.Nil;
 					TurnState = TurnState.End; // End turn
 					break;
@@ -305,7 +306,7 @@ public class BattleManager : MonoBehaviour {
 			battleCanvas = Instantiate(battleCanvasPrefab);
 			battleCanvas.GetComponent<Canvas>().worldCamera = Camera.main;
 //			battleCanvas.worldCamera = Camera.main;
-			actionMenu = battleCanvas.GetComponentInChildren<ActionMenu>();
+//			actionMenu = battleCanvas.GetComponentInChildren<ActionMenu>();
 		}
 //		actionMenu.gameObject.SetActive(false);
 		BattleState = BattleState.Ongoing;	// Go ahead and start the battle
