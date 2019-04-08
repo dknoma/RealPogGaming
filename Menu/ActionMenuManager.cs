@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class ActionMenuManager : MonoBehaviour {
 
     public static ActionMenuManager amm;
     
-    private EventSystem eventSystem;
+    private static EventSystem eventSystem = EventSystem.current;
     
-    private List<GameObject> targetButtons;
-    
+    private Stack<GameObject> previousOptions = new Stack<GameObject>();
+
     [SerializeField]
     private GameObject actionMenuPrefab;
     private static GameObject _actionMenu;
@@ -22,10 +21,13 @@ public class ActionMenuManager : MonoBehaviour {
     private static GameObject _attackMenu;
     
     [SerializeField]
-    private GameObject targetButtonPrefab;
-    private static GameObject _targetButton;
+    private GameObject targetContainerPrefab;
+    private static GameObject _targetContainer;
     
-    private void Awake() {
+    [SerializeField]
+    private GameObject targetButtonPrefab;
+    
+    private void OnEnable() {
         if (amm == null) {
             amm = this;
         } else if (amm != this) {
@@ -55,7 +57,7 @@ public class ActionMenuManager : MonoBehaviour {
                     eventSystem = EventSystem.current;
                 }
                 SetMenuActive(_actionMenu,true);
-                SetButtonsActive(_actionMenu, true);
+                SetButtonsInteractable(_actionMenu, true);
                 eventSystem.SetSelectedGameObject(_actionMenu.transform.GetChild(0).gameObject);
                 Debug.Log("currentSelected " + eventSystem.currentSelectedGameObject.name);
                 break;
@@ -72,45 +74,52 @@ public class ActionMenuManager : MonoBehaviour {
         }
     }
 
+    public void CancelCurrentAction() {
+        Debug.LogFormat("Canceling {0}", eventSystem.currentSelectedGameObject.name);
+        GameObject previousOption = previousOptions.Pop();
+        Debug.LogFormat("new curr: {0}", previousOption.name);
+        SetMenuActive(eventSystem.currentSelectedGameObject.transform.parent.gameObject, false);
+        // Reactivate parent and set its buttons to be interactable
+        Transform parent = previousOption.transform.parent;
+        SetMenuActive(parent.gameObject, transform);
+        SetButtonsInteractable(parent.gameObject, true);
+        eventSystem.SetSelectedGameObject(previousOption);
+    }
+    
     public void ChooseBasicAttack() {
-        Debug.Log("Chose basic attack");
-        SetButtonsActive(_actionMenu, false);
         if (_attackMenu == null) {
-	        _attackMenu = Instantiate(attackMenuPrefab, amm.transform, false);
+            _attackMenu = Instantiate(attackMenuPrefab, amm.transform, false);
         }
-        if (eventSystem == null) {
-            eventSystem = EventSystem.current;
-        }
+        Debug.LogFormat("Chose basic attack");
+        previousOptions.Push(eventSystem.currentSelectedGameObject);    // Add attack action to previous options
+        Debug.LogFormat("enqueing {0}", previousOptions.Peek());
+        SetButtonsInteractable(_actionMenu, false);
         SetMenuActive(_attackMenu,true);
-        SetButtonsActive(_attackMenu, true);
+        SetButtonsInteractable(_attackMenu, true);
         eventSystem.SetSelectedGameObject(_attackMenu.transform.GetChild(0).gameObject);
         Debug.Log("current attack " + eventSystem.currentSelectedGameObject.name);
     }
 
     public void AttackA() {
-        SetButtonsActive(_attackMenu, false);
         Debug.Log("Doing Attack A");
-        if (_targetButton == null) {
-            _targetButton = targetButtonPrefab;
+        if (_targetContainer == null) {
+            _targetContainer =  Instantiate(targetContainerPrefab, amm.transform, false);
+            List<GameObject> enemies = BattleManager.bm.GetEnemies();
+            // TODO: Add new buttons at the enemies position
+            foreach (var targetEnemy in enemies) {
+                Debug.LogFormat("Found target {0}", targetEnemy.name);
+                GameObject newButton =
+                    Instantiate(targetButtonPrefab, targetEnemy.transform.position, Quaternion.identity, _targetContainer.transform);
+                newButton.GetComponent<TargetButton>().target = targetEnemy;
+                Debug.LogFormat("newButton: {0}, {1}", newButton.name, newButton.transform.position);
+            }
         }
-        if (eventSystem == null) {
-            eventSystem = EventSystem.current;
-        }
-        List<GameObject> enemies = BattleManager.bm.GetEnemies();
-        targetButtons = new List<GameObject>();
-        // TODO: Add new buttons at the enemies position
-        int i = 0;
-        foreach (var targetEnemy in enemies) {
-            Debug.LogFormat("Found target {0}", targetEnemy.name);
-            GameObject newButton =
-                Instantiate(_targetButton, targetEnemy.transform.position, Quaternion.identity, amm.transform);
-            Debug.LogFormat("newButton: {0}, {1}", newButton.name, newButton.transform.position);
-            targetButtons.Add(newButton);
-            targetButtons[i].GetComponent<TargetButton>().target = targetEnemy;
-            i++;
-        }
-        Debug.LogFormat("_targetButton: {0}", targetButtons[0].name);
-        eventSystem.SetSelectedGameObject(targetButtons[0]);
+        previousOptions.Push(eventSystem.currentSelectedGameObject); // Add attack A option to previous options
+        SetButtonsInteractable(_attackMenu, false);
+        SetMenuActive(_attackMenu,false);
+        SetMenuActive(_targetContainer,true);
+        SetButtonsInteractable(_targetContainer, true);
+        eventSystem.SetSelectedGameObject(_targetContainer.transform.GetChild(0).gameObject);
         Debug.Log("currentSelected " + eventSystem.currentSelectedGameObject.name);
     }
     
@@ -119,11 +128,12 @@ public class ActionMenuManager : MonoBehaviour {
     }
     
     public void ChooseSupport() {
-        SetButtonsActive(_actionMenu, false);
+        SetButtonsInteractable(_actionMenu, false);
     }
     
     public void ChooseRun() {
-        SetButtonsActive(_actionMenu, false);
+        SetButtonsInteractable(_actionMenu, false);
+        previousOptions.Clear();
         BattleManager.bm.EndBattle(WinStatus.Escape);
     }
 
@@ -132,19 +142,13 @@ public class ActionMenuManager : MonoBehaviour {
         BattleManager.bm.SetBattlePhase(BattlePhase.Battle);
         SetMenusActive(false);
         ResetTargets();
+        previousOptions.Clear();
     }
 
-    public void SetTargetButtonsActive(bool isActive) {
-        foreach (GameObject targetButton in targetButtons) {
-            targetButton.SetActive(isActive);
-        }
-    }
-    
     public void ResetTargets() {
-        foreach (GameObject targetButton in targetButtons) {
+        foreach (GameObject targetButton in _targetContainer.transform) {
             Destroy(targetButton);
         }
-        targetButtons = new List<GameObject>();
     }
     
     public void SetMenusActive(bool isActive) {
@@ -156,12 +160,11 @@ public class ActionMenuManager : MonoBehaviour {
         menu.SetActive(isActive);
     }
     
-    private static void SetButtonsActive(GameObject menu, bool isActive) {
-//        eventSystem.currentSelectedGameObject.GetComponent<TmpButton>().interactable = false;
+    private static void SetButtonsInteractable(GameObject menu, bool isActive) {
         foreach (Transform child in menu.transform) {
-            if (child.GetComponent<Selectable>() == null) continue;
+            if (child.GetComponent<MenuButton>() == null) continue;
             Debug.LogFormat("disabling {0}", child.name);
-            child.GetComponent<Selectable>().interactable = isActive;
+            child.GetComponent<MenuButton>().interactable = isActive;
         }
     }
 }

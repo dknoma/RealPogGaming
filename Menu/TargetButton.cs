@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class TargetButton : Button {
+public class TargetButton : MenuButton {
 
 	private GameObject targetUnit;
 	
