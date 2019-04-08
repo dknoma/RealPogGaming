@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Menu;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -74,9 +73,7 @@ public class ActionMenuManager : MonoBehaviour {
     }
 
     public void ChooseBasicAttack() {
-//        actionMenu.SetActive(false);
-//        Debug.LogFormat("Chose {0}", eventSystem.firstSelectedGameObject.name);
-        Debug.Log("Chose basic attack: " + transform.name);
+        Debug.Log("Chose basic attack");
         SetButtonsActive(_actionMenu, false);
         if (_attackMenu == null) {
 	        _attackMenu = Instantiate(attackMenuPrefab, amm.transform, false);
@@ -87,7 +84,7 @@ public class ActionMenuManager : MonoBehaviour {
         SetMenuActive(_attackMenu,true);
         SetButtonsActive(_attackMenu, true);
         eventSystem.SetSelectedGameObject(_attackMenu.transform.GetChild(0).gameObject);
-        Debug.Log("currentSelected " + eventSystem.currentSelectedGameObject.name);
+        Debug.Log("current attack " + eventSystem.currentSelectedGameObject.name);
     }
 
     public void AttackA() {
@@ -162,8 +159,9 @@ public class ActionMenuManager : MonoBehaviour {
     private static void SetButtonsActive(GameObject menu, bool isActive) {
 //        eventSystem.currentSelectedGameObject.GetComponent<TmpButton>().interactable = false;
         foreach (Transform child in menu.transform) {
-            if (child.GetComponent<Button>() == null) continue;
-            child.GetComponent<Button>().interactable = isActive;
+            if (child.GetComponent<Selectable>() == null) continue;
+            Debug.LogFormat("disabling {0}", child.name);
+            child.GetComponent<Selectable>().interactable = isActive;
         }
     }
 }

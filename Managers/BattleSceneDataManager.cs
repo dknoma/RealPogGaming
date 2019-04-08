@@ -11,6 +11,7 @@ using UnityEngine;
 public enum WorldArea {
 	TestHub,
 	CelestialCanopy,
+	PaltryPlains,
 	MalaMeadows,
 }
 
