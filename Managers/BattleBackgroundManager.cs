@@ -35,7 +35,8 @@ public class BattleBackgroundManager : MonoBehaviour {
 	public void LoadBackground() {
 		if (currentBackground == null) {
 //			currentBackground = areaBackgrounds[currentArea];
-			Vector3 cameraPos = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, -10);
+			Vector3 position1 = Camera.main.transform.position;
+			Vector3 cameraPos = new Vector3(position1.x, position1.y, -10);
 			// TODO: If area changes, change current area and change current background
 			//			Destroy currentbackground, and instantiate the new current
 			currentBackground = Instantiate(areaBackgrounds[currentArea], cameraPos, Quaternion.identity);

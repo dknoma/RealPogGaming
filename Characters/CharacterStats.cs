@@ -13,6 +13,7 @@ public class CharacterStats : StatusEffects {
 	public bool runeLockResist;
 	public bool stunResist;
 	public bool silenceResist;
+	public Element element;
 
 	protected int maxLevel = 100;
 	public int currentLevel = 1;
@@ -37,7 +38,20 @@ public class CharacterStats : StatusEffects {
 	protected int baseSpd = 5;
 	protected int currentSpd;
 	protected int totalRuneSpd;
-	public Element element;
+	private int readiness;
+	private bool ready;
+
+	private const int READINESS_THRESHOLD = 100;
+	
+	public int Readiness {
+		get { return readiness; }
+		set { readiness = value; }
+	}
+	
+	public bool Ready {
+		get { return ready; }
+		set { ready = value; }
+	}
 
 	//[SerializeField]
 	//	protected int basePAtk = 5;
@@ -584,6 +598,19 @@ public class CharacterStats : StatusEffects {
 	private int SpdMod(int baseSpd, bool up) {
 		return (int) (up ? baseSpd * 0.2f : baseSpd * (-0.2f));
 	}
+
+	public void IncrementReadiness() {
+		readiness += currentSpd;
+		if (readiness >= READINESS_THRESHOLD) {
+			ready = true;
+		}
+	}
+	
+	public void ResetReadiness() {
+		readiness = readiness <= READINESS_THRESHOLD ? 0 : readiness % READINESS_THRESHOLD;
+		ready = false;
+	}
+
 
 	// Calculate the amount of exp required to get to the next level
 	// 1->2: 1, 2->3: 5, 3->4: 33, 4->5: 73, ...

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = System.Random;
@@ -65,8 +66,8 @@ public class BattleManager : MonoBehaviour {
 	private GameObject battleCanvas;
 	
 	// Queue used for determining which unit goes when.
-	private Queue turnQueue = new Queue();
-	private Queue turnQueueUi = new Queue();
+	private Queue<Character> turnQueue = new Queue<Character>();
+	private Queue<Character> turnQueueUi = new Queue<Character>();
 	private Party party;
 	// List of units to be part of the battle
 	private List<GameObject> units = new List<GameObject>();
@@ -103,7 +104,7 @@ public class BattleManager : MonoBehaviour {
 	private bool finishedBattlePhase;
 	private bool finishedResolve;
 	private bool finishedTurn;
-
+	
 //	private bool axisDown;
 //	private Direction currentDirection;
 //	private Button currentButton;
@@ -338,7 +339,7 @@ public class BattleManager : MonoBehaviour {
 		_turnCount = 0;
 		units = new List<GameObject>();
 		enemies = new List<GameObject>();
-		turnQueue = new Queue();
+		turnQueue = new Queue<Character>();
 		// Init each characters rune bonuses
 		foreach(GameObject unit in units) {
 			CalculateRuneStats(unit.GetComponent<Character>());
@@ -376,12 +377,12 @@ public class BattleManager : MonoBehaviour {
 		takingTurn = true;
 		_turnCount++;
 		Debug.Log("Turn " + _turnCount);
-		currentUnit =((GameObject) turnQueue.Dequeue()).GetComponent<Character>();
+		currentUnit = turnQueue.Dequeue();
 		// TODO: can insert check here for possible cutscenes during a battle.
-		Character unit = currentUnit.GetComponent<Character>();
+//		Character unit = currentUnit;
 		Debug.Log("============= Begin Turn =============");
 		Debug.Log(string.Format("Name: {0}, HP: {1}, exp until level up: {2}",
-		                        currentUnit.name, unit.GetCurrentHp(), unit.expUntilLevelUp));
+		                        currentUnit.name, currentUnit.GetCurrentHp(), currentUnit.expUntilLevelUp));
 //		actionMenu.gameObject.SetActive(true);
 //		actionMenu.TryInitMenu();
 		BattlePhase = BattlePhase.Status;	// The start of the units turn
@@ -524,18 +525,42 @@ public class BattleManager : MonoBehaviour {
 	/*
 	 * Sort the characters by their speeds, then enqueue them into the action queue.
 	 */
+//	private void CalculatePriority(bool fastestFirst) {
+//		// Sor the units based on speed
+//		if(fastestFirst) {
+//			Sorting.DescendingMergeSort(units, new CompareCharactersBySpeed());
+//		} else {
+//			Sorting.MergeSort(units, new CompareCharactersBySpeed());
+//		}
+//		// Add unit to the queue
+//		for (int i = 0; i < units.Count; i++) {
+//			Character character = units[i].GetComponent<Character>();
+//			turnQueue.Enqueue(character);
+//			turnQueueUi.Enqueue(character);
+//		}
+//	}
+
 	private void CalculatePriority(bool fastestFirst) {
-		// Sor the units based on speed
-		if(fastestFirst) {
-			Sorting.DescendingMergeSort(units, new CompareCharactersBySpeed());
-		} else {
-			Sorting.MergeSort(units, new CompareCharactersBySpeed());
+		Sorting.DescendingMergeSort(units, new CompareCharactersBySpeed());
+		Queue<Character> temp = new Queue<Character>();
+		while (turnQueue.Count < 10) {			// Queue up to 100 actions
+			foreach (GameObject unit in units) {
+				Character character = unit.GetComponent<Character>();
+				character.IncrementReadiness();
+				if (!character.Ready) continue; // If character is ready, add to queue and reset readiness
+				turnQueue.Enqueue(character);
+				turnQueueUi.Enqueue(character);
+				temp.Enqueue(character);
+				character.ResetReadiness();
+				if (turnQueue.Count >= 10) break; // Break out if reach threshold
+			}
 		}
-		// Add unit to the queue
-		for(int i = 0; i < units.Count; i++) {
-			turnQueue.Enqueue(units[i]);
-			turnQueueUi.Enqueue(units[i]);
+		Debug.LogFormat("Queued up units:");
+		foreach (Character c in temp) {
+			// TODO: display all the icons of units in the queue
+			Debug.LogFormat("|---> {0}", c.name);
 		}
+		Debug.LogFormat("{0}",temp.Count);
 	}
 
 	private void CalculateRuneStats(Character currentUnit) {
