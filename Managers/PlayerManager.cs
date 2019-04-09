@@ -15,7 +15,11 @@ public class PlayerManager : MonoBehaviour {
     private Dictionary<string, CharacterEquipement> characterEquipements = new Dictionary<string, CharacterEquipement>();
 //    private List<PartyMember> allyReserves = new List<PartyMember>();
     private const int MAX_PARTY_MEMBERS = 3;
-    
+    private int incapacitatedCount;
+    public int IncapacitatedCount {
+        get { return incapacitatedCount; }
+    }
+
     private void OnEnable() {
         if (pm == null) {
             pm = this;
@@ -62,6 +66,30 @@ public class PlayerManager : MonoBehaviour {
         return partyMembers;
     }
     
+    public int AllyCount() {
+        return partyMembers.Count;
+    }
+
+    public bool AllAlliesIncapacitated() {
+        return incapacitatedCount == MAX_PARTY_MEMBERS;
+    }
+
+    public void IncapacitateAlly(Player player) {
+        player.Incapacitate();
+        incapacitatedCount = incapacitatedCount+1 <= 3 ? incapacitatedCount+1 : MAX_PARTY_MEMBERS;
+    }
+    
+    public void ReviveAllyFlatHp(Player player, int hp) {
+        player.TryRemoveStatus(Status.Incapacitated);
+        player.ModifyHp(hp);
+        incapacitatedCount = incapacitatedCount - 1 >= 0 ? incapacitatedCount - 1 : 0;
+    }
+    
+    public void ReviveAllyPercentHp(Player player, float hpPercent) {
+        player.TryRemoveStatus(Status.Incapacitated);
+        player.ModifyHp(hpPercent);
+        incapacitatedCount = incapacitatedCount - 1 >= 0 ? incapacitatedCount - 1 : 0;
+    }
 //    public void CreateAllCharacterEquipmentObject() {
 //        List<Player> chars = GetCharacters();
 //        foreach (Player character in chars) {

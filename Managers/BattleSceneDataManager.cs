@@ -331,6 +331,6 @@ public class BattleSceneDataManager : MonoBehaviour {
 	}
 
 	public GameObject GetEnemyPrefab(string enemyPrefabName) { 
-		return Resources.Load<GameObject>(string.Format("enemies/prefabs/",enemyPrefabName));
+		return Resources.Load<GameObject>(string.Format("enemies/prefabs/{0}", enemyPrefabName));
 	}
 }

@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: default
+  m_Name: FadeTransition
   m_Shader: {fileID: 4800000, guid: fabca918ca89c6c42b211ec3299e2998, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 5
@@ -28,11 +28,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _TransitionBackTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: f4d67d85148b8da4b981be3959662597, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _TransitionTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: f4d67d85148b8da4b981be3959662597, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _TransitionTexture:
@@ -48,7 +48,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - _Cutoff: 0
+    - _Cutoff: 1
     - _Distort: 0
     - _Fade: 0
     - _Reverse: 0

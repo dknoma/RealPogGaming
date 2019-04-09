@@ -37,4 +37,5 @@ public class Player : Character {
     public void SetPartySlot(int slot) {
         partySlot = slot;
     }
+
 }

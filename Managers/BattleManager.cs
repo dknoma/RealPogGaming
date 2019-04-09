@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = System.Random;
 
 /// <summary>
 /// State Machines:
@@ -14,8 +15,10 @@ using UnityEngine.UI;
 public enum BattleState {
 	Nil,
 	Init,
+	Loading,
 	Ongoing,
-	End
+	End,
+	Unloading,
 }
 
 public enum TurnState {
@@ -67,20 +70,25 @@ public class BattleManager : MonoBehaviour {
 	private Party party;
 	// List of units to be part of the battle
 	private List<GameObject> units = new List<GameObject>();
-//	private List<GameObject> allies = new List<GameObject>();
 	private List<GameObject> enemies = new List<GameObject>();
 	private Character currentUnit;
 	private GameObject currentTarget;
+	private int allyCount;
+	private int enemyCount;
 	private int numUnits;
 	private int expToGive;
 	private bool fastestFirst = true;
 	private bool currentIsAlly = true;
 
+	private bool isLoadingBattle;
 	private bool takingTurn;
 	private bool calculatingBattle;
 	private bool resolvingTurn;
 	private bool inCutscene;
 	private bool menuActivated;
+	private bool isLoading;
+	private bool unloading;
+	private bool removingBattleObjects;
 
 	private bool inBattle;
 	private bool directionIsPressed;
@@ -96,18 +104,14 @@ public class BattleManager : MonoBehaviour {
 	private bool finishedResolve;
 	private bool finishedTurn;
 
-	private bool axisDown;
-
+//	private bool axisDown;
+//	private Direction currentDirection;
+//	private Button currentButton;
 //	private GameObject testMenu;
 //	private ActionMenu actionMenu;	// Get options from units Character component
 	//private int currentOption = 0;
 
-	private Direction currentDirection;
-	private Button currentButton;
 
-	private Coroutine directionRoutine;
-	private Coroutine directionResetRoutine;
-	
 	private void Awake() {
 		if (bm == null) {
 			bm = this;
@@ -115,15 +119,18 @@ public class BattleManager : MonoBehaviour {
 			Destroy(gameObject);
 		}
 		DontDestroyOnLoad(gameObject);
-		
+		BattleState = BattleState.Nil;
+		TurnState = TurnState.Nil;
+		BattlePhase = BattlePhase.Nil;
+		WinStatus = WinStatus.Nil;
 	}
 
 	private void Update() {
-		if (Input.GetButtonDown("Fire1") && BattleState == BattleState.Nil) {
-			BattleState = BattleState.Init;
-		} else if (Input.GetButtonDown("Test2")) {
-			
-		}
+//		if (Input.GetButtonDown("Fire1") && BattleState == BattleState.Nil) {
+//			BattleState = BattleState.Init;
+//		} else if (Input.GetButtonDown("Test2")) {
+//			
+//		}
 		CheckBattleState();
 	}
 
@@ -131,18 +138,30 @@ public class BattleManager : MonoBehaviour {
 		switch (BattleState) {
 			case BattleState.Nil:
 				// Not in battle.
+//				inBattle = false;
+//				unloading = false;
 				break;
 			case BattleState.Init:
 				inBattle = true;
-				InitBattle();
+				unloading = false;
+				removingBattleObjects = false;
+				if (!isLoadingBattle) {
+					isLoadingBattle = true;
+					InitBattle();
+				}
+				break;
+			case BattleState.Loading:
+				// Load stuff when transitioning
+				LoadBattleData();
 				break;
 			case BattleState.Ongoing:
 				CheckTurnState();
 				break;
 			case BattleState.End:
+				isLoading = false;
+				isLoadingBattle = false;
 				TurnState = TurnState.Nil;
 				BattlePhase = BattlePhase.Nil;
-				BattleState = BattleState.Nil;
 				takingTurn = false;
 				calculatingBattle = false;
 				resolvingTurn = false;
@@ -161,14 +180,34 @@ public class BattleManager : MonoBehaviour {
 					default:
 						throw new ArgumentOutOfRangeException("WinStatus", WinStatus, null);
 				}
-				inBattle = false;
 				expToGive = 0;
-				units = new List<GameObject>();
-//				allies = new List<GameObject>();
-				enemies = new List<GameObject>();
 				Debug.Log("Ending battle.");
-//				actionMenu.gameObject.SetActive(false);
-				Destroy(battleCanvas);
+				BattleState = BattleState.Unloading;
+				break;
+			case BattleState.Unloading:
+				if (!unloading) {
+					unloading = true;
+					ScreenTransitionManager.screenTransitionManager.DoScreenTransition(Transition.Fade, 0.5f);
+				}
+				if (unloading) {
+					if (!removingBattleObjects &&
+					    !ScreenTransitionManager.screenTransitionManager.IsTransitioningToBlack()) {
+						removingBattleObjects = true;
+						RemoveEnemiesFromBattle();
+						BattleBackgroundManager.bbm.ShowBackground(false);
+						Destroy(battleCanvas);
+						if (WinStatus == WinStatus.Win) {
+							AreaEnemyManager.aem.DoDefeatEnemyAnimation();
+						}
+					}
+					if (!ScreenTransitionManager.screenTransitionManager.IsTransitioning()) {
+						units = new List<GameObject>();
+						enemies = new List<GameObject>();
+						BattleState = BattleState.Nil;
+						inBattle = false;
+					}
+				}
+
 				break;
 			default:
 				throw new ArgumentOutOfRangeException();
@@ -214,12 +253,19 @@ public class BattleManager : MonoBehaviour {
 					menuActivated = false;
 					// TODO: check what actions can take if any
 					Debug.Log("Checking" + currentUnit.name + "'s status.");
+					currentUnit.CheckStatusAfflictions();
+					if (!currentUnit.CanCharacterAct()) {
+						// If incapacitated, skip turn
+						Debug.LogFormat("Skipping {0}'s turn.", currentUnit.name);
+						BattlePhase = BattlePhase.Resolution;
+						break;
+					}
 					BattlePhase = BattlePhase.Action;
 					break;
 				case BattlePhase.Action:
 					// TODO []: let unit do their actions: attack, use items, run away
 					// TODO [x]: have a bool that will change from the action menu depending on the action
-					if (!menuActivated && !ScreenTransitionManager.screenTransitionManager.IsTransitioning()) {
+					if (!menuActivated) {
 						menuActivated = true;
 						ActionMenuManager.amm.TryActionsSpawn();	// Spawn buttons after done transitioning
 //						actionMenu.gameObject.SetActive(true);
@@ -292,9 +338,6 @@ public class BattleManager : MonoBehaviour {
 		_turnCount = 0;
 		units = new List<GameObject> ();
 		turnQueue = new Queue ();
-		// Add all units involved in the battle to the list
-		AddPartyToList();
-		AddEnemiesToList();
 		// Init each characters rune bonuses
 		foreach(GameObject unit in units) {
 			CalculateRuneStats(unit.GetComponent<Character>());
@@ -309,8 +352,22 @@ public class BattleManager : MonoBehaviour {
 //			actionMenu = battleCanvas.GetComponentInChildren<ActionMenu>();
 		}
 //		actionMenu.gameObject.SetActive(false);
-		BattleState = BattleState.Ongoing;	// Go ahead and start the battle
+		BattleState = BattleState.Loading;	// Go ahead and start the battle
 //		testMenu.SetActive(true);
+	}
+
+	private void LoadBattleData() {
+		if (!isLoading && !ScreenTransitionManager.screenTransitionManager.IsTransitioningToBlack()) {
+			isLoading = true;
+			// Add all units involved in the battle to the list
+			AddPartyToList();
+			AddEnemiesToList();
+			BattleBackgroundManager.bbm.SetArea(WorldArea.PaltryPlains); // testing
+			BattleBackgroundManager.bbm.LoadBackground();
+		}
+		if (!ScreenTransitionManager.screenTransitionManager.IsTransitioning()) {
+			BattleState = BattleState.Ongoing;
+		}
 	}
 	
 	private void StartTurn() {
@@ -366,14 +423,37 @@ public class BattleManager : MonoBehaviour {
 		}
 	}
 
+	private int GenerateRandomEnemyCount() {
+		return UnityEngine.Random.Range(1, 5);	// random number from 1-4
+	}
+
 	private void AddEnemiesToList() {
 		// TODO: create enemy manager; takes care of instantiating enemies in a battle, etc
-		GameObject enemyPool = GameObject.FindGameObjectWithTag("EnemyPool");
-		int enemyCount = enemyPool.transform.childCount;
-		for(int i = 0; i < enemyCount; i++) {
-			GameObject enemy = enemyPool.transform.GetChild (i).gameObject;
+//		GameObject enemyPool = GameObject.FindGameObjectWithTag("EnemyPool");
+//		int enemyCount = enemyPool.transform.childCount;
+		BattleScene.battleScene.InitBattleScene();
+		int generatedEnemyCount = GenerateRandomEnemyCount();
+		BattleScene.battleScene.UpdateEnemyPositions(generatedEnemyCount);
+		for(int i = 0; i < generatedEnemyCount; i++) {
+			GameObject enemyToInstantiate = BattleSceneDataManager.bsdm.GetEnemyPrefab("Enemy1 - Battle");
+			Vector3 pos = BattleScene.battleScene.GetEnemyPosition();
+			Debug.LogFormat("Pos for enemy {0}", pos);
+			GameObject enemy = Instantiate(enemyToInstantiate, BattleScene.battleScene.gameObject.transform);
+			enemy.transform.localPosition = pos;
 			units.Add (enemy);
 			enemies.Add (enemy);
+		}
+//		for(int i = 0; i < enemyCount; i++) {
+//			GameObject enemy = enemyPool.transform.GetChild (i).gameObject;
+//			units.Add (enemy);
+//			enemies.Add (enemy);
+//		}
+	}
+
+	private void RemoveEnemiesFromBattle() {
+		if (enemies.Count == 0 || enemies == null) return;
+		foreach (GameObject enemy in enemies) {
+			Destroy(enemy);
 		}
 	}
 
@@ -386,18 +466,25 @@ public class BattleManager : MonoBehaviour {
 		// TODO: Check if target can be damaged.
 		Debug.Log(string.Format("\t{0} dealt {1} damage to {2}", currentUnit.name, dmg, target.name));
 		target.GetComponent<Character>().ModifyHp(-dmg);
-		Debug.Log(string.Format("current HP: {0}", target.GetComponent<Character>().GetCurrentHp()));
+		Debug.Log(string.Format("{0}'s HP: {1}", target.name, target.GetComponent<Character>().GetCurrentHp()));
 		if(target.GetComponent<Character>().GetCurrentHp() <= 0) {
 			// Remove unit from the list if no more HP
 			units.Remove(target);
 			// TODO: if party member, make incapacitated: can be revived
 			if(target.CompareTag("Enemy")) {
-				Debug.Log(string.Format("ending the battleeeeeeeeeeeee"));
+//				Debug.Log(string.Format("ending the battleeeeeeeeeeeee"));
 				enemies.Remove(target);
 				target.SetActive(false);
 				expToGive += target.GetComponent<Character>().expToGrant;
 				if(enemies.Count == 0) {
 					EndBattle(WinStatus.Win);
+				}
+			}
+			if(target.CompareTag("Ally")) {
+//				Debug.Log(string.Format("ending the battleeeeeeeeeeeee"));
+				PlayerManager.pm.IncapacitateAlly(target.GetComponent<Player>());
+				if(PlayerManager.pm.AllAlliesIncapacitated()) {
+					EndBattle(WinStatus.Lose);
 				}
 			}
 		}
@@ -447,7 +534,7 @@ public class BattleManager : MonoBehaviour {
 	}
 
 	private void CalculateRuneStats(Character currentUnit) {
-		RuneSlots slots = currentUnit.GetComponent<RuneSlots>();
+//		RuneSlots slots = currentUnit.GetComponent<RuneSlots>();
 	}
 
 	private void CheckRuneStatus() {
@@ -467,6 +554,11 @@ public class BattleManager : MonoBehaviour {
 	/**
 	 * GETSET
 	 */
+	
+	public int EnemyCount() {
+		return enemyCount;
+	}
+	
 	public Character GetCurrentUnit() {
 		return currentUnit;
 	}

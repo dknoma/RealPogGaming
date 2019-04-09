@@ -323,6 +323,7 @@ public class PlayerController : MonoBehaviour {
 		if(coll.gameObject.CompareTag("Enemy")) {
 			if (Vector2.Distance(coll.GetContact(0).point, shadow.transform.position) <= shadow.GetComponent<Collider2D>().bounds.size.x) {
 				Debug.Log(string.Format("\t\tcurrent enemy {0}, {1}", coll.gameObject.name, Vector2.Distance(coll.GetContact(0).point, shadow.transform.position)));
+				AreaEnemyManager.aem.EnemyToBattle(coll.gameObject);
 				BattleManager.bm.SetBattleState(BattleState.Init);
 			}
 		}

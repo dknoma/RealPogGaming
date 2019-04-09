@@ -4,6 +4,15 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using Random = UnityEngine.Random;
 
+public enum ActionType {
+    Attack,
+    Heal,
+    Revive,
+    Buff,
+    Defend,
+    Escape
+}
+
 public class ActionMenuManager : MonoBehaviour {
 
     public static ActionMenuManager amm;
@@ -73,19 +82,11 @@ public class ActionMenuManager : MonoBehaviour {
                 throw new ArgumentOutOfRangeException();
         }
     }
-
-    public void CancelCurrentAction() {
-        Debug.LogFormat("Canceling {0}", eventSystem.currentSelectedGameObject.name);
-        GameObject previousOption = previousOptions.Pop();
-        Debug.LogFormat("new curr: {0}", previousOption.name);
-        SetMenuActive(eventSystem.currentSelectedGameObject.transform.parent.gameObject, false);
-        // Reactivate parent and set its buttons to be interactable
-        Transform parent = previousOption.transform.parent;
-        SetMenuActive(parent.gameObject, transform);
-        SetButtonsInteractable(parent.gameObject, true);
-        eventSystem.SetSelectedGameObject(previousOption);
-    }
     
+    // Main Action menu options
+    /// <summary>
+    /// 
+    /// </summary>
     public void ChooseBasicAttack() {
         if (_attackMenu == null) {
             _attackMenu = Instantiate(attackMenuPrefab, amm.transform, false);
@@ -100,20 +101,37 @@ public class ActionMenuManager : MonoBehaviour {
         Debug.Log("current attack " + eventSystem.currentSelectedGameObject.name);
     }
 
+    public void ChooseSupport() {
+        SetButtonsInteractable(_actionMenu, false);
+        previousOptions.Clear();
+        BattleManager.bm.EndBattle(WinStatus.Escape);
+    }
+    
+    public void ChooseRun() {
+        SetButtonsInteractable(_actionMenu, false);
+        previousOptions.Clear();
+        BattleManager.bm.EndBattle(WinStatus.Escape);
+    }
+    
     public void AttackA() {
         Debug.Log("Doing Attack A");
         if (_targetContainer == null) {
             _targetContainer =  Instantiate(targetContainerPrefab, amm.transform, false);
+        }
+        // Create buttons ONLY if container has no buttons
+        if (_targetContainer.transform.childCount == 0) {
             List<GameObject> enemies = BattleManager.bm.GetEnemies();
             // TODO: Add new buttons at the enemies position
             foreach (var targetEnemy in enemies) {
                 Debug.LogFormat("Found target {0}", targetEnemy.name);
                 GameObject newButton =
-                    Instantiate(targetButtonPrefab, targetEnemy.transform.position, Quaternion.identity, _targetContainer.transform);
+                    Instantiate(targetButtonPrefab, targetEnemy.transform.position, Quaternion.identity,
+                                _targetContainer.transform);
                 newButton.GetComponent<TargetButton>().target = targetEnemy;
                 Debug.LogFormat("newButton: {0}, {1}", newButton.name, newButton.transform.position);
             }
         }
+
         previousOptions.Push(eventSystem.currentSelectedGameObject); // Add attack A option to previous options
         SetButtonsInteractable(_attackMenu, false);
         SetMenuActive(_attackMenu,false);
@@ -126,16 +144,6 @@ public class ActionMenuManager : MonoBehaviour {
     public void AttackB() {
         Debug.Log("Doing Attack B");
     }
-    
-    public void ChooseSupport() {
-        SetButtonsInteractable(_actionMenu, false);
-    }
-    
-    public void ChooseRun() {
-        SetButtonsInteractable(_actionMenu, false);
-        previousOptions.Clear();
-        BattleManager.bm.EndBattle(WinStatus.Escape);
-    }
 
     public void AttackTarget() {
         BattleManager.bm.SetCurrentTarget(eventSystem.currentSelectedGameObject.GetComponent<TargetButton>().target);
@@ -145,9 +153,21 @@ public class ActionMenuManager : MonoBehaviour {
         previousOptions.Clear();
     }
 
+    public void CancelCurrentAction() {
+        Debug.LogFormat("Canceling {0}", eventSystem.currentSelectedGameObject.name);
+        GameObject previousOption = previousOptions.Pop();
+        Debug.LogFormat("new curr: {0}", previousOption.name);
+        SetMenuActive(eventSystem.currentSelectedGameObject.transform.parent.gameObject, false);
+        // Reactivate parent and set its buttons to be interactable
+        Transform parent = previousOption.transform.parent;
+        SetMenuActive(parent.gameObject, transform);
+        SetButtonsInteractable(parent.gameObject, true);
+        eventSystem.SetSelectedGameObject(previousOption);
+    }
+
     public void ResetTargets() {
-        foreach (GameObject targetButton in _targetContainer.transform) {
-            Destroy(targetButton);
+        foreach (Transform targetButton in _targetContainer.transform) {
+            Destroy(targetButton.gameObject);
         }
     }
     

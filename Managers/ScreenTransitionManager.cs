@@ -22,6 +22,7 @@ public class ScreenTransitionManager : MonoBehaviour {
 	
 	public Transition transition = Transition.Triangle;
 	public Material defaultTexture;
+	public Material fadeTransitionMaterial;
 	public Material triangleTransitionMaterial;
 	public Material horizontalDistortionTransitionMaterial;
 	public Material sawtoothTransitionMaterial;
@@ -33,8 +34,10 @@ public class ScreenTransitionManager : MonoBehaviour {
 	private bool transitioning;
 	private float transitionCounter;
 	private float transitionCutoff;
+	private float transitionFade;
 	private Text debugText;
 	private readonly bool[] implemented = new bool[(int)Transition.Bubble + 1];
+	private static readonly int Fade = Shader.PropertyToID("_Fade");
 	private static readonly int Cutoff = Shader.PropertyToID("_Cutoff");
 	private static readonly int Reverse = Shader.PropertyToID("_Reverse");
 
@@ -45,10 +48,12 @@ public class ScreenTransitionManager : MonoBehaviour {
 			Destroy(gameObject);
 		}
 		DontDestroyOnLoad(gameObject);
+		ResetMaterial(fadeTransitionMaterial);
 		ResetMaterial(triangleTransitionMaterial);
 		ResetMaterial(horizontalDistortionTransitionMaterial);
 		ResetMaterial(sawtoothTransitionMaterial);
 		ResetMaterial(angularTransitionMaterial);
+		implemented[(int) Transition.Fade] = true;
 		implemented[(int) Transition.Triangle] = true;
 		implemented[(int) Transition.HorizontalDistortion] = true;
 		implemented[(int) Transition.Sawtooth] = true;
@@ -75,7 +80,9 @@ public class ScreenTransitionManager : MonoBehaviour {
 	private void OnRenderImage(RenderTexture src, RenderTexture dest) {
 		switch (transition) {
 			case Transition.Fade:
-				Graphics.Blit(src, dest, defaultTexture);
+				if (fadeTransitionMaterial != null) {
+					Graphics.Blit(src, dest, fadeTransitionMaterial);
+				}
 				break;
 			case Transition.Triangle:
 				if (triangleTransitionMaterial != null) {
@@ -108,6 +115,20 @@ public class ScreenTransitionManager : MonoBehaviour {
 		}
 	}
 
+	public void DoScreenTransition(Transition screenTransition, float loadTime) {
+		transition = screenTransition;
+		StartCoroutine(DoTransition(loadTime));
+	}
+	
+	private IEnumerator DoTransition(float loadTime) {
+		TransitionToBlack(transition);
+		yield return new WaitUntil(() => !isTransitioningToBlack);
+		yield return new WaitForSeconds(loadTime);
+		TransitionFromBlack(transition);
+		yield return new WaitUntil(() => !isTransitioningFromBlack);
+		transitioning = false;
+	}
+	
 	public void DoScreenTransition(Transition screenTransition) {
 		transition = screenTransition;
 		StartCoroutine(DoTransition());
@@ -122,6 +143,10 @@ public class ScreenTransitionManager : MonoBehaviour {
 		transitioning = false;
 	}
 
+	public bool IsTransitioningToBlack() {
+		return isTransitioningToBlack;
+	}
+	
 	public void TransitionToBlack(Transition screenTransition) {
 		transition = screenTransition;
 		transitioning = true;
@@ -141,7 +166,8 @@ public class ScreenTransitionManager : MonoBehaviour {
 	private void TestButtons() {
 		if (Input.GetButtonDown("Fire2")) {
 			if (!implemented[(int) transition]) return;
-			isTransitioningToBlack = true;
+//			isTransitioningToBlack = true;
+			DoScreenTransition(transition);
 		} else if (Input.GetButtonDown("Fire3")) {
 			if (!implemented[(int) transition]) return;
 			isTransitioningFromBlack = true;
@@ -180,6 +206,7 @@ public class ScreenTransitionManager : MonoBehaviour {
 	private void TransitionScreen() {
 		switch (transition) {
 			case Transition.Fade:
+				NormalScreenFade(fadeTransitionMaterial, 0.035f);
 				break;
 			case Transition.Triangle:
 				NormalScreenTransition(triangleTransitionMaterial, 0.02f);
@@ -202,6 +229,31 @@ public class ScreenTransitionManager : MonoBehaviour {
 		}
 	}
 
+	private void NormalScreenFade(Material mat, float cutoffSpeed) {
+		// Smoothly transition to black
+		if (isTransitioningToBlack) {
+			mat.SetFloat(Fade, 0);
+			mat.SetFloat(Cutoff, 1);
+			transitionFade = Mathf.Clamp(transitionFade + cutoffSpeed, 0, 1); // Set max of cutoff to 1
+			mat.SetFloat(Fade, transitionFade);
+			if (Mathf.Abs(transitionFade - 1) < Mathf.Epsilon) {
+				isTransitioningToBlack = false;
+			}
+		} else {
+			// Smoothly transition from black
+			if (isTransitioningFromBlack) {
+				Debug.Log("Ending transition.");
+				mat.SetFloat(Fade, 1);
+				mat.SetFloat(Cutoff, 1);
+				transitionFade = Mathf.Clamp(transitionFade - cutoffSpeed, 0, 1); // Set max of cutoff to 1
+				mat.SetFloat(Fade, transitionFade);
+				if (transitionFade < Mathf.Epsilon) {
+					isTransitioningFromBlack = false;
+				}
+			}   
+		}
+	}
+	
 	private void NormalScreenTransition(Material mat, float cutoffSpeed) {
 		// Smoothly transition to black
 		if (isTransitioningToBlack) {
@@ -224,9 +276,10 @@ public class ScreenTransitionManager : MonoBehaviour {
 		}
 	}
 
-	private static void ResetMaterial(Material mat) {
+	private void ResetMaterial(Material mat) {
 		if (mat == null) return;
 		mat.SetFloat(Reverse, 0);
 		mat.SetFloat(Cutoff, 0);
+		mat.SetFloat(Fade, mat == fadeTransitionMaterial ? 0 : 1);
 	}
 }

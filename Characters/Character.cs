@@ -12,7 +12,13 @@ public class Character : CharacterStats, IComparable {
 	
 	[SerializeField] private Affiliation affiliation;
 	private Element attackElement;
-
+//	private bool incapacitated;
+    
+//	public bool Incapacitated {
+//		get { return incapacitated; }
+//		set { incapacitated = value; }
+//	}
+	
 	// Use this for initialization
 //	private void OnEnable () {
 //		equipement = gameObject.GetComponent<CharacterEquipement>();
