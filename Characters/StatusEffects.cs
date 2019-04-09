@@ -76,8 +76,7 @@ public class StatusEffects : MonoBehaviour {
 	}
 
 	protected bool AfflictedByStatus(Status status) {
-		Debug.LogFormat("Checking if afflicted by {0}", status);
-		return afflictedStatuses[status];
+		return afflictedStatuses.ContainsKey(status) && afflictedStatuses[status];
 	}
 
 	protected bool AfflictedByStatChange(StatChange statChange) {
@@ -85,14 +84,22 @@ public class StatusEffects : MonoBehaviour {
 	}
 
 	protected void AfflictStatus(Status status) {
+		if (!afflictedStatuses.ContainsKey(status)) {
+			afflictedStatuses.Add(status, true);
+			return;
+		}
 		afflictedStatuses[status] = true;
 	}
 
 	protected void RemoveStatus(Status status) {
-		afflictedStatuses[(Status) status] = false;
+		afflictedStatuses[status] = false;
 	}
 
 	protected void AfflictStatChange(StatChange statChange) {
+		if (!afflictedStatChange.ContainsKey(statChange)) {
+			afflictedStatChange.Add(statChange, true);
+			return;
+		}
 		afflictedStatChange[statChange] = true;
 	}
 

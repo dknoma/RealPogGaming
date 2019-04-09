@@ -43,6 +43,9 @@ public class BattleBackgroundManager : MonoBehaviour {
 		}
 //		Vector3 cameraPos = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, -10);
 //		Instantiate(currentBackground, cameraPos, Quaternion.identity);
+		System.Diagnostics.Debug.Assert(Camera.main != null, "Camera.main != null");
+		Vector3 position = Camera.main.transform.position;
+		currentBackground.transform.position = new Vector3(position.x, position.y, -10);
 		ShowBackground(true);
 	}
 

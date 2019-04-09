@@ -74,20 +74,20 @@ public class PlayerManager : MonoBehaviour {
         return incapacitatedCount == MAX_PARTY_MEMBERS;
     }
 
-    public void IncapacitateAlly(Player player) {
-        player.Incapacitate();
+    public void IncapacitateUnit(Character unit) {
+        unit.Incapacitate();
         incapacitatedCount = incapacitatedCount+1 <= 3 ? incapacitatedCount+1 : MAX_PARTY_MEMBERS;
     }
     
-    public void ReviveAllyFlatHp(Player player, int hp) {
-        player.TryRemoveStatus(Status.Incapacitated);
-        player.ModifyHp(hp);
+    public void ReviveAllyFlatHp(Character unit, int hp) {
+        unit.TryRemoveStatus(Status.Incapacitated);
+        unit.ModifyHp(hp);
         incapacitatedCount = incapacitatedCount - 1 >= 0 ? incapacitatedCount - 1 : 0;
     }
     
-    public void ReviveAllyPercentHp(Player player, float hpPercent) {
-        player.TryRemoveStatus(Status.Incapacitated);
-        player.ModifyHp(hpPercent);
+    public void ReviveAllyPercentHp(Character unit, float hpPercent) {
+        unit.TryRemoveStatus(Status.Incapacitated);
+        unit.ModifyHp(hpPercent);
         incapacitatedCount = incapacitatedCount - 1 >= 0 ? incapacitatedCount - 1 : 0;
     }
 //    public void CreateAllCharacterEquipmentObject() {

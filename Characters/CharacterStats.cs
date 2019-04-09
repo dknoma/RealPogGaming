@@ -22,6 +22,7 @@ public class CharacterStats : StatusEffects {
 
 	[SerializeField]
 	protected int maxHp = 20;
+	[SerializeField]
 	protected int currentHp;
 	protected int totalRuneHp;
 	[SerializeField]

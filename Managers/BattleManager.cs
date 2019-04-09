@@ -113,9 +113,9 @@ public class BattleManager : MonoBehaviour {
 
 
 	private void Awake() {
-		if (bm == null) {
+		if(bm == null) {
 			bm = this;
-		} else if (bm != this) {
+		} else if(bm != this) {
 			Destroy(gameObject);
 		}
 		DontDestroyOnLoad(gameObject);
@@ -126,16 +126,16 @@ public class BattleManager : MonoBehaviour {
 	}
 
 	private void Update() {
-//		if (Input.GetButtonDown("Fire1") && BattleState == BattleState.Nil) {
+//		if(Input.GetButtonDown("Fire1") && BattleState == BattleState.Nil) {
 //			BattleState = BattleState.Init;
-//		} else if (Input.GetButtonDown("Test2")) {
+//		} else if(Input.GetButtonDown("Test2")) {
 //			
 //		}
 		CheckBattleState();
 	}
 
 	private void CheckBattleState() {
-		switch (BattleState) {
+		switch(BattleState) {
 			case BattleState.Nil:
 				// Not in battle.
 //				inBattle = false;
@@ -145,7 +145,7 @@ public class BattleManager : MonoBehaviour {
 				inBattle = true;
 				unloading = false;
 				removingBattleObjects = false;
-				if (!isLoadingBattle) {
+				if(!isLoadingBattle) {
 					isLoadingBattle = true;
 					InitBattle();
 				}
@@ -185,22 +185,22 @@ public class BattleManager : MonoBehaviour {
 				BattleState = BattleState.Unloading;
 				break;
 			case BattleState.Unloading:
-				if (!unloading) {
+				if(!unloading) {
 					unloading = true;
 					ScreenTransitionManager.screenTransitionManager.DoScreenTransition(Transition.Fade, 0.5f);
 				}
-				if (unloading) {
-					if (!removingBattleObjects &&
+				if(unloading) {
+					if(!removingBattleObjects &&
 					    !ScreenTransitionManager.screenTransitionManager.IsTransitioningToBlack()) {
 						removingBattleObjects = true;
 						RemoveEnemiesFromBattle();
 						BattleBackgroundManager.bbm.ShowBackground(false);
 						Destroy(battleCanvas);
-						if (WinStatus == WinStatus.Win) {
+						if(WinStatus == WinStatus.Win) {
 							AreaEnemyManager.aem.DoDefeatEnemyAnimation();
 						}
 					}
-					if (!ScreenTransitionManager.screenTransitionManager.IsTransitioning()) {
+					if(!ScreenTransitionManager.screenTransitionManager.IsTransitioning()) {
 						units = new List<GameObject>();
 						enemies = new List<GameObject>();
 						BattleState = BattleState.Nil;
@@ -215,15 +215,15 @@ public class BattleManager : MonoBehaviour {
 	}
 	
 	private void CheckTurnState() {
-		switch (TurnState) {
+		switch(TurnState) {
 			case TurnState.Nil:
 				// Not in battle.
 				break;
 			case TurnState.Init:
-				if (turnQueue.Count == 0) {
-					CalculatePriority (fastestFirst);
+				if(turnQueue.Count == 0) {
+					CalculatePriority(fastestFirst);
 				}
-				if (!takingTurn) {
+				if(!takingTurn) {
 					StartTurn();
 				}
 				break;
@@ -243,10 +243,10 @@ public class BattleManager : MonoBehaviour {
 	}
 	
 	private void CheckBattlePhase() {
-		if (!inCutscene) {
-			switch (BattlePhase) {
+		if(!inCutscene) {
+			switch(BattlePhase) {
 				case BattlePhase.Nil:
-					finishedActing = false;
+//					finishedActing = false;
 					break;
 				case BattlePhase.Status:
 					finishedActing = false;
@@ -254,7 +254,7 @@ public class BattleManager : MonoBehaviour {
 					// TODO: check what actions can take if any
 					Debug.Log("Checking" + currentUnit.name + "'s status.");
 					currentUnit.CheckStatusAfflictions();
-					if (!currentUnit.CanCharacterAct()) {
+					if(!currentUnit.CanCharacterAct()) {
 						// If incapacitated, skip turn
 						Debug.LogFormat("Skipping {0}'s turn.", currentUnit.name);
 						BattlePhase = BattlePhase.Resolution;
@@ -265,23 +265,23 @@ public class BattleManager : MonoBehaviour {
 				case BattlePhase.Action:
 					// TODO []: let unit do their actions: attack, use items, run away
 					// TODO [x]: have a bool that will change from the action menu depending on the action
-					if (!menuActivated) {
+					if(!menuActivated) {
 						menuActivated = true;
 						ActionMenuManager.amm.TryActionsSpawn();	// Spawn buttons after done transitioning
 //						actionMenu.gameObject.SetActive(true);
 //						actionMenu.TryInitMenu();
 					}
 
-//					if (finishedActing) {
+//					if(finishedActing) {
 //						BattlePhase = BattlePhase.Battle;
 //					}
 					break;
 				case BattlePhase.Battle:
 					// TODO: resolve the unit's action: attacking(action commands for bonus dmg), healing(possible action
 					//		 commands here as well.), item useage, Calculate damage/heals, running away.
-					if (!calculatingBattle) {
+					if(!calculatingBattle) {
 						calculatingBattle = true;
-						switch (currentActionType) {
+						switch(currentActionType) {
 							case ActionType.Attack:
 //								GameObject target = currentUnit.CompareTag("EnemyPrefab") ? party.frontUnit : enemies[0];
 //								int dmg = CalculateDamage(currentUnit, target);
@@ -308,7 +308,7 @@ public class BattleManager : MonoBehaviour {
 					break;
 				case BattlePhase.Resolution:
 					// TODO: resolve end of turn effects: do DoT, decrement status counters
-					if (!resolvingTurn) {
+					if(!resolvingTurn) {
 						resolvingTurn = true;
 						currentUnit.GetComponent<Character>().ResolveStatusAfflictions();
 					}
@@ -332,20 +332,21 @@ public class BattleManager : MonoBehaviour {
 //	}
 
 	// Use this for initialization
-	private void InitBattle () {
+	private void InitBattle() {
 		ScreenTransitionManager.screenTransitionManager.DoScreenTransition(Transition.Sawtooth);
 		// Initialize battle settings
 		_turnCount = 0;
-		units = new List<GameObject> ();
-		turnQueue = new Queue ();
+		units = new List<GameObject>();
+		enemies = new List<GameObject>();
+		turnQueue = new Queue();
 		// Init each characters rune bonuses
 		foreach(GameObject unit in units) {
 			CalculateRuneStats(unit.GetComponent<Character>());
 		}
 		numUnits = units.Count;
 		TurnState = TurnState.Init; 		// Turn initialization: calculate turn order, etc.
-		Debug.Log ("number of units: " + numUnits);
-		if (battleCanvas == null) {
+		Debug.Log("number of units: " + numUnits);
+		if(battleCanvas == null) {
 			battleCanvas = Instantiate(battleCanvasPrefab);
 			battleCanvas.GetComponent<Canvas>().worldCamera = Camera.main;
 //			battleCanvas.worldCamera = Camera.main;
@@ -357,7 +358,7 @@ public class BattleManager : MonoBehaviour {
 	}
 
 	private void LoadBattleData() {
-		if (!isLoading && !ScreenTransitionManager.screenTransitionManager.IsTransitioningToBlack()) {
+		if(!isLoading && !ScreenTransitionManager.screenTransitionManager.IsTransitioningToBlack()) {
 			isLoading = true;
 			// Add all units involved in the battle to the list
 			AddPartyToList();
@@ -365,17 +366,17 @@ public class BattleManager : MonoBehaviour {
 			BattleBackgroundManager.bbm.SetArea(WorldArea.PaltryPlains); // testing
 			BattleBackgroundManager.bbm.LoadBackground();
 		}
-		if (!ScreenTransitionManager.screenTransitionManager.IsTransitioning()) {
+		if(isLoading && !ScreenTransitionManager.screenTransitionManager.IsTransitioning()) {
 			BattleState = BattleState.Ongoing;
 		}
 	}
-	
+	 
 	private void StartTurn() {
 		// Keep this round going until all units finish their turns
 		takingTurn = true;
 		_turnCount++;
-		Debug.Log ("Turn " + _turnCount);
-		currentUnit = ((GameObject) turnQueue.Dequeue()).GetComponent<Character>();
+		Debug.Log("Turn " + _turnCount);
+		currentUnit =((GameObject) turnQueue.Dequeue()).GetComponent<Character>();
 		// TODO: can insert check here for possible cutscenes during a battle.
 		Character unit = currentUnit.GetComponent<Character>();
 		Debug.Log("============= Begin Turn =============");
@@ -399,9 +400,11 @@ public class BattleManager : MonoBehaviour {
 	}
 	
 	public void EndBattle(WinStatus winStatus) {
-		turnQueue.Clear ();
+		turnQueue.Clear();
 		WinStatus = winStatus;
 		BattleState = BattleState.End;
+		BattlePhase = BattlePhase.Nil;
+		TurnState = TurnState.Nil;
 //		finishedTurn = true;
 //		battleOver = true;
 	}
@@ -440,19 +443,19 @@ public class BattleManager : MonoBehaviour {
 			Debug.LogFormat("Pos for enemy {0}", pos);
 			GameObject enemy = Instantiate(enemyToInstantiate, BattleScene.battleScene.gameObject.transform);
 			enemy.transform.localPosition = pos;
-			units.Add (enemy);
-			enemies.Add (enemy);
+			units.Add(enemy);
+			enemies.Add(enemy);
 		}
 //		for(int i = 0; i < enemyCount; i++) {
-//			GameObject enemy = enemyPool.transform.GetChild (i).gameObject;
-//			units.Add (enemy);
-//			enemies.Add (enemy);
+//			GameObject enemy = enemyPool.transform.GetChild(i).gameObject;
+//			units.Add(enemy);
+//			enemies.Add(enemy);
 //		}
 	}
 
 	private void RemoveEnemiesFromBattle() {
-		if (enemies.Count == 0 || enemies == null) return;
-		foreach (GameObject enemy in enemies) {
+		if(enemies.Count == 0 || enemies == null) return;
+		foreach(GameObject enemy in enemies) {
 			Destroy(enemy);
 		}
 	}
@@ -465,9 +468,10 @@ public class BattleManager : MonoBehaviour {
 	private bool TryDamage(int dmg, GameObject target) {
 		// TODO: Check if target can be damaged.
 		Debug.Log(string.Format("\t{0} dealt {1} damage to {2}", currentUnit.name, dmg, target.name));
-		target.GetComponent<Character>().ModifyHp(-dmg);
-		Debug.Log(string.Format("{0}'s HP: {1}", target.name, target.GetComponent<Character>().GetCurrentHp()));
-		if(target.GetComponent<Character>().GetCurrentHp() <= 0) {
+		Character unit = target.GetComponent<Character>();
+		unit.ModifyHp(-dmg);
+		Debug.Log(string.Format("{0}'s HP: {1}", target.name, unit.GetCurrentHp()));
+		if(unit.GetCurrentHp() <= 0) {
 			// Remove unit from the list if no more HP
 			units.Remove(target);
 			// TODO: if party member, make incapacitated: can be revived
@@ -475,14 +479,14 @@ public class BattleManager : MonoBehaviour {
 //				Debug.Log(string.Format("ending the battleeeeeeeeeeeee"));
 				enemies.Remove(target);
 				target.SetActive(false);
-				expToGive += target.GetComponent<Character>().expToGrant;
+				expToGive += unit.expToGrant;
 				if(enemies.Count == 0) {
 					EndBattle(WinStatus.Win);
 				}
 			}
 			if(target.CompareTag("Ally")) {
 //				Debug.Log(string.Format("ending the battleeeeeeeeeeeee"));
-				PlayerManager.pm.IncapacitateAlly(target.GetComponent<Player>());
+				PlayerManager.pm.IncapacitateUnit(unit.GetComponent<Player>());
 				if(PlayerManager.pm.AllAlliesIncapacitated()) {
 					EndBattle(WinStatus.Lose);
 				}
@@ -490,21 +494,22 @@ public class BattleManager : MonoBehaviour {
 		}
 		return true;
 	}
+	
 	private int CalculateDamage(Character src, GameObject dest) {
 		Character 
 		source = src,
-		target = dest.GetComponent<Character> ();
-		Debug.Log (string.Format("{0}'s atk: {1}, {2}'s def: {3}", 
+		target = dest.GetComponent<Character>();
+		Debug.Log(string.Format("{0}'s atk: {1}, {2}'s def: {3}", 
 			source.name, source.GetCurrentAtk(), target.name, target.GetCurrentDef()));
-		Debug.Log (string.Format("{0}'s attack element: {1}, {2} element: {3}", 
+		Debug.Log(string.Format("{0}'s attack element: {1}, {2} element: {3}", 
 			source.name, source.GetAttackElement(), target.name, target.element));
 		// Calculate the current units rune bonuses
-		CalculateRuneStats (currentUnit);
+		CalculateRuneStats(currentUnit);
 		int damage = Mathf.RoundToInt(
 			// Standard atk-def calc
-			(Mathf.Pow(source.GetCurrentAtk(), 2) + source.GetRuneAtk()) / (target.GetCurrentDef() + target.GetRuneDef()) 								
+			(Mathf.Pow(source.GetCurrentAtk(), 2) + source.GetRuneAtk()) /(target.GetCurrentDef() + target.GetRuneDef()) 								
 			// Level compensation
-			* (1 + (source.currentLevel*2 - target.currentLevel) / 50)			
+			*(1 +(source.currentLevel*2 - target.currentLevel) / 50)			
 			// Elemental multiplier
 			* ElementalAffinity.CalcElementalDamage(source.GetAttackElement(),	
 				target.element));  														
@@ -521,10 +526,10 @@ public class BattleManager : MonoBehaviour {
 	 */
 	private void CalculatePriority(bool fastestFirst) {
 		// Sor the units based on speed
-		if (fastestFirst) {
-			Sorting.DescendingMergeSort (units, new CompareCharactersBySpeed ());
+		if(fastestFirst) {
+			Sorting.DescendingMergeSort(units, new CompareCharactersBySpeed());
 		} else {
-			Sorting.MergeSort (units, new CompareCharactersBySpeed ());
+			Sorting.MergeSort(units, new CompareCharactersBySpeed());
 		}
 		// Add unit to the queue
 		for(int i = 0; i < units.Count; i++) {
