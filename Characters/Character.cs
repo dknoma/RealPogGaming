@@ -9,6 +9,8 @@ public enum Affiliation {
 }
 //[RequireComponent(typeof(BattleActions))]
 public class Character : CharacterStats, IComparable {
+
+	public GameObject icon;	// Icon to display inside of the turn queue
 	
 	[SerializeField] private Affiliation affiliation;
 	private Element attackElement;

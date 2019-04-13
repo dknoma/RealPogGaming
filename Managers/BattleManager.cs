@@ -74,6 +74,8 @@ public class BattleManager : MonoBehaviour {
 	private List<GameObject> enemies = new List<GameObject>();
 	private Character currentUnit;
 	private GameObject currentTarget;
+	private GameObject currentUnitIcon;
+	
 	private int allyCount;
 	private int enemyCount;
 	private int numUnits;
@@ -104,6 +106,9 @@ public class BattleManager : MonoBehaviour {
 	private bool finishedBattlePhase;
 	private bool finishedResolve;
 	private bool finishedTurn;
+
+	private const int MAX_QUEUE_SIZE = 20;
+	private const int MAX_QUEUE_ICONS = MAX_QUEUE_SIZE / 2;
 	
 //	private bool axisDown;
 //	private Direction currentDirection;
@@ -221,7 +226,7 @@ public class BattleManager : MonoBehaviour {
 				// Not in battle.
 				break;
 			case TurnState.Init:
-				if(turnQueue.Count == 0) {
+				if(turnQueue.Count <= MAX_QUEUE_ICONS) {
 					CalculatePriority(fastestFirst);
 				}
 				if(!takingTurn) {
@@ -345,7 +350,6 @@ public class BattleManager : MonoBehaviour {
 			CalculateRuneStats(unit.GetComponent<Character>());
 		}
 		numUnits = units.Count;
-		TurnState = TurnState.Init; 		// Turn initialization: calculate turn order, etc.
 		Debug.Log("number of units: " + numUnits);
 		if(battleCanvas == null) {
 			battleCanvas = Instantiate(battleCanvasPrefab);
@@ -368,6 +372,7 @@ public class BattleManager : MonoBehaviour {
 			BattleBackgroundManager.bbm.LoadBackground();
 		}
 		if(isLoading && !ScreenTransitionManager.screenTransitionManager.IsTransitioning()) {
+			TurnState = TurnState.Init; // Turn initialization: calculate turn order, etc.
 			BattleState = BattleState.Ongoing;
 		}
 	}
@@ -376,6 +381,7 @@ public class BattleManager : MonoBehaviour {
 		// Keep this round going until all units finish their turns
 		takingTurn = true;
 		_turnCount++;
+		Debug.Log("Queue size " + turnQueue.Count);
 		Debug.Log("Turn " + _turnCount);
 		currentUnit = turnQueue.Dequeue();
 		// TODO: can insert check here for possible cutscenes during a battle.
@@ -542,26 +548,34 @@ public class BattleManager : MonoBehaviour {
 
 	private void CalculatePriority(bool fastestFirst) {
 		Sorting.DescendingMergeSort(units, new CompareCharactersBySpeed());
-		Queue<Character> temp = new Queue<Character>();
-		while (turnQueue.Count < 10) {			// Queue up to 100 actions
+//		Queue<Character> temp = new Queue<Character>();
+		while (turnQueue.Count < MAX_QUEUE_SIZE) {			// Queue up to 100 actions
 			foreach (GameObject unit in units) {
 				Character character = unit.GetComponent<Character>();
 				character.IncrementReadiness();
 				if (!character.Ready) continue; // If character is ready, add to queue and reset readiness
 				turnQueue.Enqueue(character);
-				turnQueueUi.Enqueue(character);
-				temp.Enqueue(character);
+//				temp.Enqueue(character);
 				character.ResetReadiness();
-				if (turnQueue.Count >= 10) break; // Break out if reach threshold
+				if (turnQueue.Count >= MAX_QUEUE_SIZE) break; // Break out if reach threshold
 			}
 		}
 		Debug.LogFormat("Queued up units:");
-		foreach (Character c in temp) {
-			// TODO: display all the icons of units in the queue
-			Debug.LogFormat("|---> {0}", c.name);
-		}
-		Debug.LogFormat("{0}",temp.Count);
+		Debug.LogFormat("{0}",turnQueueUi.Count);
 	}
+
+//	private void InitQueueIcons() {
+//		int i = 0;
+//		foreach (GameObject unit in units) {
+//			Character character = unit.GetComponent<Character>();
+//			Debug.LogFormat("|---> {0}", character.name);
+//			turnQueueUi.Enqueue(character);
+//			if (i == MAX_QUEUE_ICONS) {
+//				
+//			}
+//			i++;
+//		}
+//	}
 
 	private void CalculateRuneStats(Character currentUnit) {
 //		RuneSlots slots = currentUnit.GetComponent<RuneSlots>();

@@ -242,12 +242,12 @@ public class ScreenTransitionManager : MonoBehaviour {
 		} else {
 			// Smoothly transition from black
 			if (isTransitioningFromBlack) {
-				Debug.Log("Ending transition.");
 				mat.SetFloat(Fade, 1);
 				mat.SetFloat(Cutoff, 1);
 				transitionFade = Mathf.Clamp(transitionFade - cutoffSpeed, 0, 1); // Set max of cutoff to 1
 				mat.SetFloat(Fade, transitionFade);
 				if (transitionFade < Mathf.Epsilon) {
+//				Debug.Log("Ending transition.");
 					isTransitioningFromBlack = false;
 				}
 			}   

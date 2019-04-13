@@ -45,7 +45,8 @@ public class PlayerController : MonoBehaviour {
 	private int boundMask;
 
 	// Constants
-	private const float BOUND_CORRECTION = 1.625f;
+	private const float BOUND_CORRECTION = 0.8125f;
+//	1.625f;
 //	private const float RAY_LIMIT = 24f;
 
 	// Game Objects
