@@ -21,7 +21,8 @@ public enum StatChange {
 	AtkDown, 
 	DefDown, 
 	SpeedDown, 
-	HpDestruct}
+	HpDestruct
+}
 /*
  * Player status effect class. 
  */

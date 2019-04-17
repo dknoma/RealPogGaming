@@ -21,8 +21,13 @@ public class ActionMenuManager : MonoBehaviour {
     
     private Stack<GameObject> previousOptions = new Stack<GameObject>();
 
-    [SerializeField]
-    private GameObject actionMenuPrefab;
+    
+//    [SerializeField]
+//    private GameObject hudPrefab;
+//    private static GameObject _hud;
+    
+//    [SerializeField]
+//    private GameObject actionMenuPrefab;
     private static GameObject _actionMenu;
     
     [SerializeField]
@@ -42,6 +47,7 @@ public class ActionMenuManager : MonoBehaviour {
         } else if (amm != this) {
             Destroy(gameObject);
         }
+        DontDestroyOnLoad(gameObject);
     }
 
     private void Start() {
@@ -50,25 +56,26 @@ public class ActionMenuManager : MonoBehaviour {
 
 //    private void Update() {
 //        if (Input.GetKeyDown("f")) {
-//            TryActionsSpawn();
+//            InitActions();
 //        }
 //    }
 
-    public void TryActionsSpawn() {
+    public void InitActions() {
         if (!BattleManager.bm.InBattle()) return;
         switch (BattleManager.bm.GetCurrentUnit().GetAffiliation()) {
             case Affiliation.Ally:
                 Debug.Log("Current unit is an ally.");
-                if (_actionMenu == null) {
-                    _actionMenu = Instantiate(actionMenuPrefab, amm.transform, false);
-                }
+//                if (_actionMenu == null) {
+//                    _actionMenu = Instantiate(actionMenuPrefab, BattleManager.battleCanvas.transform, false);
+//                }
                 if (eventSystem == null) {
                     eventSystem = EventSystem.current;
                 }
-                SetMenuActive(_actionMenu,true);
+                _actionMenu = UIManager.um.GetMainActionMenu();
+//                SetMenuActive(_actionMenu,true);
                 SetButtonsInteractable(_actionMenu, true);
                 eventSystem.SetSelectedGameObject(_actionMenu.transform.GetChild(0).gameObject);
-                Debug.Log("currentSelected " + eventSystem.currentSelectedGameObject.name);
+                Debug.Log("\t\tcurrentSelected " + eventSystem.currentSelectedGameObject.name);
                 break;
             case Affiliation.Enemy:
                 Debug.Log("Current unit is an enemy.");
@@ -82,6 +89,10 @@ public class ActionMenuManager : MonoBehaviour {
                 throw new ArgumentOutOfRangeException();
         }
     }
+
+    public void DisableActions() {
+        SetMenusActive(false);
+    }
     
     // Main Action menu options
     /// <summary>
@@ -89,7 +100,7 @@ public class ActionMenuManager : MonoBehaviour {
     /// </summary>
     public void ChooseBasicAttack() {
         if (_attackMenu == null) {
-            _attackMenu = Instantiate(attackMenuPrefab, amm.transform, false);
+            _attackMenu = Instantiate(attackMenuPrefab, BattleManager.battleCanvas.transform, false);
         }
         Debug.LogFormat("Chose basic attack");
         previousOptions.Push(eventSystem.currentSelectedGameObject);    // Add attack action to previous options
@@ -101,10 +112,13 @@ public class ActionMenuManager : MonoBehaviour {
         Debug.Log("current attack " + eventSystem.currentSelectedGameObject.name);
     }
 
+    public void ChooseBag() {
+    }
+
     public void ChooseSupport() {
-        SetButtonsInteractable(_actionMenu, false);
-        previousOptions.Clear();
-        BattleManager.bm.EndBattle(WinStatus.Escape);
+//        SetButtonsInteractable(_actionMenu, false);
+//        previousOptions.Clear();
+//        BattleManager.bm.EndBattle(WinStatus.Escape);
     }
     
     public void ChooseRun() {
@@ -116,7 +130,7 @@ public class ActionMenuManager : MonoBehaviour {
     public void AttackA() {
         Debug.Log("Doing Attack A");
         if (_targetContainer == null) {
-            _targetContainer =  Instantiate(targetContainerPrefab, amm.transform, false);
+            _targetContainer =  Instantiate(targetContainerPrefab, BattleManager.battleCanvas.transform, false);
         }
         // Create buttons ONLY if container has no buttons
         if (_targetContainer.transform.childCount == 0) {
@@ -148,7 +162,8 @@ public class ActionMenuManager : MonoBehaviour {
     public void AttackTarget() {
         BattleManager.bm.SetCurrentTarget(eventSystem.currentSelectedGameObject.GetComponent<TargetButton>().target);
         BattleManager.bm.SetBattlePhase(BattlePhase.Battle);
-        SetMenusActive(false);
+//        SetMenusActive(false);
+        SetButtonsInteractable(_actionMenu, false);
         ResetTargets();
         previousOptions.Clear();
     }

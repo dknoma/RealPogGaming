@@ -52,6 +52,7 @@ public enum WinStatus {
 public class BattleManager : MonoBehaviour {
 	
 	public static BattleManager bm;
+	public static GameObject battleCanvas;
 	
 	private static int _turnCount;
 
@@ -62,8 +63,9 @@ public class BattleManager : MonoBehaviour {
 
 	private ActionType currentActionType;
 
-	[SerializeField] private GameObject battleCanvasPrefab;
-	private GameObject battleCanvas;
+//	[SerializeField] private GameObject actionMenu;
+//	private GameObject _actionMenu;
+//	[SerializeField] private GameObject battleCanvas;
 	
 	// Queue used for determining which unit goes when.
 	private Queue<Character> turnQueue = new Queue<Character>();
@@ -117,8 +119,7 @@ public class BattleManager : MonoBehaviour {
 //	private ActionMenu actionMenu;	// Get options from units Character component
 	//private int currentOption = 0;
 
-
-	private void Awake() {
+	private void OnEnable() {
 		if(bm == null) {
 			bm = this;
 		} else if(bm != this) {
@@ -129,6 +130,7 @@ public class BattleManager : MonoBehaviour {
 		TurnState = TurnState.Nil;
 		BattlePhase = BattlePhase.Nil;
 		WinStatus = WinStatus.Nil;
+		battleCanvas = GameObject.FindGameObjectWithTag("BattleCanvas");
 	}
 
 	private void Update() {
@@ -201,7 +203,8 @@ public class BattleManager : MonoBehaviour {
 						removingBattleObjects = true;
 						RemoveEnemiesFromBattle();
 						BattleBackgroundManager.bbm.ShowBackground(false);
-						Destroy(battleCanvas);
+//						Destroy(_actionMenu);	// Disable ui w/ UIManager
+						UIManager.um.DisableBattleUI();
 						if(WinStatus == WinStatus.Win) {
 							AreaEnemyManager.aem.DoDefeatEnemyAnimation();
 						}
@@ -273,7 +276,7 @@ public class BattleManager : MonoBehaviour {
 					// TODO [x]: have a bool that will change from the action menu depending on the action
 					if(!menuActivated) {
 						menuActivated = true;
-						ActionMenuManager.amm.TryActionsSpawn();	// Spawn buttons after done transitioning
+						ActionMenuManager.amm.InitActions();	// Spawn buttons after done transitioning
 //						actionMenu.gameObject.SetActive(true);
 //						actionMenu.TryInitMenu();
 					}
@@ -351,12 +354,12 @@ public class BattleManager : MonoBehaviour {
 		}
 		numUnits = units.Count;
 		Debug.Log("number of units: " + numUnits);
-		if(battleCanvas == null) {
-			battleCanvas = Instantiate(battleCanvasPrefab);
-			battleCanvas.GetComponent<Canvas>().worldCamera = Camera.main;
-//			battleCanvas.worldCamera = Camera.main;
-//			actionMenu = battleCanvas.GetComponentInChildren<ActionMenu>();
-		}
+//		if(_actionMenu == null) {
+//			_actionMenu = Instantiate(actionMenu, battleCanvas.transform, false);
+////			battleCanvas.GetComponent<Canvas>().worldCamera = Camera.main;
+////			battleCanvas.worldCamera = Camera.main;
+////			actionMenu = battleCanvas.GetComponentInChildren<ActionMenu>();
+//		}
 //		actionMenu.gameObject.SetActive(false);
 		BattleState = BattleState.Loading;	// Go ahead and start the battle
 //		testMenu.SetActive(true);
@@ -370,6 +373,7 @@ public class BattleManager : MonoBehaviour {
 			AddEnemiesToList();
 			BattleBackgroundManager.bbm.SetArea(WorldArea.PaltryPlains); // testing
 			BattleBackgroundManager.bbm.LoadBackground();
+			UIManager.um.InitBattleUI();
 		}
 		if(isLoading && !ScreenTransitionManager.screenTransitionManager.IsTransitioning()) {
 			TurnState = TurnState.Init; // Turn initialization: calculate turn order, etc.
@@ -446,7 +450,7 @@ public class BattleManager : MonoBehaviour {
 		BattleScene.battleScene.UpdateEnemyPositions(generatedEnemyCount);
 		for(int i = 0; i < generatedEnemyCount; i++) {
 			GameObject enemyToInstantiate = BattleSceneDataManager.bsdm.GetEnemyPrefab("Enemy1 - Battle");
-			Vector3 pos = BattleScene.battleScene.GetEnemyPosition();
+			Vector3 pos = BattleScene.battleScene.GetEnemyPosition(i);
 			Debug.LogFormat("Pos for enemy {0}", pos);
 			GameObject enemy = Instantiate(enemyToInstantiate, BattleScene.battleScene.gameObject.transform);
 			enemy.transform.localPosition = pos;

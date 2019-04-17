@@ -8,6 +8,11 @@ public class BattleBackgroundManager : MonoBehaviour {
 	[SerializeField]
 	private GameObject grasslandBGPrefab;
 	private GameObject grasslandBG;
+	
+	
+	[SerializeField]
+	private GameObject creamuBGPrefab;
+	private GameObject creamuBG;
 
 //	private readonly Camera mainCamera = Camera.main;
 	private Dictionary<WorldArea, GameObject> areaBackgrounds = new Dictionary<WorldArea, GameObject>();
@@ -27,7 +32,12 @@ public class BattleBackgroundManager : MonoBehaviour {
 	private void Awake() {
 		if (grasslandBG == null) {
 			grasslandBG = grasslandBGPrefab;
-			areaBackgrounds[WorldArea.PaltryPlains] = grasslandBG;
+//			areaBackgrounds[WorldArea.PaltryPlains] = grasslandBG;
+//			currentArea = WorldArea.PaltryPlains;
+		}
+		if (creamuBG == null) {
+			creamuBG = creamuBGPrefab;
+			areaBackgrounds[WorldArea.PaltryPlains] = creamuBG;
 			currentArea = WorldArea.PaltryPlains;
 		}
 	}
