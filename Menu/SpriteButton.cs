@@ -1,44 +1,26 @@
 ﻿using UnityEngine;
 
 public class SpriteButton : MenuButton {
-
-	private SpriteRenderer renderer;
+	
+	private SpriteRenderer spriteRenderer;
 
 	private const Transition MY_TRANSITION = Transition.SpriteSwap;
+
+	public SpriteRenderer SpriteRenderer {
+		get { return spriteRenderer; }
+	}
 	
+	/// <summary>
+	/// Override UIBehaviour Start(). Safe to override as Selectable doesn't use Start()
+	/// </summary>
 	protected override void Start() {
 		transition = MY_TRANSITION;
-		if (renderer == null) {
-			renderer = GetComponent<SpriteRenderer>();
+		if (spriteRenderer == null) {
+			spriteRenderer = GetComponent<SpriteRenderer>();
 		}
 	}
 
 	protected override void DoStateTransition(SelectionState state, bool instant) {
-//		Sprite newSprite;
-//		switch (state) {
-//			case SelectionState.Normal:
-//				newSprite = null;
-//				break;
-//			case SelectionState.Highlighted:
-//				newSprite = spriteState.highlightedSprite;
-//				break;
-//			case SelectionState.Pressed:
-//				newSprite = spriteState.pressedSprite;
-//				break;
-//			case SelectionState.Disabled:
-//				newSprite = spriteState.disabledSprite;
-//				break;
-//			default:
-//				newSprite = null;
-//				break;
-//		}
-//		if (!gameObject.activeInHierarchy)
-//			return;
-//		switch (transition) {
-//			case Transition.SpriteSwap:
-//				DoSpriteSwap(newSprite);
-//				break;
-//		}
 		Sprite newSprite;
 		switch (state) {
 			case SelectionState.Normal:
@@ -87,11 +69,11 @@ public class SpriteButton : MenuButton {
 	}
 	
 	private void DoSpriteSwap(Sprite newSprite) {
-		if (renderer == null) {
-			renderer = GetComponent<SpriteRenderer>();
+		if (spriteRenderer == null) {
+			spriteRenderer = GetComponent<SpriteRenderer>();
 		}
 //		image.overrideSprite = newSprite;
-		renderer.sprite = newSprite;
-		Debug.LogFormat("renderer.sprite: {0}", renderer.sprite.name);
+		spriteRenderer.sprite = newSprite;
+		Debug.LogFormat("spriteRenderer.sprite: {0}", spriteRenderer.sprite.name);
 	}
 }

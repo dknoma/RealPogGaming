@@ -13,6 +13,8 @@ public enum Transition {
 	Bubble
 }
 
+// Requires 42 colors from black to white for full 456 px across
+
 //[ExecuteInEditMode]
 public class ScreenTransitionManager : MonoBehaviour {
 

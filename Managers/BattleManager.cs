@@ -83,7 +83,7 @@ public class BattleManager : MonoBehaviour {
 	private int numUnits;
 	private int expToGive;
 	private bool fastestFirst = true;
-	private bool currentIsAlly = true;
+//	private bool currentIsAlly = true;
 
 	private bool isLoadingBattle;
 	private bool takingTurn;
@@ -97,10 +97,10 @@ public class BattleManager : MonoBehaviour {
 
 	private bool inBattle;
 	private bool directionIsPressed;
-	private bool directionCanBePressed = true;
+//	private bool directionCanBePressed = true;
 	private bool buttonIsPressed;
-	private bool buttonCanBePressed = true;
-	private bool finishedActing;
+//	private bool buttonCanBePressed = true;
+//	private bool finishedActing;
 	private bool finishedUnitAction;
 
 	private bool finishedStatusPhase;
@@ -203,6 +203,7 @@ public class BattleManager : MonoBehaviour {
 						removingBattleObjects = true;
 						RemoveEnemiesFromBattle();
 						BattleBackgroundManager.bbm.ShowBackground(false);
+						BattleScene.battleScene.ResetEnemyPositions();
 //						Destroy(_actionMenu);	// Disable ui w/ UIManager
 						UIManager.um.DisableBattleUI();
 						if(WinStatus == WinStatus.Win) {
@@ -258,7 +259,7 @@ public class BattleManager : MonoBehaviour {
 //					finishedActing = false;
 					break;
 				case BattlePhase.Status:
-					finishedActing = false;
+//					finishedActing = false;
 					menuActivated = false;
 					// TODO: check what actions can take if any
 					Debug.Log("Checking" + currentUnit.name + "'s status.");
@@ -276,7 +277,7 @@ public class BattleManager : MonoBehaviour {
 					// TODO [x]: have a bool that will change from the action menu depending on the action
 					if(!menuActivated) {
 						menuActivated = true;
-						ActionMenuManager.amm.InitActions();	// Spawn buttons after done transitioning
+						UIManager.um.InitActions();	// Spawn buttons after done transitioning
 //						actionMenu.gameObject.SetActive(true);
 //						actionMenu.TryInitMenu();
 					}
@@ -342,7 +343,7 @@ public class BattleManager : MonoBehaviour {
 
 	// Use this for initialization
 	private void InitBattle() {
-		ScreenTransitionManager.screenTransitionManager.DoScreenTransition(Transition.Sawtooth);
+		ScreenTransitionManager.screenTransitionManager.DoScreenTransition(Transition.Triangle);
 		// Initialize battle settings
 		_turnCount = 0;
 		units = new List<GameObject>();
@@ -406,9 +407,9 @@ public class BattleManager : MonoBehaviour {
 		currentActionType = actionType;
 	}
 	
-	public void FinishAction() {
-		finishedActing = true;
-	}
+//	public void FinishAction() {
+//		finishedActing = true;
+//	}
 	
 	public void EndBattle(WinStatus winStatus) {
 		turnQueue.Clear();
@@ -453,7 +454,7 @@ public class BattleManager : MonoBehaviour {
 			Vector3 pos = BattleScene.battleScene.GetEnemyPosition(i);
 			Debug.LogFormat("Pos for enemy {0}", pos);
 			GameObject enemy = Instantiate(enemyToInstantiate, BattleScene.battleScene.gameObject.transform);
-			enemy.transform.localPosition = pos;
+			enemy.transform.position = pos;
 			units.Add(enemy);
 			enemies.Add(enemy);
 		}

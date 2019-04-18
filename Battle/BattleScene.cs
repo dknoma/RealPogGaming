@@ -54,6 +54,33 @@ public class BattleScene : MonoBehaviour {
 		}
 		DontDestroyOnLoad(gameObject);
 		cam = Camera.main;
+//		aPosOne = allyPositionOne.transform.position;
+//		aPosTwo = allyPositionTwo.transform.position;
+//		aPostThree = allyPositionThree.transform.position;
+//
+//		aPosOneOfOne = allyPositionOneOfOne.transform.position;
+//		
+//		ePosOne = enemyPositionOne.transform.position;
+//		ePosTwo = enemyPositionTwo.transform.position;
+//		ePosThree = enemyPositionThree.transform.position;
+//		ePosFour = enemyPositionFour.transform.position;
+//
+//		ePosOneOfOne = enemyPositionOneOfOne.transform.position;
+//		ePosOneOfTwo = enemyPositionOneOfTwo.transform.position;
+//		ePosTwoOfTwo = enemyPositionTwoOfTwo.transform.position;
+//		ePosThreeOfThree = enemyPositionThreeOfThree.transform.position;
+	}
+
+	// Update is called once per frame
+//	private void Update() {
+//		Vector3 pos = new Vector3(cam.transform.position.x, cam.transform.position.y, -10);
+//		transform.position = pos;
+//	}
+
+	public void InitBattleScene() {
+		Vector3 position = cam.transform.position;
+		Vector3 pos = new Vector3(position.x, position.y, -10);
+		transform.position = pos;
 		aPosOne = allyPositionOne.transform.position;
 		aPosTwo = allyPositionTwo.transform.position;
 		aPostThree = allyPositionThree.transform.position;
@@ -69,18 +96,6 @@ public class BattleScene : MonoBehaviour {
 		ePosOneOfTwo = enemyPositionOneOfTwo.transform.position;
 		ePosTwoOfTwo = enemyPositionTwoOfTwo.transform.position;
 		ePosThreeOfThree = enemyPositionThreeOfThree.transform.position;
-	}
-
-	// Update is called once per frame
-//	private void Update() {
-//		Vector3 pos = new Vector3(cam.transform.position.x, cam.transform.position.y, -10);
-//		transform.position = pos;
-//	}
-
-	public void InitBattleScene() {
-		Vector3 position = cam.transform.position;
-		Vector3 pos = new Vector3(position.x, position.y, -10);
-		transform.position = pos;
 	}
 
 	public void UpdateAllyPositions() {
@@ -141,5 +156,9 @@ public class BattleScene : MonoBehaviour {
 
 	public Vector3 GetEnemyPosition(int index) {
 		return enemyPositions[index];
+	}
+
+	public void ResetEnemyPositions() {
+		enemyPositions.Clear();
 	}
 }

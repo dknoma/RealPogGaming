@@ -9,7 +9,7 @@ public class TopDownOrderRender : MonoBehaviour {
 	private void Awake() {
 		myRenderer = GetComponent<Renderer>();
 		if (myRenderer == null) {
-			Debug.LogError("Parent did not have a Renderer attached to it. Cannot change sorting order.", this);
+			Debug.LogError("Parent did not have a SpriteRenderer attached to it. Cannot change sorting order.", this);
 		}
 		objInfo = GetComponentInParent<ObjectInfo>();
 	}

@@ -51,7 +51,7 @@ public class PlayerController : MonoBehaviour {
 
 	// Game Objects
 	private Animator animator;
-	private BoxCollider2D myCollider;
+//	private BoxCollider2D myCollider;
 	// ReSharper disable once InconsistentNaming
 	private Rigidbody2D rb2d;
 	private ContactFilter2D baseContactFilter;
@@ -82,22 +82,22 @@ public class PlayerController : MonoBehaviour {
 	private RaycastHit2D[] resultsDownLeft = new RaycastHit2D[2];
 	
 	// Platform physics
-	private RaycastHit2D[] pResultsUp = new RaycastHit2D[2];
-	private RaycastHit2D[] pResultsDown = new RaycastHit2D[2];
-	private RaycastHit2D[] pResultsRight = new RaycastHit2D[2];
-	private RaycastHit2D[] pResultsLeft  = new RaycastHit2D[2];
-	private RaycastHit2D[] pResultsUpRight = new RaycastHit2D[2];
-	private RaycastHit2D[] pResultsUpLeft = new RaycastHit2D[2];
-	private RaycastHit2D[] pResultsDownRight = new RaycastHit2D[2];
-	private RaycastHit2D[] pResultsDownLeft = new RaycastHit2D[2];
-
-	private RaycastHit2D[] floorHits = new RaycastHit2D[2];
-	private RaycastHit2D[] wallHits = new RaycastHit2D[2];
-
-	private RaycastHit2D upHit;
-	private RaycastHit2D downHit;
-	private RaycastHit2D leftHit;
-	private RaycastHit2D rightHit;
+//	private RaycastHit2D[] pResultsUp = new RaycastHit2D[2];
+//	private RaycastHit2D[] pResultsDown = new RaycastHit2D[2];
+//	private RaycastHit2D[] pResultsRight = new RaycastHit2D[2];
+//	private RaycastHit2D[] pResultsLeft  = new RaycastHit2D[2];
+//	private RaycastHit2D[] pResultsUpRight = new RaycastHit2D[2];
+//	private RaycastHit2D[] pResultsUpLeft = new RaycastHit2D[2];
+//	private RaycastHit2D[] pResultsDownRight = new RaycastHit2D[2];
+//	private RaycastHit2D[] pResultsDownLeft = new RaycastHit2D[2];
+//
+//	private RaycastHit2D[] floorHits = new RaycastHit2D[2];
+//	private RaycastHit2D[] wallHits = new RaycastHit2D[2];
+//
+//	private RaycastHit2D upHit;
+//	private RaycastHit2D downHit;
+//	private RaycastHit2D leftHit;
+//	private RaycastHit2D rightHit;
 
 	// Raycast stuff
 	private RaycastHit2D currentLeftBase;
@@ -177,7 +177,7 @@ public class PlayerController : MonoBehaviour {
 	private void Start() {
 		animator = GetComponentInChildren<Animator>();
 		animator.ResetTrigger("changeDirection");
-		myCollider = GetComponent<BoxCollider2D>();
+//		myCollider = GetComponent<BoxCollider2D>();
 		rb2d = GetComponent<Rigidbody2D>();
 		//wallContactFilter = new ContactFilter2D();
 		baseMask = LayerMask.GetMask("Base");
@@ -497,10 +497,10 @@ public class PlayerController : MonoBehaviour {
 
 	private void FixedUpdate() {
 		MovePlayer();
-		upHit = RaycastInDirection(Direction.Up);
-		downHit = RaycastInDirection(Direction.Down);
-		leftHit = RaycastInDirection(Direction.Left);
-		rightHit = RaycastInDirection(Direction.Right);
+//		upHit = RaycastInDirection(Direction.Up);
+//		downHit = RaycastInDirection(Direction.Down);
+//		leftHit = RaycastInDirection(Direction.Left);
+//		rightHit = RaycastInDirection(Direction.Right);
 //		groundPosition = shadow.transform.position;
 		velocity += gravityModifier * Physics2D.gravity * Time.deltaTime;
 //		Debug.Log("height " + currentHeight);
@@ -2993,7 +2993,7 @@ public class PlayerController : MonoBehaviour {
 //			if (nextUpBase.collider != null && Mathf.Abs(nextUpBase.distance + currentHeight) < boundCorrection && CheckIfBlockPlayerByHeight(nextUpBase)
 //			    && fallingDirection != Direction.Up) {
 			if (nextDownBase.collider != null) {
-				ObjectInfo obj = nextDownBase.transform.GetComponent<ObjectInfo>();
+//				ObjectInfo obj = nextDownBase.transform.GetComponent<ObjectInfo>();
 				// Check if current pos is next to the next wall, taking height into account.
 //				if (Mathf.Abs(targetTransform.position.y - obj.bottomBound - (currentPlatform != null ? currentPlatform.height : 0)) < BOUND_CORRECTION 
 //				    && CheckIfBlockPlayerByHeight(nextUpBase) &&
@@ -3156,7 +3156,7 @@ public class PlayerController : MonoBehaviour {
 	//			Debug.Log("next left base: " + (nextLeftBase.collider != null ? nextLeftBase.transform.name : "no next left base"));
 			Debug.DrawRay(targetTransform.transform.position, new Vector3(nextRightBase.distance, 0, 0), Color.red);
 			if (nextRightBase.collider != null) {
-				ObjectInfo obj = nextRightBase.transform.GetComponent<ObjectInfo>();
+//				ObjectInfo obj = nextRightBase.transform.GetComponent<ObjectInfo>();
 				// Check if current pos is next to the next wall, taking height into account.
 				if (Mathf.Abs(Vector2.Distance(targetTransform.position, nextRightBase.point)) < BOUND_CORRECTION && CheckIfBlockPlayerByHeight(nextRightBase) &&
 				    fallingDirection != Direction.Right) {
@@ -3275,7 +3275,7 @@ public class PlayerController : MonoBehaviour {
 			Debug.Log("next left base: " + (nextLeftBase.collider != null ? nextLeftBase.transform.name : "no next left base"));
 			Debug.DrawRay(targetTransform.transform.position, new Vector3(-nextLeftBase.distance, 0, 0), Color.red);
 			if (nextLeftBase.collider != null) {
-				ObjectInfo obj = nextLeftBase.transform.GetComponent<ObjectInfo>();
+//				ObjectInfo obj = nextLeftBase.transform.GetComponent<ObjectInfo>();
 				// Check if current pos is next to the next wall, taking height into account.
 //				if (Mathf.Abs(targetTransform.position.x - 4) < BOUND_CORRECTION && CheckIfBlockPlayerByHeight(nextLeftBase) &&
 				if (Mathf.Abs(Vector2.Distance(targetTransform.position, nextLeftBase.point)) < BOUND_CORRECTION && CheckIfBlockPlayerByHeight(nextLeftBase) &&
@@ -3348,7 +3348,7 @@ public class PlayerController : MonoBehaviour {
 			              Vector3.ClampMagnitude(new Vector3(nextUpRightBase.distance, nextUpRightBase.distance, 0), nextUpRightBase.distance)
 			              , Color.red);
 			if (nextUpRightBase.collider != null) {
-				ObjectInfo obj = nextUpRightBase.transform.GetComponent<ObjectInfo>();
+//				ObjectInfo obj = nextUpRightBase.transform.GetComponent<ObjectInfo>();
 				// Check if current pos is next to the next wall, taking height into account.
 //				if (Mathf.Abs(targetTransform.position.y - obj.bottomBound - (currentPlatform != null ? currentPlatform.height : 0)) < BOUND_CORRECTION 
 //				    && CheckIfBlockPlayerByHeight(nextUpBase) &&
@@ -3490,7 +3490,7 @@ public class PlayerController : MonoBehaviour {
 			Vector3.ClampMagnitude(new Vector3(-nextUpLeftBase.distance, nextUpLeftBase.distance, 0), nextUpLeftBase.distance)
 				, Color.red);
 			if (nextUpLeftBase.collider != null) {
-				ObjectInfo obj = nextUpLeftBase.transform.GetComponent<ObjectInfo>(); 
+//				ObjectInfo obj = nextUpLeftBase.transform.GetComponent<ObjectInfo>(); 
 				// Check if current pos is next to the next wall, taking height into account.
 				if ((
 //					targetTransform.position.x <= 4 && targetTransform.position.x >= 4 
@@ -3633,7 +3633,7 @@ public class PlayerController : MonoBehaviour {
 			              Vector3.ClampMagnitude(new Vector3(-nextDownLeftBase.distance, -nextDownLeftBase.distance, 0), nextDownLeftBase.distance)
 			              , Color.red);
 			if (nextDownLeftBase.collider != null) {
-				ObjectInfo obj = nextDownLeftBase.transform.GetComponent<ObjectInfo>();
+//				ObjectInfo obj = nextDownLeftBase.transform.GetComponent<ObjectInfo>();
 				// Check if current pos is next to the next wall, taking height into account.
 				if ((
 //				    targetTransform.position.x <= 4 && targetTransform.position.x >= 4 
@@ -3772,7 +3772,7 @@ public class PlayerController : MonoBehaviour {
 			              Vector3.ClampMagnitude(new Vector3(nextDownRightBase.distance, -nextDownRightBase.distance, 0), nextDownRightBase.distance)
 			              , Color.red);
 			if (nextDownRightBase.collider != null) {
-				var obj = nextDownRightBase.transform.GetComponent<ObjectInfo>();
+//				var obj = nextDownRightBase.transform.GetComponent<ObjectInfo>();
 				// Check if current pos is next to the next wall, taking height into account.
 				if ((
 //					    targetTransform.position.x <= 4 && targetTransform.position.x >= 4 

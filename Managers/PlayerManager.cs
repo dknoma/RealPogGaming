@@ -65,6 +65,10 @@ public class PlayerManager : MonoBehaviour {
     public List<Player> GetParty() {
         return partyMembers;
     }
+
+    public int GetPartyCount() {
+        return partyMembers.Count;
+    }
     
     public int AllyCount() {
         return partyMembers.Count;
