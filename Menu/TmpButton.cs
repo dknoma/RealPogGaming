@@ -29,10 +29,10 @@ public class TmpButton : MenuButton {
 			text = GetComponentInChildren<TextMeshProUGUI>();
 			Vector3 localPos = text.transform.localPosition;
 			textLocalPos = new Vector3(localPos.x - 0.06175f, localPos.y, localPos.z-1);
-			Debug.LogFormat("null: {0}", textLocalPos);
+//			Debug.LogFormat("null: {0}", textLocalPos);
 		} else {
 			textLocalPos = new Vector3(-0.06175f, 0, -1);
-			Debug.LogFormat("local: {0}", textLocalPos);
+//			Debug.LogFormat("local: {0}", textLocalPos);
 		}
 		if (spriteRenderer == null && GetComponent<SpriteRenderer>() != null) {
 			spriteRenderer = GetComponent<SpriteRenderer>();
@@ -48,35 +48,35 @@ public class TmpButton : MenuButton {
 		Sprite newSprite;
 		switch (state) {
 			case SelectionState.Normal:
-				Debug.LogFormat("Normal {0}", name);
+//				Debug.LogFormat("Normal {0}", name);
 				if(text == null  && GetComponentInChildren<TextMeshProUGUI>() != null) {
 					text = GetComponentInChildren<TextMeshProUGUI>();
 					Vector3 localPos = text.transform.localPosition;
 					textLocalPos = new Vector3(localPos.x + 0.18675f, localPos.y, localPos.z-1);
-					Debug.LogFormat("init: {0}", textLocalPos);
+//					Debug.LogFormat("init: {0}", textLocalPos);
 				}
 				if (text != null) {
 					text.transform.localPosition = textLocalPos;
-					Debug.LogFormat("text local pos: {0}, {1}", textLocalPos, text.transform.localPosition);
+//					Debug.LogFormat("text local pos: {0}, {1}", textLocalPos, text.transform.localPosition);
 				}
 				newSprite = spriteState.disabledSprite;
 				break;
 			case SelectionState.Highlighted:
-				Debug.LogFormat("Highlighting {0}", name);
+//				Debug.LogFormat("Highlighting {0}", name);
 				newSprite = spriteState.highlightedSprite;
 				if (text != null) {
 					text.transform.localPosition = new Vector3(- 0.18675f, 0.125f, -1);
 				}
 				break;
 			case SelectionState.Pressed:
-				Debug.LogFormat("Pressing {0}", name);
+//				Debug.LogFormat("Pressing {0}", name);
 				newSprite = spriteState.pressedSprite;
 				if (text != null) {
 					text.transform.localPosition = textLocalPos;
 				}
 				break;
 			case SelectionState.Disabled:
-				Debug.LogFormat("Disabling {0}", name);
+//				Debug.LogFormat("Disabling {0}", name);
 				newSprite = spriteState.disabledSprite;
 				break;
 			default:

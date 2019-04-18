@@ -9,6 +9,18 @@ public class PlayerStatBar : MonoBehaviour {
 	[SerializeField] private Transform hpBar;
 	[SerializeField] private Transform mpBar;
 
+	public void ListenOnPlayerStats(Player player) {
+		player.AddHpModListener(UpdateHpBar);
+	}
+	
+	/// <summary>
+	/// Listen in on the corresponding Player who's slot matches this one's
+	/// </summary>
+	public void ListenOnPlayerStats() {
+		Player player = PlayerManager.pm.GetPartyMemberLocations()[slot];
+		player.AddHpModListener(UpdateHpBar);
+	}
+
 	public void UpdateHpBar(float percent) {
 		if (percent <= 0) {
 			hpBar.localScale = Vector3.zero;

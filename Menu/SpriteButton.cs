@@ -24,7 +24,7 @@ public class SpriteButton : MenuButton {
 		Sprite newSprite;
 		switch (state) {
 			case SelectionState.Normal:
-				Debug.LogFormat("Normal {0}", name);
+//				Debug.LogFormat("Normal {0}", name);
 //				if(text == null  && GetComponentInChildren<TextMeshProUGUI>() != null) {
 //					text = GetComponentInChildren<TextMeshProUGUI>();
 //					Vector3 localPos = text.transform.localPosition;
@@ -38,21 +38,21 @@ public class SpriteButton : MenuButton {
 				newSprite = spriteState.disabledSprite;
 				break;
 			case SelectionState.Highlighted:
-				Debug.LogFormat("Highlighting {0}", name);
+//				Debug.LogFormat("Highlighting {0}", name);
 				newSprite = spriteState.highlightedSprite;
 //				if (text != null) {
 //					text.transform.localPosition = new Vector3(0, 0.5f, -1);
 //				}
 				break;
 			case SelectionState.Pressed:
-				Debug.LogFormat("Pressing {0}", name);
+//				Debug.LogFormat("Pressing {0}", name);
 				newSprite = spriteState.pressedSprite;
 //				if (text != null) {
 //					text.transform.localPosition = textLocalPos;
 //				}
 				break;
 			case SelectionState.Disabled:
-				Debug.LogFormat("Disabling {0}", name);
+//				Debug.LogFormat("Disabling {0}", name);
 				newSprite = spriteState.disabledSprite;
 				break;
 			default:
@@ -74,6 +74,6 @@ public class SpriteButton : MenuButton {
 		}
 //		image.overrideSprite = newSprite;
 		spriteRenderer.sprite = newSprite;
-		Debug.LogFormat("spriteRenderer.sprite: {0}", spriteRenderer.sprite.name);
+//		Debug.LogFormat("spriteRenderer.sprite: {0}", spriteRenderer.sprite.name);
 	}
 }

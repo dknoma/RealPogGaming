@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Analytics;
+using UnityEngine.Events;
 
 public class CharacterStats : StatusEffects {
 
@@ -42,6 +44,8 @@ public class CharacterStats : StatusEffects {
 	private bool ready;
 
 	private const int READINESS_THRESHOLD = 100;
+
+//	public UnityEvent anEvent;
 	
 	public int Readiness {
 		get { return readiness; }
@@ -75,6 +79,11 @@ public class CharacterStats : StatusEffects {
 	protected bool canCastSpells;
 	protected bool hasStatusAffliction;
 
+	protected UnityEvent hpModEvent = new UnityEvent();
+	protected UnityEvent atkModEvent = new UnityEvent();
+	protected UnityEvent defModEvent = new UnityEvent();
+	protected UnityEvent spdModEvent = new UnityEvent();
+	protected UnityEvent incapacitatedEvent = new UnityEvent();
 
 	// Status effect constants
 //	protected const int Bog = (int) Status.Bog;
@@ -120,34 +129,83 @@ public class CharacterStats : StatusEffects {
 		}
 	}
 
-	/******
-	 * HP *
-	 ******/
-	// Return a copy of this characters max hp
+	private void Start() {
+		BattleManager.bm.AddEndBattleListener(ClearReadiness);	// Listen in on Battle Manager end battle event
+	}
+	
+	///
+	/// Various Event Methods
+	/// 
+	
+	/// <summary>
+	/// Add listeners on when this character is incapacitated
+	/// </summary>
+	/// <param name="call"></param>
+	public void AddIncapacitatedListener(UnityAction call) {
+		incapacitatedEvent.AddListener(call);
+	}
+	
+	/// <summary>
+	/// Add listeners on when this character's health is changed
+	/// </summary>
+	/// <param name="call"></param>
+	public void AddHpModListener(UnityAction<float> call) {
+		hpModEvent.AddListener(() => call(currentHp / (float) maxHp));
+	}
+	
+	///
+	/// Stat Methods
+	///
+	
+	///
+	/// HP
+	///
+	/// Return a copy of this characters max hp
+	/// 
 	public int GetMaxHp() { return 0 + maxHp; }
 
-	// Return a copy of this characters current attack
+	///
+	/// Return a copy of this characters current attack
+	/// 
 	public int GetCurrentHp() { return 0 + currentHp; }
 
-	// Modify current HP w/ new value
-	public void ModifyHp(int hp) { currentHp += hp; }
+	///
+	/// Modify current HP w/ new value
+	/// 
+	public void ModifyHp(int hp) {
+		currentHp += hp;
+		if (currentHp <= 0) {
+			TryIncapacitate();
+		}
+		hpModEvent.Invoke();
+	}
 
 	// A % modifier for HP
-	public void ModifyHp(float hpPercentage) { currentHp += (int) Mathf.Round(maxHp * hpPercentage); }
+	public void ModifyHp(float hpPercentage) { 
+		currentHp += (int) Mathf.Round(maxHp * hpPercentage); 
+		if (currentHp <= 0) {
+			TryIncapacitate();
+		}
+		hpModEvent.Invoke();
+	}
 
 	public int GetRuneHp() { return 0 + totalRuneHp; }
 
-	/*******
-	 * ATK *
-	 *******/
-	// Return a copy of this characters base attack
+	///
+	/// Atk
+	///
+	/// Return a copy of this characters base attack
+	/// 
 	public int GetBaseAtk() { return 0 + baseAtk; }
 
 	// Return a copy of this characters current attack
 	public int GetCurrentAtk() { return 0 + currentAtk; }
 
 	// Modify current attack w/ new value
-	public void ModifyAtk(bool up) { currentAtk += AtkMod(baseAtk, up); }
+	public void ModifyAtk(bool up) {
+		currentAtk += AtkMod(baseAtk, up);
+		atkModEvent.Invoke();
+	}
 
 	public int GetRuneAtk() { return 0 + totalRuneAtk; }
 
@@ -161,7 +219,10 @@ public class CharacterStats : StatusEffects {
 	public int GetCurrentDef() { return 0 + currentDef; }
 
 	// Modify current defense w/ new value
-	public void ModifyDef(bool up) { currentDef += DefMod(baseDef, up); }
+	public void ModifyDef(bool up) {
+		currentDef += DefMod(baseDef, up);
+		defModEvent.Invoke();
+	}
 
 	public int GetRuneDef() { return 0 + totalRuneDef; }
 
@@ -175,18 +236,22 @@ public class CharacterStats : StatusEffects {
 	public int GetCurrentSpd() { return 0 + currentSpd; }
 
 	// Modify current defense w/ new value
-	public void ModifySpd(bool up) { currentSpd += DefMod(baseSpd, up); }
+	public void ModifySpd(bool up) {
+		currentSpd += DefMod(baseSpd, up);
+		spdModEvent.Invoke();
+	}
 
 	public int GetRuneSpd() { return 0 + totalRuneSpd; }
 
 	/* 
 	 * Status effects
 	 */
-	public bool Incapacitate() {
+	public bool TryIncapacitate() {
 		if(!AfflictedByStatus(Status.Incapacitated)) {
 			// TODO: afflict the state
 			AfflictStatus(Status.Incapacitated);
 			hasStatusAffliction = true;
+			incapacitatedEvent.Invoke();
 			return true;
 		}
 		return false;
@@ -529,6 +594,8 @@ public class CharacterStats : StatusEffects {
 						}
 					}
 					break;
+				case Status.Incapacitated:
+					break;
 				default:
 					Debug.Log ("Affliction not valid");
 					break;
@@ -536,6 +603,10 @@ public class CharacterStats : StatusEffects {
 		}
 	}
 
+	public bool IsIncapacitated() {
+		return afflictedStatuses.ContainsKey(Status.Incapacitated) && afflictedStatuses[Status.Incapacitated];
+	}
+	
 //	public void tryStatUp(StatUps statUp) {
 //		if(!status.alreadyAfflictedStatUp[statUp]) {
 //			// TODO: afflict the stat up
@@ -611,6 +682,10 @@ public class CharacterStats : StatusEffects {
 		ready = false;
 	}
 
+	public void ClearReadiness() {
+		readiness = 0;
+		ready = false;
+	}
 
 	// Calculate the amount of exp required to get to the next level
 	// 1->2: 1, 2->3: 5, 3->4: 33, 4->5: 73, ...

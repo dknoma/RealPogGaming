@@ -45,8 +45,8 @@ public class Player : Character {
         return partySlot;
     }
 
-    public void SetPartySlot(int slot) {
-        partySlot = slot;
+    public void SetPartySlot(int newSlot) {
+        partySlot = newSlot;
     }
 
 }

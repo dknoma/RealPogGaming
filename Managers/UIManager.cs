@@ -81,6 +81,7 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public void InitBattleUI() {
+		if (!BattleManager.bm.InBattle()) return; // If not in battle, should not bring up battle UI
 		Vector3 cameraPos = Camera.main.transform.position;
 		battleUI.transform.position = new Vector3(cameraPos.x, cameraPos.y, transform.position.z);
 		battleUI.SetActive(true);
@@ -89,7 +90,9 @@ public class UIManager : MonoBehaviour {
 		if (_playerOneStatusBars == null) {
 			_playerOneStatusBars = Instantiate(playerOneStatusBarsPrefab, battleUI.transform, false);
 			_playerOneStatusBars.transform.localPosition = pOneLocation;
-			playerStatBars.Add(PlayerSlot.One, _playerOneStatusBars.GetComponent<PlayerStatBar>());
+			PlayerStatBar statBar = _playerOneStatusBars.GetComponent<PlayerStatBar>();
+			statBar.ListenOnPlayerStats();	// Listen in on the player's stats whos slot matches the bars.
+			playerStatBars.Add(PlayerSlot.One, statBar);
 		}
 		switch (partyCount) {
 			case 1:
@@ -98,19 +101,25 @@ public class UIManager : MonoBehaviour {
 				if (_playerTwoStatusBars == null) {
 					_playerTwoStatusBars = Instantiate(playerTwoStatusBarsPrefab, battleUI.transform, false);
 					_playerTwoStatusBars.transform.localPosition = pTwoLocation;
-					playerStatBars.Add(PlayerSlot.Two, _playerTwoStatusBars.GetComponent<PlayerStatBar>());
+					PlayerStatBar statBar = _playerTwoStatusBars.GetComponent<PlayerStatBar>();
+					statBar.ListenOnPlayerStats(); // Listen in on the player's stats whos slot matches the bars.
+					playerStatBars.Add(PlayerSlot.Two, statBar);
 				}
 				break;
 			case 3:
 				if (_playerTwoStatusBars == null) {
 					_playerTwoStatusBars = Instantiate(playerTwoStatusBarsPrefab, battleUI.transform, false);
 					_playerTwoStatusBars.transform.localPosition = pTwoLocation;
-					playerStatBars.Add(PlayerSlot.Two, _playerTwoStatusBars.GetComponent<PlayerStatBar>());
+					PlayerStatBar statBar = _playerTwoStatusBars.GetComponent<PlayerStatBar>();
+					statBar.ListenOnPlayerStats(); // Listen in on the player's stats whos slot matches the bars.
+					playerStatBars.Add(PlayerSlot.Two, statBar);
 				}
 				if (_playerThreeStatusBars == null) {
 					_playerThreeStatusBars = Instantiate(playerThreeStatusBarsPrefab, battleUI.transform, false);
 					_playerThreeStatusBars.transform.localPosition = pThreeLocation;
-					playerStatBars.Add(PlayerSlot.Three, _playerThreeStatusBars.GetComponent<PlayerStatBar>());
+					PlayerStatBar statBar = _playerThreeStatusBars.GetComponent<PlayerStatBar>();
+					statBar.ListenOnPlayerStats(); // Listen in on the player's stats whos slot matches the bars.
+					playerStatBars.Add(PlayerSlot.Three, statBar);
 				}
 				break;
 			default:
@@ -125,32 +134,33 @@ public class UIManager : MonoBehaviour {
 	}
 	
 	public void InitActions() {
-		if (!BattleManager.bm.InBattle()) return;
-		switch (BattleManager.bm.GetCurrentUnit().GetAffiliation()) {
-			case Affiliation.Ally:
-				Debug.Log("Current unit is an ally.");
+		if (!BattleManager.bm.InBattle()) return;	// If not in battle, should not bring up battle UI
+		if (eventSystem == null) {
+			eventSystem = EventSystem.current;
+		}
+		SetMenuActive(_mainActionMenu,true);
+		SetButtonsInteractable(_mainActionMenu, true);
+		eventSystem.SetSelectedGameObject(GetDefaultMainAction());
+//		if (!BattleManager.bm.InBattle()) return;
+//		switch (BattleManager.bm.GetCurrentUnit().GetAffiliation()) {
+//			case Affiliation.Ally:
+//				Debug.Log("Current unit is an ally.");
 //                if (_actionMenu == null) {
 //                    _actionMenu = Instantiate(actionMenuPrefab, BattleManager.battleCanvas.transform, false);
 //                }
-				if (eventSystem == null) {
-					eventSystem = EventSystem.current;
-				}
-                SetMenuActive(_mainActionMenu,true);
-				SetButtonsInteractable(_mainActionMenu, true);
-				eventSystem.SetSelectedGameObject(GetDefaultMainAction());
-				Debug.Log("\t\tcurrentSelected " + eventSystem.currentSelectedGameObject.name);
-				break;
-			case Affiliation.Enemy:
-				Debug.Log("Current unit is an enemy.");
-				List<Player> allies = PlayerManager.pm.GetParty();
-				int randomTarget = Random.Range(0, allies.Count);
-				BattleManager.bm.SetCurrentTarget(allies[randomTarget].gameObject);
-				BattleManager.bm.SetCurrentActionType(ActionType.Attack);
-				BattleManager.bm.SetBattlePhase(BattlePhase.Battle);
-				break;
-			default:
-				throw new ArgumentOutOfRangeException();
-		}
+//				Debug.Log("\t\tcurrentSelected " + eventSystem.currentSelectedGameObject.name);
+//				break;
+//			case Affiliation.Enemy:
+////				Debug.Log("Current unit is an enemy.");
+//				List<Player> allies = PlayerManager.pm.GetParty();
+//				int randomTarget = Random.Range(0, allies.Count);
+//				BattleManager.bm.SetCurrentTarget(allies[randomTarget].gameObject);
+//				BattleManager.bm.SetCurrentActionType(ActionType.Attack);
+//				BattleManager.bm.SetBattlePhase(BattlePhase.Battle);
+//				break;
+//			default:
+//				throw new ArgumentOutOfRangeException();
+//		}
 	}
 
 	public void DisableActions() {
@@ -171,10 +181,10 @@ public class UIManager : MonoBehaviour {
 		if (_attackMenu == null) {
 			_attackMenu = Instantiate(attackMenuPrefab, BattleManager.battleCanvas.transform, false);
 		}
-		Debug.LogFormat("Chose basic attack");
+//		Debug.LogFormat("Chose basic attack");
 		previousOptions.Push(eventSystem.currentSelectedGameObject);    // Add attack action to previous options
 		SpriteButton button = eventSystem.currentSelectedGameObject.GetComponent<SpriteButton>();
-		Debug.LogFormat("enqueing {0}", previousOptions.Peek());
+//		Debug.LogFormat("enqueing {0}", previousOptions.Peek());
 		SetButtonsInteractable(_mainActionMenu, false);
 		SetMenuActive(_attackMenu,true);
 		SetButtonsInteractable(_attackMenu, true);
@@ -182,7 +192,7 @@ public class UIManager : MonoBehaviour {
 		button.SpriteRenderer.sprite = button.spriteState.highlightedSprite;	// Show the highlighted sprite of the button
 		TmpButton tmpButton = eventSystem.currentSelectedGameObject.GetComponent<TmpButton>();
 		tmpButton.SpriteRenderer.sprite = tmpButton.spriteState.highlightedSprite;
-		Debug.Log("current attack " + tmpButton.name);
+//		Debug.Log("current attack " + tmpButton.name);
 	}
 
 	public void ChooseBag() {
@@ -223,12 +233,12 @@ public class UIManager : MonoBehaviour {
 			List<GameObject> enemies = BattleManager.bm.GetEnemies();
 			// TODO: Add new buttons at the enemies position
 			foreach (var targetEnemy in enemies) {
-				Debug.LogFormat("Found target {0}", targetEnemy.name);
+//				Debug.LogFormat("Found target {0}", targetEnemy.name);
 				GameObject newButton =
 					Instantiate(targetButtonPrefab, targetEnemy.transform.position, Quaternion.identity,
 								_targetContainer.transform);
 				newButton.GetComponent<TargetButton>().target = targetEnemy;
-				Debug.LogFormat("newButton: {0}, {1}", newButton.name, newButton.transform.position);
+//				Debug.LogFormat("newButton: {0}, {1}", newButton.name, newButton.transform.position);
 			}
 		}
 
@@ -238,7 +248,7 @@ public class UIManager : MonoBehaviour {
 		SetMenuActive(_targetContainer,true);
 		SetButtonsInteractable(_targetContainer, true);
 		eventSystem.SetSelectedGameObject(_targetContainer.transform.GetChild(0).gameObject);
-		Debug.Log("currentSelected " + eventSystem.currentSelectedGameObject.name);
+//		Debug.Log("currentSelected " + eventSystem.currentSelectedGameObject.name);
 	}
 	
 	public void AttackB() {
@@ -284,7 +294,7 @@ public class UIManager : MonoBehaviour {
 	private static void SetButtonsInteractable(GameObject menu, bool isActive) {
 		foreach (Transform child in menu.transform) {
 			if (child.GetComponent<MenuButton>() == null) continue;
-			Debug.LogFormat("disabling {0}", child.name);
+//			Debug.LogFormat("disabling {0}", child.name);
 			child.GetComponent<MenuButton>().interactable = isActive;
 		}
 	}

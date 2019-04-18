@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
-using Random = System.Random;
+using Random = UnityEngine.Random;
 
 /// <summary>
 /// State Machines:
@@ -112,6 +114,9 @@ public class BattleManager : MonoBehaviour {
 	private const int MAX_QUEUE_SIZE = 20;
 	private const int MAX_QUEUE_ICONS = MAX_QUEUE_SIZE / 2;
 	
+//	private Dictionary <string, UnityEvent> eventDictionary;
+	private readonly UnityEvent endBattle = new UnityEvent();
+	
 //	private bool axisDown;
 //	private Direction currentDirection;
 //	private Button currentButton;
@@ -142,6 +147,10 @@ public class BattleManager : MonoBehaviour {
 		CheckBattleState();
 	}
 
+	public void AddEndBattleListener(UnityAction call) {
+		endBattle.AddListener(call);
+	}
+
 	private void CheckBattleState() {
 		switch(BattleState) {
 			case BattleState.Nil:
@@ -166,6 +175,7 @@ public class BattleManager : MonoBehaviour {
 				CheckTurnState();
 				break;
 			case BattleState.End:
+				endBattle.Invoke();
 				isLoading = false;
 				isLoadingBattle = false;
 				TurnState = TurnState.Nil;
@@ -213,6 +223,7 @@ public class BattleManager : MonoBehaviour {
 					if(!ScreenTransitionManager.screenTransitionManager.IsTransitioning()) {
 						units = new List<GameObject>();
 						enemies = new List<GameObject>();
+						turnQueue.Clear();
 						BattleState = BattleState.Nil;
 						inBattle = false;
 					}
@@ -261,23 +272,46 @@ public class BattleManager : MonoBehaviour {
 				case BattlePhase.Status:
 //					finishedActing = false;
 					menuActivated = false;
-					// TODO: check what actions can take if any
-					Debug.Log("Checking" + currentUnit.name + "'s status.");
+					// check what actions can take if any
+//					Debug.Log("Checking" + currentUnit.name + "'s status.");
 					currentUnit.CheckStatusAfflictions();
 					if(!currentUnit.CanCharacterAct()) {
 						// If incapacitated, skip turn
-						Debug.LogFormat("Skipping {0}'s turn.", currentUnit.name);
-						BattlePhase = BattlePhase.Resolution;
-						break;
+						Debug.Log(string.Format("============= Begin Turn =============\nSkipping {0}'s turn.",
+						                        currentUnit.name));
+						SetBattlePhase(BattlePhase.Resolution);
+					} else {
+						Debug.Log(string.Format("============= Begin Turn =============\nName: {0}, HP: {1}, exp until level up: {2}",
+						                        currentUnit.name, currentUnit.GetCurrentHp(), currentUnit.expUntilLevelUp));
+						BattlePhase = BattlePhase.Action;
 					}
-					BattlePhase = BattlePhase.Action;
 					break;
 				case BattlePhase.Action:
 					// TODO []: let unit do their actions: attack, use items, run away
 					// TODO [x]: have a bool that will change from the action menu depending on the action
 					if(!menuActivated) {
 						menuActivated = true;
-						UIManager.um.InitActions();	// Spawn buttons after done transitioning
+						switch (GetCurrentUnit().GetAffiliation()) {
+							case Affiliation.Ally:
+								UIManager.um.InitActions(); // Spawn buttons after done transitioning
+								break;
+							case Affiliation.Enemy:
+//				Debug.Log("Current unit is an enemy.");
+								List<Player> allies = PlayerManager.pm.GetParty();
+								int randomTarget = Random.Range(0, allies.Count);
+								Player target = allies[randomTarget];
+								while (target.IsIncapacitated()) {
+									randomTarget = Random.Range(0, allies.Count);
+									target = allies[randomTarget];
+								}
+								SetCurrentTarget(target.gameObject);
+								SetCurrentActionType(ActionType.Attack);
+								BattlePhase = BattlePhase.Battle;
+								break;
+							default:
+								throw new ArgumentOutOfRangeException();
+						}
+//						UIManager.um.InitActions();	// Spawn buttons after done transitioning
 //						actionMenu.gameObject.SetActive(true);
 //						actionMenu.TryInitMenu();
 					}
@@ -386,14 +420,11 @@ public class BattleManager : MonoBehaviour {
 		// Keep this round going until all units finish their turns
 		takingTurn = true;
 		_turnCount++;
-		Debug.Log("Queue size " + turnQueue.Count);
-		Debug.Log("Turn " + _turnCount);
+//		Debug.Log("Queue size " + turnQueue.Count);
+//		Debug.Log("Turn " + _turnCount);
 		currentUnit = turnQueue.Dequeue();
 		// TODO: can insert check here for possible cutscenes during a battle.
 //		Character unit = currentUnit;
-		Debug.Log("============= Begin Turn =============");
-		Debug.Log(string.Format("Name: {0}, HP: {1}, exp until level up: {2}",
-		                        currentUnit.name, currentUnit.GetCurrentHp(), currentUnit.expUntilLevelUp));
 //		actionMenu.gameObject.SetActive(true);
 //		actionMenu.TryInitMenu();
 		BattlePhase = BattlePhase.Status;	// The start of the units turn
@@ -434,12 +465,13 @@ public class BattleManager : MonoBehaviour {
 		// Get party members from sibling component
 		List<Player> partyMembers = PlayerManager.pm.GetParty();
 		foreach(Player member in partyMembers) {
+			Debug.LogFormat("member readiness: {0}".Remove(member.Readiness));
 			units.Add(member.gameObject);
 		}
 	}
 
 	private int GenerateRandomEnemyCount() {
-		return UnityEngine.Random.Range(1, 5);	// random number from 1-4
+		return Random.Range(1, 5);	// random number from 1-4
 	}
 
 	private void AddEnemiesToList() {
@@ -482,18 +514,25 @@ public class BattleManager : MonoBehaviour {
 		Debug.Log(string.Format("\t{0} dealt {1} damage to {2}", currentUnit.name, dmg, target.name));
 		Character unit = target.GetComponent<Character>();
 		unit.ModifyHp(-dmg);
+		
 		// If target is an ally, update their hp bars/numbers
-		if (target.GetComponent<Player>() != null) {
-			Player player = target.GetComponent<Player>();
-			PlayerStatBar statBar = UIManager.um.GetPlayerStatBar(player.slot);
-			statBar.UpdateHpBar(player.GetCurrentHp()/(float)player.GetMaxHp());
-		}
+//		if (target.GetComponent<Player>() != null) {
+//			Player player = target.GetComponent<Player>();
+//			PlayerStatBar statBar = UIManager.um.GetPlayerStatBar(player.slot);
+//			float hpPercent = (0.000000f+player.GetCurrentHp()) / (0.000000f + player.GetMaxHp());
+//			Debug.LogFormat("percent: {0}", hpPercent);
+//			statBar.UpdateHpBar(hpPercent);
+//		}
+		
 		Debug.Log(string.Format("{0}'s HP: {1}", target.name, unit.GetCurrentHp()));
 		// If HP is still positive, return
 		if (unit.GetCurrentHp() > 0) return true;
-		units.Remove(target); // Remove unit from the list if no more HP
+//		unit.TryIncapacitate();	// Incapacitate the unit. Cannot act until revived
+//		units.Remove(target); // Remove unit from the list if no more HP
+//		RemoveTargetFromQueue(unit);
+		Debug.LogFormat("contains {0}: {1}", target, units.Contains(target));
 		// TODO: if party member, make incapacitated: can be revived
-		if(target.CompareTag("Enemy")) {;
+		if(target.CompareTag("Enemy")) {
 			enemies.Remove(target);
 			target.SetActive(false);
 			expToGive += unit.expToGrant;
@@ -505,22 +544,30 @@ public class BattleManager : MonoBehaviour {
 			Player player = target.GetComponent<Player>();
 			PlayerStatBar statBar = UIManager.um.GetPlayerStatBar(player.slot);
 			statBar.UpdateHpBar(0);
-			PlayerManager.pm.IncapacitateUnit(unit.GetComponent<Player>());
+//			PlayerManager.pm.IncapacitateUnit(unit.GetComponent<Player>());
 			if(PlayerManager.pm.AllAlliesIncapacitated()) {
 				EndBattle(WinStatus.Lose);
 			}
 		}
 		return true;
 	}
+
+//	private void RemoveTargetFromQueue(Character target) {
+//		List<Character> unitListFromQueue = turnQueue.ToList();
+//		unitListFromQueue.RemoveAll(unit => target);
+//		turnQueue = new Queue<Character>(unitListFromQueue);
+////		foreach (Character unit in unitListFromQueue) {
+////		}
+//	}
 	
 	private int CalculateDamage(Character src, GameObject dest) {
 		Character 
 		source = src,
 		target = dest.GetComponent<Character>();
-		Debug.Log(string.Format("{0}'s atk: {1}, {2}'s def: {3}", 
-			source.name, source.GetCurrentAtk(), target.name, target.GetCurrentDef()));
-		Debug.Log(string.Format("{0}'s attack element: {1}, {2} element: {3}", 
-			source.name, source.GetAttackElement(), target.name, target.element));
+//		Debug.Log(string.Format("{0}'s atk: {1}, {2}'s def: {3}", 
+//			source.name, source.GetCurrentAtk(), target.name, target.GetCurrentDef()));
+//		Debug.Log(string.Format("{0}'s attack element: {1}, {2} element: {3}", 
+//			source.name, source.GetAttackElement(), target.name, target.element));
 		// Calculate the current units rune bonuses
 		CalculateRuneStats(currentUnit);
 		int damage = Mathf.RoundToInt(
@@ -571,8 +618,7 @@ public class BattleManager : MonoBehaviour {
 				if (turnQueue.Count >= MAX_QUEUE_SIZE) break; // Break out if reach threshold
 			}
 		}
-		Debug.LogFormat("Queued up units:");
-		Debug.LogFormat("{0}",turnQueueUi.Count);
+		Debug.LogFormat("Queued up units: {0}",turnQueue.Count);
 	}
 
 //	private void InitQueueIcons() {
