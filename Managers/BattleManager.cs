@@ -482,26 +482,32 @@ public class BattleManager : MonoBehaviour {
 		Debug.Log(string.Format("\t{0} dealt {1} damage to {2}", currentUnit.name, dmg, target.name));
 		Character unit = target.GetComponent<Character>();
 		unit.ModifyHp(-dmg);
+		// If target is an ally, update their hp bars/numbers
+		if (target.GetComponent<Player>() != null) {
+			Player player = target.GetComponent<Player>();
+			PlayerStatBar statBar = UIManager.um.GetPlayerStatBar(player.slot);
+			statBar.UpdateHpBar(player.GetCurrentHp()/(float)player.GetMaxHp());
+		}
 		Debug.Log(string.Format("{0}'s HP: {1}", target.name, unit.GetCurrentHp()));
-		if(unit.GetCurrentHp() <= 0) {
-			// Remove unit from the list if no more HP
-			units.Remove(target);
-			// TODO: if party member, make incapacitated: can be revived
-			if(target.CompareTag("Enemy")) {
-//				Debug.Log(string.Format("ending the battleeeeeeeeeeeee"));
-				enemies.Remove(target);
-				target.SetActive(false);
-				expToGive += unit.expToGrant;
-				if(enemies.Count == 0) {
-					EndBattle(WinStatus.Win);
-				}
+		// If HP is still positive, return
+		if (unit.GetCurrentHp() > 0) return true;
+		units.Remove(target); // Remove unit from the list if no more HP
+		// TODO: if party member, make incapacitated: can be revived
+		if(target.CompareTag("Enemy")) {;
+			enemies.Remove(target);
+			target.SetActive(false);
+			expToGive += unit.expToGrant;
+			if(enemies.Count == 0) {
+				EndBattle(WinStatus.Win);
 			}
-			if(target.CompareTag("Ally")) {
-//				Debug.Log(string.Format("ending the battleeeeeeeeeeeee"));
-				PlayerManager.pm.IncapacitateUnit(unit.GetComponent<Player>());
-				if(PlayerManager.pm.AllAlliesIncapacitated()) {
-					EndBattle(WinStatus.Lose);
-				}
+		}
+		if(target.CompareTag("Ally")) {
+			Player player = target.GetComponent<Player>();
+			PlayerStatBar statBar = UIManager.um.GetPlayerStatBar(player.slot);
+			statBar.UpdateHpBar(0);
+			PlayerManager.pm.IncapacitateUnit(unit.GetComponent<Player>());
+			if(PlayerManager.pm.AllAlliesIncapacitated()) {
+				EndBattle(WinStatus.Lose);
 			}
 		}
 		return true;

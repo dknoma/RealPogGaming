@@ -2,10 +2,21 @@
 
 public class Player : Character {
 
+    public PlayerSlot slot;
+    
     private int partySlot;
     private CharacterEquipement equipement;
     private Weapon weapon;
     private bool inParty;
+
+//    public PlayerSlot Slot {
+//        get {
+//            return slot;
+//        }
+//        set {
+//            slot = value;
+//        }
+//    }
     
     private void OnEnable () {
         equipement = gameObject.GetComponent<CharacterEquipement>();

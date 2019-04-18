@@ -2,22 +2,36 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum PlayerSlot {
+    One,
+    Two,
+    Three
+}
+
 public class PlayerManager : MonoBehaviour {
     
     public static PlayerManager pm;
     
     [SerializeField] private GameObject mainCharacter;
     [SerializeField] private GameObject otherCharacter;
+
+    private GameObject playerTwo;
+    private GameObject playerThree;
     
     private readonly List<Player> characters = new List<Player>();
     private readonly List<Player> partyMembers = new List<Player>();
     
-    private Dictionary<string, CharacterEquipement> characterEquipements = new Dictionary<string, CharacterEquipement>();
+//    private Dictionary<string, CharacterEquipement> characterEquipements = new Dictionary<string, CharacterEquipement>();
 //    private List<PartyMember> allyReserves = new List<PartyMember>();
     private const int MAX_PARTY_MEMBERS = 3;
     private int incapacitatedCount;
     public int IncapacitatedCount {
         get { return incapacitatedCount; }
+    }
+
+    public Player MainCharacter {
+        get { return mainCharacter.GetComponent<Player>(); }
+        set { mainCharacter = value.gameObject; }
     }
 
     private void OnEnable() {
@@ -30,6 +44,7 @@ public class PlayerManager : MonoBehaviour {
 //        AddPlayableCharacter(mainCharacter.GetComponent<Player>());
         AddAllyToParty(mainCharacter.GetComponent<Player>());
         AddAllyToParty(otherCharacter.GetComponent<Player>());
+        playerTwo = otherCharacter;
 //        CreateAllCharacterEquipmentObject();
     }
 

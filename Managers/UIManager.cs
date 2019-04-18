@@ -37,9 +37,10 @@ public class UIManager : MonoBehaviour {
 	
 	private static EventSystem eventSystem = EventSystem.current;
 	
-	private Stack<GameObject> previousOptions = new Stack<GameObject>();
-	
-	
+	private readonly Stack<GameObject> previousOptions = new Stack<GameObject>();
+	private readonly Dictionary<PlayerSlot, PlayerStatBar> playerStatBars = new Dictionary<PlayerSlot, PlayerStatBar>();
+
+
 	// Player stats
 	[SerializeField]
 	private GameObject playerOneBarLocation;
@@ -77,9 +78,6 @@ public class UIManager : MonoBehaviour {
 		pOneLocation = playerOneBarLocation.transform.position;
 		pTwoLocation = playerTwoBarLocation.transform.position;
 		pThreeLocation = playerThreeBarLocation.transform.position;
-		Debug.LogFormat("{0},{1},{2}", playerOneBarLocation.transform.position,
-		                playerTwoBarLocation.transform.position,
-		                playerThreeBarLocation.transform.position);
 	}
 
 	public void InitBattleUI() {
@@ -91,6 +89,7 @@ public class UIManager : MonoBehaviour {
 		if (_playerOneStatusBars == null) {
 			_playerOneStatusBars = Instantiate(playerOneStatusBarsPrefab, battleUI.transform, false);
 			_playerOneStatusBars.transform.localPosition = pOneLocation;
+			playerStatBars.Add(PlayerSlot.One, _playerOneStatusBars.GetComponent<PlayerStatBar>());
 		}
 		switch (partyCount) {
 			case 1:
@@ -99,16 +98,19 @@ public class UIManager : MonoBehaviour {
 				if (_playerTwoStatusBars == null) {
 					_playerTwoStatusBars = Instantiate(playerTwoStatusBarsPrefab, battleUI.transform, false);
 					_playerTwoStatusBars.transform.localPosition = pTwoLocation;
+					playerStatBars.Add(PlayerSlot.Two, _playerTwoStatusBars.GetComponent<PlayerStatBar>());
 				}
 				break;
 			case 3:
 				if (_playerTwoStatusBars == null) {
 					_playerTwoStatusBars = Instantiate(playerTwoStatusBarsPrefab, battleUI.transform, false);
 					_playerTwoStatusBars.transform.localPosition = pTwoLocation;
+					playerStatBars.Add(PlayerSlot.Two, _playerTwoStatusBars.GetComponent<PlayerStatBar>());
 				}
 				if (_playerThreeStatusBars == null) {
 					_playerThreeStatusBars = Instantiate(playerThreeStatusBarsPrefab, battleUI.transform, false);
 					_playerThreeStatusBars.transform.localPosition = pThreeLocation;
+					playerStatBars.Add(PlayerSlot.Three, _playerThreeStatusBars.GetComponent<PlayerStatBar>());
 				}
 				break;
 			default:
@@ -306,5 +308,13 @@ public class UIManager : MonoBehaviour {
 
 	public GameObject GetDefaultMainAction() {
 		return _mainActionMenu.transform.GetChild(0).gameObject;
+	}
+
+	public PlayerStatBar GetPlayerStatBar(PlayerSlot slot) {
+		return playerStatBars[slot];
+	}
+	
+	public Dictionary<PlayerSlot, PlayerStatBar> GetPlayerStatBars() {
+		return playerStatBars;
 	}
 }
