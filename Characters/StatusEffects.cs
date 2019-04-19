@@ -16,11 +16,11 @@ public enum Status {
 public enum StatChange { 
 	AtkUp, 
 	DefUp, 
-	SpeedUp, 
+	SpdUp, 
 	HpUp, 
 	AtkDown, 
 	DefDown, 
-	SpeedDown, 
+	SpdDown, 
 	HpDestruct
 }
 /*
@@ -28,13 +28,13 @@ public enum StatChange {
  */
 public class StatusEffects : MonoBehaviour {
 
-	//	public enum StatUps { PATKUp, MATKUp, /*SpeedUp,*/ PDEFUp, MDEFUp, HPUp }; 
-	//	public enum StatDowns { PATKDown, MATKDown, /*SpeedDown,*/ PDEFDown, MDEFDown, HPDestruct };
-//	public enum StatChange { PATKUp, MATKUp, /*SpeedUp,*/ PDEFUp, MDEFUp, HPUp, 
-//		PATKDown, MATKDown, /*SpeedDown,*/ PDEFDown, MDEFDown, HPDestruct}
+	//	public enum StatUps { PATKUp, MATKUp, /*SpdUp,*/ PDEFUp, MDEFUp, HPUp }; 
+	//	public enum StatDowns { PATKDown, MATKDown, /*SpdDown,*/ PDEFDown, MDEFDown, HPDestruct };
+//	public enum StatChange { PATKUp, MATKUp, /*SpdUp,*/ PDEFUp, MDEFUp, HPUp, 
+//		PATKDown, MATKDown, /*SpdDown,*/ PDEFDown, MDEFDown, HPDestruct}
 
 	protected Dictionary<Status, bool> afflictedStatuses = new Dictionary<Status, bool>();
-	protected Dictionary<StatChange, bool> afflictedStatChange = new Dictionary<StatChange, bool>();
+	protected Dictionary<StatChange, bool> afflictedStatChanges = new Dictionary<StatChange, bool>();
 	protected Dictionary<Status, bool> statusResists = new Dictionary<Status, bool>();
 	protected Dictionary<StatChange, bool> statChangeResists = new Dictionary<StatChange, bool>();
 	protected Dictionary<Status, bool> statusRemovalResists = new Dictionary<Status, bool>();
@@ -44,7 +44,7 @@ public class StatusEffects : MonoBehaviour {
 //	protected bool[] afflictedStatuses = new bool[(int) Status.Silence+1];
 	//	private bool[] afflictedStatUpStatus = new bool[StatUps.HPUp+1];
 	//	private bool[] afflictedStatDownStatus = new bool[StatDowns.HPDestruct+1];
-//	protected bool[] afflictedStatChange = new bool[(int) StatChange.HpDestruct+1];
+//	protected bool[] afflictedStatChanges = new bool[(int) StatChange.HpDestruct+1];
 	// Decides whether a character is immune to a state or not
 //	protected bool[] statusResists = new bool[(int) Status.Silence+1];
 //	protected bool[] statChangeResists = new bool[(int) StatChange.HpDestruct+1];
@@ -59,7 +59,7 @@ public class StatusEffects : MonoBehaviour {
 			statusRemovalResists.Add(status, false);
 		}
 		foreach (StatChange statChange in Enum.GetValues(typeof(StatChange))) {
-			afflictedStatChange.Add(statChange, false);
+			afflictedStatChanges.Add(statChange, false);
 			statChangeResists.Add(statChange, false);
 			statChangeRemovalResists.Add(statChange, false);
 		}
@@ -73,7 +73,7 @@ public class StatusEffects : MonoBehaviour {
 	}
 
 	protected Dictionary<StatChange, bool> GetStatChangeAfflictions() {
-		return afflictedStatChange;
+		return afflictedStatChanges;
 	}
 
 	protected bool AfflictedByStatus(Status status) {
@@ -81,7 +81,7 @@ public class StatusEffects : MonoBehaviour {
 	}
 
 	protected bool AfflictedByStatChange(StatChange statChange) {
-		return afflictedStatChange[statChange];
+		return afflictedStatChanges.ContainsKey(statChange) && afflictedStatChanges[statChange];
 	}
 
 	protected void AfflictStatus(Status status) {
@@ -97,15 +97,15 @@ public class StatusEffects : MonoBehaviour {
 	}
 
 	protected void AfflictStatChange(StatChange statChange) {
-		if (!afflictedStatChange.ContainsKey(statChange)) {
-			afflictedStatChange.Add(statChange, true);
+		if (!afflictedStatChanges.ContainsKey(statChange)) {
+			afflictedStatChanges.Add(statChange, true);
 			return;
 		}
-		afflictedStatChange[statChange] = true;
+		afflictedStatChanges[statChange] = true;
 	}
 
 	protected void RemoveStatChange(StatChange statChange) {
-		afflictedStatChange[statChange] = false;
+		afflictedStatChanges[statChange] = false;
 	}
 
 	/* 
@@ -120,26 +120,26 @@ public class StatusEffects : MonoBehaviour {
 	}
 
 	protected bool ResistsStatusEffect(Status status) {
-		return statusResists[status];
+		return statusResists.ContainsKey(status) && statusResists[status];
 	}
 
 	protected bool ResistsStatChange(StatChange statChange) {
-		return statChangeResists[statChange];
+		return statChangeResists.ContainsKey(statChange) && statChangeResists[statChange];
 	}
 
 	protected bool ResistsStatusEffectRemoval(Status status) {
-		return statusRemovalResists[status];
+		return statusRemovalResists.ContainsKey(status) && statusRemovalResists[status];
 	}
 
 	protected bool ResistsStatChangeRemoval(StatChange statChange) {
-		return statChangeRemovalResists[statChange];
+		return statChangeRemovalResists.ContainsKey(statChange) && statChangeRemovalResists[statChange];
 	}
 //	protected bool afflictedByStatus(Status status) {
 //		return this.afflictedStatuses[(int) status];
 //	}
 //
 //	protected bool afflictedByStatChange(StatChange statChange) {
-//		return this.afflictedStatChange[(int) statChange];
+//		return this.afflictedStatChanges[(int) statChange];
 //	}
 //
 //	protected void afflictStatus(Status status) {
@@ -151,11 +151,11 @@ public class StatusEffects : MonoBehaviour {
 //	}
 //
 //	protected void afflictStatChange(StatChange statChange) {
-//		this.afflictedStatChange[(int) statChange] = true;
+//		this.afflictedStatChanges[(int) statChange] = true;
 //	}
 //
 //	protected void removeStatChange(int statChange) {
-//		this.afflictedStatChange[statChange] = false;
+//		this.afflictedStatChanges[statChange] = false;
 //	}
 //
 //	/* 

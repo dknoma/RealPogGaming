@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Analytics;
 using UnityEngine.Events;
@@ -24,6 +25,7 @@ public class CharacterStats : StatusEffects {
 	public int currentExp;
 
 	[SerializeField]
+	protected int baseHp = 20;
 	protected int maxHp = 20;
 	[SerializeField]
 	protected int currentHp;
@@ -79,11 +81,12 @@ public class CharacterStats : StatusEffects {
 	protected bool canCastSpells;
 	protected bool hasStatusAffliction;
 
-	protected UnityEvent hpModEvent = new UnityEvent();
-	protected UnityEvent atkModEvent = new UnityEvent();
-	protected UnityEvent defModEvent = new UnityEvent();
-	protected UnityEvent spdModEvent = new UnityEvent();
-	protected UnityEvent incapacitatedEvent = new UnityEvent();
+	private readonly UnityEvent hpValueChangeEvent = new UnityEvent();	// Event when player gains/loses current HP
+	private readonly UnityEvent hpModEvent = new UnityEvent();			// Event when player max HP changes
+	private readonly UnityEvent atkModEvent = new UnityEvent();			// Event when player base atk changes
+	private readonly UnityEvent defModEvent = new UnityEvent();			// Event when player base def changes
+	private readonly UnityEvent spdModEvent = new UnityEvent();			// Event when player base spd changes
+	private readonly UnityEvent incapacitatedEvent = new UnityEvent();	// Event when player gets incapacitated
 
 	// Status effect constants
 //	protected const int Bog = (int) Status.Bog;
@@ -95,16 +98,17 @@ public class CharacterStats : StatusEffects {
 //
 //	protected const int Atkup = (int) StatChange.AtkUp;
 //	protected const int Defup = (int) StatChange.DefUp;
-//	protected const int Spdup = (int) StatChange.SpeedUp;
+//	protected const int Spdup = (int) StatChange.SpdUp;
 //	protected const int Hpup = (int) StatChange.HpUp;
 //	protected const int Atkdown = (int) StatChange.AtkDown;
 //	protected const int Defdown = (int) StatChange.DefDown;
-//	protected const int Spddown = (int) StatChange.SpeedDown;
+//	protected const int Spddown = (int) StatChange.SpdDown;
 //	protected const int Hpdestruction = (int) StatChange.HpDestruct;
 
 	private void Awake() {
 		expUntilLevelUp = CalcNextLevel();
-		currentHp = maxHp;
+		maxHp = baseHp;
+		currentHp = baseHp;
 		currentAtk = baseAtk;
 		currentDef = baseDef;
 		currentSpd = baseSpd;
@@ -130,7 +134,8 @@ public class CharacterStats : StatusEffects {
 	}
 
 	private void Start() {
-		BattleManager.bm.AddEndBattleListener(ClearReadiness);	// Listen in on Battle Manager end battle event
+		BattleManager.bm.AddEndBattleListener(ClearReadiness);	// Listen in on Battle Manager end battle event and clear readiness
+		BattleManager.bm.AddEndBattleListener(ClearStatChanges);	// Listen in on Battle Manager end battle event and clear stat changes
 	}
 	
 	///
@@ -148,9 +153,41 @@ public class CharacterStats : StatusEffects {
 	/// <summary>
 	/// Add listeners on when this character's health is changed
 	/// </summary>
+	/// <param name="call">Takes a float as a parameter for the listener.</param>
+	public void AddHpValueChangeListener(UnityAction<float> call) {
+		hpValueChangeEvent.AddListener(() => call(currentHp / (float) maxHp));
+	}
+	
+	/// <summary>
+	/// Add listeners on when this character's base attack is changed
+	/// </summary>
 	/// <param name="call"></param>
-	public void AddHpModListener(UnityAction<float> call) {
-		hpModEvent.AddListener(() => call(currentHp / (float) maxHp));
+	public void AddHpModListener(UnityAction<bool, bool> call) {
+		hpModEvent.AddListener(() => call(AfflictedByStatChange(StatChange.HpUp), AfflictedByStatChange(StatChange.HpDestruct)));
+	}
+	
+	/// <summary>
+	/// Add listeners on when this character's base attack is changed
+	/// </summary>
+	/// <param name="call"></param>
+	public void AddAtkModListener(UnityAction<bool, bool> call) {
+		atkModEvent.AddListener(() => call(AfflictedByStatChange(StatChange.AtkUp), AfflictedByStatChange(StatChange.AtkDown)));
+	}
+	
+	/// <summary>
+	/// Add listeners on when this character's base defense is changed
+	/// </summary>
+	/// <param name="call"></param>
+	public void AddDefModListener(UnityAction<bool, bool> call) {
+		defModEvent.AddListener(() => call(AfflictedByStatChange(StatChange.DefUp), AfflictedByStatChange(StatChange.DefDown)));
+	}
+	
+	/// <summary>
+	/// Add listeners on when this character's base speed is changed
+	/// </summary>
+	/// <param name="call"></param>
+	public void AddSpdModListener(UnityAction<bool, bool> call) {
+		spdModEvent.AddListener(() => call(AfflictedByStatChange(StatChange.SpdUp), AfflictedByStatChange(StatChange.SpdDown)));
 	}
 	
 	///
@@ -164,6 +201,11 @@ public class CharacterStats : StatusEffects {
 	/// 
 	public int GetMaxHp() { return 0 + maxHp; }
 
+	public void ModifyHp(bool up) {
+		maxHp += AtkMod(baseHp, up);
+		hpModEvent.Invoke();
+	}
+	
 	///
 	/// Return a copy of this characters current attack
 	/// 
@@ -172,22 +214,28 @@ public class CharacterStats : StatusEffects {
 	///
 	/// Modify current HP w/ new value
 	/// 
-	public void ModifyHp(int hp) {
+	public void ModifyCurrentHp(int hp) {
 		currentHp += hp;
 		if (currentHp <= 0) {
 			TryIncapacitate();
+		} else if (currentHp > maxHp) {
+			currentHp = maxHp;
 		}
-		hpModEvent.Invoke();
+		Debug.LogFormat("hp %: {0}", currentHp / (float) maxHp);
+		hpValueChangeEvent.Invoke();
 	}
 
 	// A % modifier for HP
-	public void ModifyHp(float hpPercentage) { 
+	public void ModifyCurrentHp(float hpPercentage) { 
 		currentHp += (int) Mathf.Round(maxHp * hpPercentage); 
 		if (currentHp <= 0) {
 			TryIncapacitate();
+		} else if (currentHp > maxHp) {
+			currentHp = maxHp;
 		}
-		hpModEvent.Invoke();
+		hpValueChangeEvent.Invoke();
 	}
+
 
 	public int GetRuneHp() { return 0 + totalRuneHp; }
 
@@ -277,6 +325,34 @@ public class CharacterStats : StatusEffects {
 			// TODO: afflict the stat change
 			AfflictStatChange(statChange);
 			statChangeTurnCounter [statChange] = turnsToAfflict;
+			switch (statChange) {
+				case StatChange.AtkUp:
+					ModifyAtk(true);
+					break;
+				case StatChange.DefUp:
+					ModifyDef(true);
+					break;
+				case StatChange.SpdUp:
+					ModifySpd(true);
+					break;
+				case StatChange.HpUp:
+					ModifyHp(true);
+					break;
+				case StatChange.AtkDown:
+					ModifyAtk(false);
+					break;
+				case StatChange.DefDown:
+					ModifyDef(false);
+					break;
+				case StatChange.SpdDown:
+					ModifySpd(false);
+					break;
+				case StatChange.HpDestruct:
+					ModifyHp(false);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException("statChange", statChange, null);
+			}
 			return true;
 		}
 		return false;
@@ -300,6 +376,53 @@ public class CharacterStats : StatusEffects {
 			return true;
 		}
 		return false;
+	}
+	
+	/// <summary>
+	/// Reset stat changes. Invokes stat mod events to notify listeners of stat changes.
+	/// </summary>
+	/// <param name="statChange">Desired stat change</param>
+	/// <exception cref="ArgumentOutOfRangeException"></exception>
+	public void ResetStatChange(StatChange statChange) {
+		if (afflictedStatChanges.ContainsKey(statChange)) {
+			afflictedStatChanges[statChange] = false;
+		} else {
+			afflictedStatChanges.Add(statChange, false);
+		}
+		switch (statChange) {
+			case StatChange.AtkUp:
+			case StatChange.AtkDown:
+				currentAtk = baseAtk;
+				atkModEvent.Invoke();
+				break;
+			case StatChange.DefUp:
+			case StatChange.DefDown:
+				currentDef = baseDef;
+				defModEvent.Invoke();
+				break;
+			case StatChange.SpdUp:
+			case StatChange.SpdDown:
+				currentSpd = baseSpd;
+				spdModEvent.Invoke();
+				break;
+			case StatChange.HpUp:
+			case StatChange.HpDestruct:
+				maxHp = baseHp;
+				hpModEvent.Invoke();
+				break;
+			default:
+				throw new ArgumentOutOfRangeException("statChange", statChange, null);
+		}
+	}
+	
+	/// <summary>
+	/// Remove all stat changes. 
+	/// </summary>
+	public void ClearStatChanges() {
+		var statChanges = afflictedStatChanges.Keys.ToList();	// Gets the list of keys in order to reset each stat change
+		foreach (StatChange statChange in statChanges) {
+			ResetStatChange(statChange);
+		}
 	}
 
 	public bool DoesResistStatus(Status status) {
@@ -327,7 +450,7 @@ public class CharacterStats : StatusEffects {
 		if(TryStatusAffliction (status, turns)) {
 			switch (status) {
 				case Status.Bog:
-					if(TryStatChange(StatChange.SpeedDown, turns)) {
+					if(TryStatChange(StatChange.SpdDown, turns)) {
 						ModifySpd (false);
 					} else {
 						Debug.Log("Already afflicted by speed down...");
@@ -377,7 +500,7 @@ public class CharacterStats : StatusEffects {
 				if(TryRemoveStatus(Status.Bog)) {
 //					hasStatusAffliction = false;
 				}
-				if(TryRemoveStatChange (StatChange.SpeedDown)) {
+				if(TryRemoveStatChange (StatChange.SpdDown)) {
 					ModifySpd (true);// Only need to happen once, not every turn
 				}
 				break;
@@ -432,7 +555,7 @@ public class CharacterStats : StatusEffects {
 		foreach(Status status in Enum.GetValues(typeof(Status))) {
 			switch (status) {
 				case Status.Bog:
-					if(TryRemoveStatChange (StatChange.SpeedDown)) {
+					if(TryRemoveStatChange (StatChange.SpdDown)) {
 						ModifySpd (true);// Only need to happen once, not every turn
 					}
 					if(TryRemoveStatus(Status.Bog)) {
@@ -549,7 +672,7 @@ public class CharacterStats : StatusEffects {
 					// 8% DoT & p atk down
 					Status s = Status.Burn;
 					if(statusTurnCounter [s] > 0) {
-						ModifyHp (-0.08f);
+						ModifyCurrentHp (-0.08f);
 						statusTurnCounter[s] -= 1;
 						if(statusTurnCounter[s] == 0) {
 							TryRemoveStatus (s);
@@ -560,7 +683,7 @@ public class CharacterStats : StatusEffects {
 					// 10% DoT & m atk 
 					s = Status.Poison;
 					if(statusTurnCounter [s] > 0) {
-						ModifyHp (-0.1f);
+						ModifyCurrentHp (-0.1f);
 						statusTurnCounter[s] -= 1;
 						if(statusTurnCounter[s] == 0) {
 							TryRemoveStatus (s);
@@ -595,6 +718,33 @@ public class CharacterStats : StatusEffects {
 					}
 					break;
 				case Status.Incapacitated:
+					break;
+				default:
+					Debug.Log ("Affliction not valid");
+					break;
+			}
+		}
+	}
+
+	public void ResolveStatChanges() {
+		foreach(KeyValuePair<StatChange, bool> statChanges in afflictedStatChanges) {
+			// Check status afflictions and do action depending on the affliction
+			StatChange sc = statChanges.Key;
+			switch (sc) {
+				case StatChange.AtkUp:
+				case StatChange.DefUp:
+				case StatChange.SpdUp:
+				case StatChange.HpUp:
+				case StatChange.AtkDown:
+				case StatChange.DefDown:
+				case StatChange.SpdDown:
+				case StatChange.HpDestruct:
+					if (statChangeTurnCounter[sc] > 0) {
+						statChangeTurnCounter[sc] -= 1;
+						if (statChangeTurnCounter[sc] == 0) {
+							TryRemoveStatChange(sc);
+						}
+					}
 					break;
 				default:
 					Debug.Log ("Affliction not valid");
@@ -655,19 +805,23 @@ public class CharacterStats : StatusEffects {
 //		}
 	}
 
+	private int HpMod(int baseHp, bool up) {
+		return (int) (up ? baseHp * 0.15f : baseHp * -0.15f);
+	}
+
 	// Increase/decrease atk by 25% of the base value
 	private int AtkMod(int baseAtk, bool up) {
-		return (int) (up ? baseAtk * 0.25f : baseAtk * (-0.25f));
+		return (int) (up ? baseAtk * 0.25f : baseAtk * -0.25f);
 	}
 
 	// Increase/decrease defense by 25% of the base value
 	private int DefMod(int baseDef, bool up) {
-		return (int) (up ? baseDef * 0.25f : baseDef * (-0.25f));
+		return (int) (up ? baseDef * 0.25f : baseDef * -0.25f);
 	}
 
 	// Increase/decrease speed by 20% of the base value
 	private int SpdMod(int baseSpd, bool up) {
-		return (int) (up ? baseSpd * 0.2f : baseSpd * (-0.2f));
+		return (int) (up ? baseSpd * 0.2f : baseSpd * -0.2f);
 	}
 
 	public void IncrementReadiness() {

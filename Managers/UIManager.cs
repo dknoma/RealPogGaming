@@ -253,12 +253,18 @@ public class UIManager : MonoBehaviour {
 	
 	public void AttackB() {
 		Debug.Log("Doing Attack B");
+		SetButtonsInteractable(_attackMenu, false);
+		SetMenuActive(_attackMenu,false);
+		BattleManager.bm.SetCurrentActionType(ActionType.Buff);
+		BattleManager.bm.SetBattlePhase(BattlePhase.Battle);
+		SetButtonsInteractable(_mainActionMenu, false);
+		previousOptions.Clear();
 	}
 
 	public void AttackTarget() {
+		BattleManager.bm.SetCurrentActionType(ActionType.Attack);
 		BattleManager.bm.SetCurrentTarget(eventSystem.currentSelectedGameObject.GetComponent<TargetButton>().target);
 		BattleManager.bm.SetBattlePhase(BattlePhase.Battle);
-//        SetMenusActive(false);
 		SetButtonsInteractable(_mainActionMenu, false);
 		ResetTargets();
 		previousOptions.Clear();

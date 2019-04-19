@@ -128,7 +128,7 @@ public class PlayerManager : MonoBehaviour {
 //                incapacitatedCount++;
 //            }
 //        }
-        return incapacitatedCount == MAX_PARTY_MEMBERS;
+        return incapacitatedCount == partyMembers.Count;
     }
 
     public void IncapacitateUnit(Character unit) {
@@ -138,13 +138,13 @@ public class PlayerManager : MonoBehaviour {
     
     public void ReviveAllyFlatHp(Character unit, int hp) {
         unit.TryRemoveStatus(Status.Incapacitated);
-        unit.ModifyHp(hp);
+        unit.ModifyCurrentHp(hp);
 //        incapacitatedCount = incapacitatedCount - 1 >= 0 ? incapacitatedCount - 1 : 0;
     }
     
     public void ReviveAllyPercentHp(Character unit, float hpPercent) {
         unit.TryRemoveStatus(Status.Incapacitated);
-        unit.ModifyHp(hpPercent);
+        unit.ModifyCurrentHp(hpPercent);
 //        incapacitatedCount = incapacitatedCount - 1 >= 0 ? incapacitatedCount - 1 : 0;
     }
 //    public void CreateAllCharacterEquipmentObject() {

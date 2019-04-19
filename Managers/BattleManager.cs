@@ -117,6 +117,7 @@ public class BattleManager : MonoBehaviour {
 //	private Dictionary <string, UnityEvent> eventDictionary;
 	private readonly UnityEvent endBattle = new UnityEvent();
 	
+	private readonly UnityEvent buffEvent = new UnityEvent();
 //	private bool axisDown;
 //	private Direction currentDirection;
 //	private Button currentButton;
@@ -149,6 +150,14 @@ public class BattleManager : MonoBehaviour {
 
 	public void AddEndBattleListener(UnityAction call) {
 		endBattle.AddListener(call);
+	}
+	
+	public void AddBuffActionListener(UnityAction call) {
+		buffEvent.AddListener(call);
+	}
+	
+	public void RemoveBuffActionListener(UnityAction call) {
+		buffEvent.RemoveListener(call);
 	}
 
 	private void CheckBattleState() {
@@ -300,6 +309,10 @@ public class BattleManager : MonoBehaviour {
 								List<Player> allies = PlayerManager.pm.GetParty();
 								int randomTarget = Random.Range(0, allies.Count);
 								Player target = allies[randomTarget];
+//								if(PlayerManager.pm.AllAlliesIncapacitated()) {
+//									EndBattle(WinStatus.Lose);
+//									return;
+//								}
 								while (target.IsIncapacitated()) {
 									randomTarget = Random.Range(0, allies.Count);
 									target = allies[randomTarget];
@@ -343,6 +356,9 @@ public class BattleManager : MonoBehaviour {
 							case ActionType.Revive:
 								break;
 							case ActionType.Buff:
+								buffEvent.AddListener(currentUnit.BuffAtk);
+								buffEvent.Invoke();
+								buffEvent.RemoveListener(currentUnit.BuffAtk);
 								break;
 							default:
 								throw new ArgumentOutOfRangeException();
@@ -355,6 +371,7 @@ public class BattleManager : MonoBehaviour {
 					if(!resolvingTurn) {
 						resolvingTurn = true;
 						currentUnit.GetComponent<Character>().ResolveStatusAfflictions();
+						currentUnit.GetComponent<Character>().ResolveStatChanges();
 					}
 //					actionMenu.gameObject.SetActive(false);
 					BattlePhase = BattlePhase.Nil;
@@ -513,7 +530,7 @@ public class BattleManager : MonoBehaviour {
 		// TODO: Check if target can be damaged.
 		Debug.Log(string.Format("\t{0} dealt {1} damage to {2}", currentUnit.name, dmg, target.name));
 		Character unit = target.GetComponent<Character>();
-		unit.ModifyHp(-dmg);
+		unit.ModifyCurrentHp(-dmg);
 		
 		// If target is an ally, update their hp bars/numbers
 //		if (target.GetComponent<Player>() != null) {
@@ -533,6 +550,7 @@ public class BattleManager : MonoBehaviour {
 		Debug.LogFormat("contains {0}: {1}", target, units.Contains(target));
 		// TODO: if party member, make incapacitated: can be revived
 		if(target.CompareTag("Enemy")) {
+			RemoveTargetFromQueue(unit);
 			enemies.Remove(target);
 			target.SetActive(false);
 			expToGive += unit.expToGrant;
@@ -541,9 +559,9 @@ public class BattleManager : MonoBehaviour {
 			}
 		}
 		if(target.CompareTag("Ally")) {
-			Player player = target.GetComponent<Player>();
-			PlayerStatBar statBar = UIManager.um.GetPlayerStatBar(player.slot);
-			statBar.UpdateHpBar(0);
+//			Player player = target.GetComponent<Player>();
+//			PlayerStatBar statBar = UIManager.um.GetPlayerStatBar(player.slot);
+//			statBar.UpdateHpBar(0);
 //			PlayerManager.pm.IncapacitateUnit(unit.GetComponent<Player>());
 			if(PlayerManager.pm.AllAlliesIncapacitated()) {
 				EndBattle(WinStatus.Lose);
@@ -552,13 +570,13 @@ public class BattleManager : MonoBehaviour {
 		return true;
 	}
 
-//	private void RemoveTargetFromQueue(Character target) {
-//		List<Character> unitListFromQueue = turnQueue.ToList();
-//		unitListFromQueue.RemoveAll(unit => target);
-//		turnQueue = new Queue<Character>(unitListFromQueue);
-////		foreach (Character unit in unitListFromQueue) {
-////		}
-//	}
+	private void RemoveTargetFromQueue(Character target) {
+		List<Character> unitListFromQueue = turnQueue.ToList();
+		unitListFromQueue.RemoveAll(unit => unit == target);
+		turnQueue = new Queue<Character>(unitListFromQueue);
+//		foreach (Character unit in unitListFromQueue) {
+//		}
+	}
 	
 	private int CalculateDamage(Character src, GameObject dest) {
 		Character 

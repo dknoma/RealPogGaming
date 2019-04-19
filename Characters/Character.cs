@@ -57,4 +57,9 @@ public class Character : CharacterStats, IComparable {
 	public void SetAttackElement(Element ele) {
 		attackElement = ele;
 	}
+
+	public void BuffAtk() {
+		Debug.LogFormat("Modding attack");
+		TryStatChange(StatChange.AtkUp, 3);
+	}
 }
