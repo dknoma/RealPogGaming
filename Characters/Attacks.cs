@@ -10,7 +10,12 @@ public class Attacks : MonoBehaviour {
 	private UnityEvent supportEvent;
 
 	public virtual void DoAttackA() {
-		
+		// TODO: Create sub classes for each unit. maybe even make one for enemies (obviously would do attacks automatically)
+		//		 	Maybe move attack names and stuff to this class as well.
+		//			Attacks need target(s)
+		//			Support skills need target(s) as well
+		//				targets probably chosen from Buttons during battle
+		//				Perform action on target, invoke action event to listeners (battle manager in this case)
 	}
 	
 	public virtual void DoAttackB() {
