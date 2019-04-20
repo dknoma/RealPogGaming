@@ -167,6 +167,8 @@ public class Character : CharacterStats, IComparable {
 		actionEvent.RemoveListener(call);
 	}
 	
+	// These events are called either directly by a manager or by OnClick button events (UIManager buttons)
+	
 	/// <summary>
 	/// Attack A event
 	/// </summary>
