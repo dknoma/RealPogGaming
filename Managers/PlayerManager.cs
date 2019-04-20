@@ -114,7 +114,7 @@ public class PlayerManager : MonoBehaviour {
         return partyMembers.Count;
     }
 
-    public void IncIncapacitatedCount() {
+    public void IncIncapacitatedCount(GameObject obj) {
         incapacitatedCount++;
         if (incapacitatedCount > MAX_PARTY_MEMBERS) {
             incapacitatedCount = MAX_PARTY_MEMBERS;

@@ -586,10 +586,10 @@ public class BattleManager : MonoBehaviour {
 	/// <summary>
 	/// Response method to the current target's incapacitated event.
 	/// </summary>
-	public void TargetDefeated() {	
-		Debug.Log(string.Format("\t{0} has been defeated.", currentUnit.name));
-		Character unit = currentTarget.GetComponent<Character>();
-		Debug.LogFormat("Units contains {0}: {1}", currentTarget, units.Contains(currentTarget));
+	public void TargetDefeated(GameObject defeatedUnit) {	
+		Debug.Log(string.Format("\t{0} has been defeated.", defeatedUnit.name));
+		Character unit = defeatedUnit.GetComponent<Character>();
+		Debug.LogFormat("Units contains {0}: {1}", defeatedUnit, units.Contains(defeatedUnit));
 		// TODO: if party member, make incapacitated: can be revived
 		Affiliation targetAffiliation = unit.GetAffiliation();
 		switch (targetAffiliation) {
@@ -601,8 +601,8 @@ public class BattleManager : MonoBehaviour {
 				break;
 			case Affiliation.Enemy:
 				RemoveTargetFromQueue(unit); // Remove enemy from queue, does not perform any more actions
-				enemies.Remove(currentTarget);
-				currentTarget.SetActive(false);
+				enemies.Remove(defeatedUnit);
+				defeatedUnit.SetActive(false);
 				expToGive += unit.expToGrant;
 				if(enemies.Count == 0) {
 					EndBattle(WinStatus.Win);

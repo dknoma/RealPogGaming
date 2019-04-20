@@ -146,8 +146,8 @@ public class CharacterStats : StatusEffects {
 	/// Add listeners on when this character is incapacitated
 	/// </summary>
 	/// <param name="call"></param>
-	public void AddIncapacitatedListener(UnityAction call) {
-		incapacitatedEvent.AddListener(call);
+	public void AddIncapacitatedListener(UnityAction<GameObject> call) {
+		incapacitatedEvent.AddListener(() => call(gameObject));
 	}
 	
 	/// <summary>
