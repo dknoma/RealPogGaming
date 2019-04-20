@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Characters;
 using UnityEngine;
 using UnityEngine.Analytics;
 using UnityEngine.Events;
@@ -30,6 +31,12 @@ public class CharacterStats : StatusEffects {
 	[SerializeField]
 	protected int currentHp;
 	protected int totalRuneHp;
+	[SerializeField]
+	protected int baseMp = 15;
+	protected int maxMp = 15;
+	[SerializeField]
+	protected int currentMp;
+	protected int totalRuneMp;
 	[SerializeField]
 	protected int baseAtk = 5;
 	protected int currentAtk;
@@ -83,6 +90,8 @@ public class CharacterStats : StatusEffects {
 
 	private readonly UnityEvent hpValueChangeEvent = new UnityEvent();	// Event when player gains/loses current HP
 	private readonly UnityEvent hpModEvent = new UnityEvent();			// Event when player max HP changes
+	private readonly UnityEvent mpValueChangeEvent = new UnityEvent(); // Event when player gains/loses current HP
+	private readonly UnityEvent mpModEvent = new UnityEvent();         // Event when player max HP changes
 	private readonly UnityEvent atkModEvent = new UnityEvent();			// Event when player base atk changes
 	private readonly UnityEvent defModEvent = new UnityEvent();			// Event when player base def changes
 	private readonly UnityEvent spdModEvent = new UnityEvent();			// Event when player base spd changes
@@ -108,7 +117,9 @@ public class CharacterStats : StatusEffects {
 	private void Awake() {
 		expUntilLevelUp = CalcNextLevel();
 		maxHp = baseHp;
-		currentHp = baseHp;
+		maxMp = baseMp;
+		currentHp = maxHp;
+		currentMp = maxMp;
 		currentAtk = baseAtk;
 		currentDef = baseDef;
 		currentSpd = baseSpd;
@@ -154,8 +165,12 @@ public class CharacterStats : StatusEffects {
 	/// Add listeners on when this character's health is changed
 	/// </summary>
 	/// <param name="call">Takes a float as a parameter for the listener.</param>
-	public void AddHpValueChangeListener(UnityAction<float> call) {
-		hpValueChangeEvent.AddListener(() => call(currentHp / (float) maxHp));
+	public void AddHpValueChangeListener(UnityAction<CharacterStats, float> call) {
+		hpValueChangeEvent.AddListener(() => call(this, currentHp / (float) maxHp));
+	}
+	
+	public void AddMpValueChangeListener(UnityAction<CharacterStats, float> call) {
+		mpValueChangeEvent.AddListener(() => call(this, currentMp / (float) maxMp));
 	}
 	
 	/// <summary>
@@ -164,6 +179,10 @@ public class CharacterStats : StatusEffects {
 	/// <param name="call"></param>
 	public void AddHpModListener(UnityAction<bool, bool> call) {
 		hpModEvent.AddListener(() => call(AfflictedByStatChange(StatChange.HpUp), AfflictedByStatChange(StatChange.HpDestruct)));
+	}
+	
+	public void AddMpModListener(UnityAction<bool, bool> call) {
+		mpModEvent.AddListener(() => call(AfflictedByStatChange(StatChange.HpUp), AfflictedByStatChange(StatChange.HpDestruct)));
 	}
 	
 	/// <summary>
@@ -195,14 +214,14 @@ public class CharacterStats : StatusEffects {
 	///
 	
 	///
-	/// HP
+	/// HP methods
 	///
 	/// Return a copy of this characters max hp
 	/// 
 	public int GetMaxHp() { return 0 + maxHp; }
 
 	public void ModifyHp(bool up) {
-		maxHp += AtkMod(baseHp, up);
+		maxHp += HpMod(baseHp, up);
 		hpModEvent.Invoke();
 	}
 	
@@ -235,9 +254,54 @@ public class CharacterStats : StatusEffects {
 		}
 		hpValueChangeEvent.Invoke();
 	}
-
-
+	
 	public int GetRuneHp() { return 0 + totalRuneHp; }
+	
+	/// MP Methods
+	
+	/// <summary>
+	/// Get current MP
+	/// </summary>
+	/// <returns>Character's max MP.</returns>
+	public int GetMaxMp() { return 0 + maxMp; }
+
+	public void ModifyMp(bool up) {
+		maxMp += HpMod(baseMp, up);
+		mpModEvent.Invoke();
+	}
+	
+	///
+	/// Return a copy of this characters current mp
+	/// 
+	public int GetCurrentMp() { return 0 + currentMp; }
+
+	///
+	/// Modify current MP w/ new value
+	/// 
+	public void ModifyCurrentMp(int mp) {
+		currentMp += mp;
+		if (currentMp <= 0) {
+			TryIncapacitate();
+		} else if (currentMp > maxMp) {
+			currentMp = maxMp;
+		}
+		Debug.LogFormat("{0} hp %: {1}", name, currentMp / (float) maxMp);
+		mpValueChangeEvent.Invoke();
+	}
+	 
+	/// <summary>
+	/// A % modifier for MP
+	/// </summary>
+	/// <param name="mpPercentage"></param>
+	public void ModifyCurrentMp(float mpPercentage) { 
+		currentMp += (int) Mathf.Round(maxMp * mpPercentage); 
+		if (currentMp <= 0) {
+			TryIncapacitate();
+		} else if (currentMp > maxMp) {
+			currentMp = maxMp;
+		}
+		mpValueChangeEvent.Invoke();
+	}
 
 	///
 	/// Atk
@@ -326,6 +390,12 @@ public class CharacterStats : StatusEffects {
 			AfflictStatChange(statChange);
 			statChangeTurnCounter [statChange] = turnsToAfflict;
 			switch (statChange) {
+				case StatChange.HpUp:
+					ModifyHp(true);
+					break;
+				case StatChange.MpUp:
+					ModifyMp(true);
+					break;
 				case StatChange.AtkUp:
 					ModifyAtk(true);
 					break;
@@ -335,8 +405,11 @@ public class CharacterStats : StatusEffects {
 				case StatChange.SpdUp:
 					ModifySpd(true);
 					break;
-				case StatChange.HpUp:
-					ModifyHp(true);
+				case StatChange.HpDestruct:
+					ModifyHp(false);
+					break;
+				case StatChange.MpDown:
+					ModifyMp(false);
 					break;
 				case StatChange.AtkDown:
 					ModifyAtk(false);
@@ -346,9 +419,6 @@ public class CharacterStats : StatusEffects {
 					break;
 				case StatChange.SpdDown:
 					ModifySpd(false);
-					break;
-				case StatChange.HpDestruct:
-					ModifyHp(false);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException("statChange", statChange, null);
@@ -409,6 +479,11 @@ public class CharacterStats : StatusEffects {
 			case StatChange.HpDestruct:
 				maxHp = baseHp;
 				hpModEvent.Invoke();
+				break;
+			case StatChange.MpUp:
+			case StatChange.MpDown:
+				maxMp = baseMp;
+				mpModEvent.Invoke();
 				break;
 			default:
 				throw new ArgumentOutOfRangeException("statChange", statChange, null);
@@ -731,14 +806,16 @@ public class CharacterStats : StatusEffects {
 			// Check status afflictions and do action depending on the affliction
 			StatChange sc = statChanges.Key;
 			switch (sc) {
+				case StatChange.HpUp:
+				case StatChange.MpUp:
 				case StatChange.AtkUp:
 				case StatChange.DefUp:
 				case StatChange.SpdUp:
-				case StatChange.HpUp:
+				case StatChange.HpDestruct:
+				case StatChange.MpDown:
 				case StatChange.AtkDown:
 				case StatChange.DefDown:
 				case StatChange.SpdDown:
-				case StatChange.HpDestruct:
 					if (statChangeTurnCounter[sc] > 0) {
 						statChangeTurnCounter[sc] -= 1;
 						if (statChangeTurnCounter[sc] == 0) {
@@ -805,8 +882,35 @@ public class CharacterStats : StatusEffects {
 //		}
 	}
 
+	private int ModStat(StatChange statChange) {
+		switch (statChange) {
+			case StatChange.AtkUp:
+				return Mathf.RoundToInt(baseAtk * 0.25f);
+			case StatChange.DefUp:
+				return Mathf.RoundToInt(baseDef * 0.25f);
+			case StatChange.SpdUp:
+				return Mathf.RoundToInt(baseSpd * 0.2f);
+			case StatChange.HpUp:
+				return Mathf.RoundToInt(baseHp * 0.15f);
+			case StatChange.AtkDown:
+				return Mathf.RoundToInt(baseAtk * -0.25f);
+			case StatChange.DefDown:
+				return Mathf.RoundToInt(baseDef * -0.25f);
+			case StatChange.SpdDown:
+				return Mathf.RoundToInt(baseSpd * -0.2f);
+			case StatChange.HpDestruct:
+				return Mathf.RoundToInt(baseHp * -0.15f);
+			default:
+				throw new ArgumentOutOfRangeException("statChange", statChange, null);
+		}
+	}
+
 	private int HpMod(int baseHp, bool up) {
 		return (int) (up ? baseHp * 0.15f : baseHp * -0.15f);
+	}
+	
+	private int MpMod(int basemp, bool up) {
+		return (int) (up ? baseMp * 0.2f : baseMp * -0.2f);
 	}
 
 	// Increase/decrease atk by 25% of the base value
@@ -824,8 +928,8 @@ public class CharacterStats : StatusEffects {
 		return (int) (up ? baseSpd * 0.2f : baseSpd * -0.2f);
 	}
 
-	public void IncrementReadiness() {
-		readiness += currentSpd;
+	public void IncrementReadiness(int speed, bool fastestFirst) {
+		readiness = fastestFirst ? readiness + speed : readiness + (READINESS_THRESHOLD - speed);
 		if (readiness >= READINESS_THRESHOLD) {
 			ready = true;
 		}

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class AreaEnemyManager : MonoBehaviour {
@@ -7,6 +8,7 @@ public class AreaEnemyManager : MonoBehaviour {
 
     private int totalAreaEnemyCount;
     private GameObject enemyToBattle;
+    private Queue<GameObject> enemiesToBattle = new Queue<GameObject>();
     
     private void OnEnable() {
         if (aem == null) {
@@ -23,6 +25,7 @@ public class AreaEnemyManager : MonoBehaviour {
 
     public void EnemyToBattle(GameObject enemy) {
         enemyToBattle = enemy;
+        enemiesToBattle.Enqueue(enemy);
     }
     
     public void DoDefeatEnemyAnimation() {
@@ -31,9 +34,10 @@ public class AreaEnemyManager : MonoBehaviour {
     
     private IEnumerator DefeatEnemyAnimation() {
         // Disable colliders and movement
-        Debug.LogFormat("Defeated {0}", enemyToBattle);
-        enemyToBattle.GetComponent<Collider2D>().enabled = false;
-        SpriteRenderer enemyRenderer = enemyToBattle.GetComponent<SpriteRenderer>();
+        GameObject enemy = enemiesToBattle.Dequeue();
+        Debug.LogFormat("Defeated {0}", enemy.name);
+        enemy.GetComponent<Collider2D>().enabled = false;
+        SpriteRenderer enemyRenderer = enemy.GetComponent<SpriteRenderer>();
         int i = 1;
         while(i <= 20) {
 //            enemyToBattle.SetActive(false);
@@ -45,6 +49,6 @@ public class AreaEnemyManager : MonoBehaviour {
             i += 2;
         }
         Debug.LogFormat("done");
-        enemyToBattle.SetActive(false);
+        enemy.SetActive(false);
     }
 }

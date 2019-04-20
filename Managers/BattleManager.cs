@@ -116,8 +116,9 @@ public class BattleManager : MonoBehaviour {
 	
 //	private Dictionary <string, UnityEvent> eventDictionary;
 	private readonly UnityEvent endBattle = new UnityEvent();
+	private readonly UnityEvent defeatedEnemyEvent = new UnityEvent();
 	
-	private readonly UnityEvent buffEvent = new UnityEvent();
+//	private readonly UnityEvent buffEvent = new UnityEvent();
 //	private bool axisDown;
 //	private Direction currentDirection;
 //	private Button currentButton;
@@ -140,24 +141,15 @@ public class BattleManager : MonoBehaviour {
 	}
 
 	private void Update() {
-//		if(Input.GetButtonDown("Fire1") && BattleState == BattleState.Nil) {
-//			BattleState = BattleState.Init;
-//		} else if(Input.GetButtonDown("Test2")) {
-//			
-//		}
 		CheckBattleState();
 	}
 
 	public void AddEndBattleListener(UnityAction call) {
 		endBattle.AddListener(call);
 	}
-	
-	public void AddBuffActionListener(UnityAction call) {
-		buffEvent.AddListener(call);
-	}
-	
-	public void RemoveBuffActionListener(UnityAction call) {
-		buffEvent.RemoveListener(call);
+
+	public void AddDefeatEnemyEvent(UnityAction call) {
+		defeatedEnemyEvent.AddListener(call);
 	}
 
 	private void CheckBattleState() {
@@ -227,6 +219,7 @@ public class BattleManager : MonoBehaviour {
 						UIManager.um.DisableBattleUI();
 						if(WinStatus == WinStatus.Win) {
 							AreaEnemyManager.aem.DoDefeatEnemyAnimation();
+//							defeatedEnemyEvent.Invoke();
 						}
 					}
 					if(!ScreenTransitionManager.screenTransitionManager.IsTransitioning()) {
@@ -310,10 +303,6 @@ public class BattleManager : MonoBehaviour {
 								List<Player> allies = PlayerManager.pm.GetParty();
 								int randomTarget = Random.Range(0, allies.Count);
 								Player target = allies[randomTarget];
-//								if(PlayerManager.pm.AllAlliesIncapacitated()) {
-//									EndBattle(WinStatus.Lose);
-//									return;
-//								}
 								while (target.IsIncapacitated()) {
 									randomTarget = Random.Range(0, allies.Count);
 									target = allies[randomTarget];
@@ -341,6 +330,8 @@ public class BattleManager : MonoBehaviour {
 					//		 commands here as well.), item useage, Calculate damage/heals, running away.
 					if(!calculatingBattle) {
 						calculatingBattle = true;
+						currentUnit.RemoveActionListener(MoveToBattlePhase);
+						BattlePhase = BattlePhase.Resolution;
 //						switch(currentActionType) {
 //							case ActionType.Attack:
 ////								GameObject target = currentUnit.CompareTag("EnemyPrefab") ? party.frontUnit : enemies[0];
@@ -366,8 +357,6 @@ public class BattleManager : MonoBehaviour {
 //							default:
 //								throw new ArgumentOutOfRangeException();
 //						}
-						currentUnit.RemoveActionListener(MoveToBattlePhase);
-						BattlePhase = BattlePhase.Resolution;
 					}
 					break;
 				case BattlePhase.Resolution:
@@ -537,51 +526,51 @@ public class BattleManager : MonoBehaviour {
 	 *  Dmg related functions  *
 	 * 						   *
 	 ***************************/ 
-	private bool TryDamage(int dmg, GameObject target) {
-		// TODO: Check if target can be damaged.
-		Debug.Log(string.Format("\t{0} dealt {1} damage to {2}", currentUnit.name, dmg, target.name));
-		Character unit = target.GetComponent<Character>();
-		unit.ModifyCurrentHp(-dmg);
-		
-		// If target is an ally, update their hp bars/numbers
-//		if (target.GetComponent<Player>() != null) {
-//			Player player = target.GetComponent<Player>();
-//			PlayerStatBar statBar = UIManager.um.GetPlayerStatBar(player.slot);
-//			float hpPercent = (0.000000f+player.GetCurrentHp()) / (0.000000f + player.GetMaxHp());
-//			Debug.LogFormat("percent: {0}", hpPercent);
-//			statBar.UpdateHpBar(hpPercent);
+//	private bool TryDamage(int dmg, GameObject target) {
+//		// TODO: Check if target can be damaged.
+//		Debug.Log(string.Format("\t{0} dealt {1} damage to {2}", currentUnit.name, dmg, target.name));
+//		Character unit = target.GetComponent<Character>();
+//		unit.ModifyCurrentHp(-dmg);
+//		
+//		// If target is an ally, update their hp bars/numbers
+////		if (target.GetComponent<Player>() != null) {
+////			Player player = target.GetComponent<Player>();
+////			PlayerStatBar statBar = UIManager.um.GetPlayerStatBar(player.slot);
+////			float hpPercent = (0.000000f+player.GetCurrentHp()) / (0.000000f + player.GetMaxHp());
+////			Debug.LogFormat("percent: {0}", hpPercent);
+////			statBar.UpdateHpBar(hpPercent);
+////		}
+//		
+//		Debug.Log(string.Format("{0}'s HP: {1}", target.name, unit.GetCurrentHp()));
+//		// If HP is still positive, return
+//		if (unit.GetCurrentHp() > 0) return true;
+////		unit.TryIncapacitate();	// Incapacitate the unit. Cannot act until revived
+////		units.Remove(target); // Remove unit from the list if no more HP
+////		RemoveTargetFromQueue(unit);
+//		Debug.LogFormat("contains {0}: {1}", target, units.Contains(target));
+//		// TODO: if party member, make incapacitated: can be revived
+//		if(target.CompareTag("Enemy")) {
+//			RemoveTargetFromQueue(unit);	// Remove enemy from queue, does not perform any more actions
+//			enemies.Remove(target);
+//			target.SetActive(false);
+//			expToGive += unit.expToGrant;
+//			if(enemies.Count == 0) {
+//				EndBattle(WinStatus.Win);
+//			}
 //		}
-		
-		Debug.Log(string.Format("{0}'s HP: {1}", target.name, unit.GetCurrentHp()));
-		// If HP is still positive, return
-		if (unit.GetCurrentHp() > 0) return true;
-//		unit.TryIncapacitate();	// Incapacitate the unit. Cannot act until revived
-//		units.Remove(target); // Remove unit from the list if no more HP
-//		RemoveTargetFromQueue(unit);
-		Debug.LogFormat("contains {0}: {1}", target, units.Contains(target));
-		// TODO: if party member, make incapacitated: can be revived
-		if(target.CompareTag("Enemy")) {
-			RemoveTargetFromQueue(unit);	// Remove enemy from queue, does not perform any more actions
-			enemies.Remove(target);
-			target.SetActive(false);
-			expToGive += unit.expToGrant;
-			if(enemies.Count == 0) {
-				EndBattle(WinStatus.Win);
-			}
-		}
-		if(target.CompareTag("Ally")) {
-//			Player player = target.GetComponent<Player>();
-//			PlayerStatBar statBar = UIManager.um.GetPlayerStatBar(player.slot);
-//			statBar.UpdateHpBar(0);
-//			PlayerManager.pm.IncapacitateUnit(unit.GetComponent<Player>());
-
-			// Allies do not get removed from queue in case their turn comes around when revived
-			if(PlayerManager.pm.AllAlliesIncapacitated()) {
-				EndBattle(WinStatus.Lose);
-			}
-		}
-		return true;
-	}
+//		if(target.CompareTag("Ally")) {
+////			Player player = target.GetComponent<Player>();
+////			PlayerStatBar statBar = UIManager.um.GetPlayerStatBar(player.slot);
+////			statBar.UpdateHpBar(0);
+////			PlayerManager.pm.IncapacitateUnit(unit.GetComponent<Player>());
+//
+//			// Allies do not get removed from queue in case their turn comes around when revived
+//			if(PlayerManager.pm.AllAlliesIncapacitated()) {
+//				EndBattle(WinStatus.Lose);
+//			}
+//		}
+//		return true;
+//	}
 
 	/// <summary>
 	/// Response method to the current target's incapacitated event.
@@ -621,26 +610,26 @@ public class BattleManager : MonoBehaviour {
 //		}
 	}
 	
-	private int CalculateDamage(Character src, GameObject dest) {
-		Character 
-		source = src,
-		target = dest.GetComponent<Character>();
-//		Debug.Log(string.Format("{0}'s atk: {1}, {2}'s def: {3}", 
-//			source.name, source.GetCurrentAtk(), target.name, target.GetCurrentDef()));
-//		Debug.Log(string.Format("{0}'s attack element: {1}, {2} element: {3}", 
-//			source.name, source.GetAttackElement(), target.name, target.element));
-		// Calculate the current units rune bonuses
-		CalculateRuneStats(src);
-		int damage = Mathf.RoundToInt(
-			// Standard atk-def calc
-			(Mathf.Pow(source.GetCurrentAtk(), 2) + source.GetRuneAtk()) /(target.GetCurrentDef() + target.GetRuneDef()) 								
-			// Level compensation
-			*(1 +(source.currentLevel*2 - target.currentLevel) / 50)			
-			// Elemental multiplier
-			* ElementalAffinity.CalcElementalDamage(source.GetAttackElement(),	
-				target.element));  														
-		return damage;
-	}
+//	private int CalculateDamage(Character src, GameObject dest) {
+//		Character 
+//		source = src,
+//		target = dest.GetComponent<Character>();
+////		Debug.Log(string.Format("{0}'s atk: {1}, {2}'s def: {3}", 
+////			source.name, source.GetCurrentAtk(), target.name, target.GetCurrentDef()));
+////		Debug.Log(string.Format("{0}'s attack element: {1}, {2} element: {3}", 
+////			source.name, source.GetAttackElement(), target.name, target.element));
+//		// Calculate the current units rune bonuses
+//		CalculateRuneStats(src);
+//		int damage = Mathf.RoundToInt(
+//			// Standard atk-def calc
+//			(Mathf.Pow(source.GetCurrentAtk(), 2) + source.GetRuneAtk()) /(target.GetCurrentDef() + target.GetRuneDef()) 								
+//			// Level compensation
+//			*(1 +(source.currentLevel*2 - target.currentLevel) / 50)			
+//			// Elemental multiplier
+//			* ElementalAffinity.CalcElementalDamage(source.GetAttackElement(),	
+//				target.element));  														
+//		return damage;
+//	}
 	
 	private void GrantExpToParty() {
 		foreach(Player ally in PlayerManager.pm.GetParty()) {
@@ -651,9 +640,9 @@ public class BattleManager : MonoBehaviour {
 	/*
 	 * Sort the characters by their speeds, then enqueue them into the action queue.
 	 */
-//	private void CalculatePriority(bool fastestFirst) {
+//	private void CalculatePriority(bool byFastestFirst) {
 //		// Sor the units based on speed
-//		if(fastestFirst) {
+//		if(byFastestFirst) {
 //			Sorting.DescendingMergeSort(units, new CompareCharactersBySpeed());
 //		} else {
 //			Sorting.MergeSort(units, new CompareCharactersBySpeed());
@@ -666,16 +655,17 @@ public class BattleManager : MonoBehaviour {
 //		}
 //	}
 
-	private void CalculatePriority(bool fastestFirst) {
+	private void CalculatePriority(bool byFastestFirst) {
 		Sorting.DescendingMergeSort(units, new CompareCharactersBySpeed());
 //		Queue<Character> temp = new Queue<Character>();
 		while (turnQueue.Count < MAX_QUEUE_SIZE) {			// Queue up to 100 actions
 			foreach (GameObject unit in units) {
 				Character character = unit.GetComponent<Character>();
-				character.IncrementReadiness();
+				// TODO: This can allow players to move more than twice a turn, 20x the spd means can move 20 times
+				// 			Tho, at this point, the player would be able to kill enemies in one hit.
+				character.IncrementReadiness(character.GetCurrentSpd(), byFastestFirst);
 				if (!character.Ready) continue; // If character is ready, add to queue and reset readiness
 				turnQueue.Enqueue(character);
-//				temp.Enqueue(character);
 				character.ResetReadiness();
 				if (turnQueue.Count >= MAX_QUEUE_SIZE) break; // Break out if reach threshold
 			}

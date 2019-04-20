@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Characters;
 using UnityEngine;
 
 public enum PlayerSlot {
