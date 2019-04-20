@@ -221,7 +221,7 @@ public class CharacterStats : StatusEffects {
 		} else if (currentHp > maxHp) {
 			currentHp = maxHp;
 		}
-		Debug.LogFormat("hp %: {0}", currentHp / (float) maxHp);
+		Debug.LogFormat("{0} hp %: {1}", name, currentHp / (float) maxHp);
 		hpValueChangeEvent.Invoke();
 	}
 

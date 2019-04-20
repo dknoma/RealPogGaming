@@ -111,7 +111,7 @@ public class BattleManager : MonoBehaviour {
 	private bool finishedResolve;
 	private bool finishedTurn;
 
-	private const int MAX_QUEUE_SIZE = 20;
+	private const int MAX_QUEUE_SIZE = 8;
 	private const int MAX_QUEUE_ICONS = MAX_QUEUE_SIZE / 2;
 	
 //	private Dictionary <string, UnityEvent> eventDictionary;
@@ -300,12 +300,13 @@ public class BattleManager : MonoBehaviour {
 					// TODO [x]: have a bool that will change from the action menu depending on the action
 					if(!menuActivated) {
 						menuActivated = true;
+						currentUnit.AddActionListener(MoveToBattlePhase);
 						switch (GetCurrentUnit().GetAffiliation()) {
 							case Affiliation.Ally:
 								UIManager.um.InitActions(); // Spawn buttons after done transitioning
 								break;
 							case Affiliation.Enemy:
-//				Debug.Log("Current unit is an enemy.");
+								Debug.Log("Current unit is an enemy.");
 								List<Player> allies = PlayerManager.pm.GetParty();
 								int randomTarget = Random.Range(0, allies.Count);
 								Player target = allies[randomTarget];
@@ -317,9 +318,11 @@ public class BattleManager : MonoBehaviour {
 									randomTarget = Random.Range(0, allies.Count);
 									target = allies[randomTarget];
 								}
-								SetCurrentTarget(target.gameObject);
-								SetCurrentActionType(ActionType.Attack);
-								BattlePhase = BattlePhase.Battle;
+								Debug.LogFormat("Chose ally to attack.");
+								currentUnit.DoAttackA(target.gameObject);
+//								SetCurrentTarget(target.gameObject);
+//								SetCurrentActionType(ActionType.Attack);
+//								BattlePhase = BattlePhase.Battle;
 								break;
 							default:
 								throw new ArgumentOutOfRangeException();
@@ -338,31 +341,32 @@ public class BattleManager : MonoBehaviour {
 					//		 commands here as well.), item useage, Calculate damage/heals, running away.
 					if(!calculatingBattle) {
 						calculatingBattle = true;
-						switch(currentActionType) {
-							case ActionType.Attack:
-//								GameObject target = currentUnit.CompareTag("EnemyPrefab") ? party.frontUnit : enemies[0];
-//								int dmg = CalculateDamage(currentUnit, target);
-//								TryDamage(dmg, target);
-								int dmg = CalculateDamage(currentUnit, currentTarget);
-								TryDamage(dmg, currentTarget);
-								break;
-							case ActionType.Heal:
-								break;
-							case ActionType.Defend:
-								break;
-							case ActionType.Escape:
-								EndBattle(WinStatus.Escape);
-								break;
-							case ActionType.Revive:
-								break;
-							case ActionType.Buff:
-								buffEvent.AddListener(currentUnit.BuffAtk);
-								buffEvent.Invoke();
-								buffEvent.RemoveListener(currentUnit.BuffAtk);
-								break;
-							default:
-								throw new ArgumentOutOfRangeException();
-						}
+//						switch(currentActionType) {
+//							case ActionType.Attack:
+////								GameObject target = currentUnit.CompareTag("EnemyPrefab") ? party.frontUnit : enemies[0];
+////								int dmg = CalculateDamage(currentUnit, target);
+////								TryDamage(dmg, target);
+//								int dmg = CalculateDamage(currentUnit, currentTarget);
+//								TryDamage(dmg, currentTarget);
+//								break;
+//							case ActionType.Heal:
+//								break;
+//							case ActionType.Defend:
+//								break;
+//							case ActionType.Escape:
+//								EndBattle(WinStatus.Escape);
+//								break;
+//							case ActionType.Revive:
+//								break;
+//							case ActionType.Buff:
+//								buffEvent.AddListener(currentUnit.BuffAtk);
+//								buffEvent.Invoke();
+//								buffEvent.RemoveListener(currentUnit.BuffAtk);
+//								break;
+//							default:
+//								throw new ArgumentOutOfRangeException();
+//						}
+						currentUnit.RemoveActionListener(MoveToBattlePhase);
 						BattlePhase = BattlePhase.Resolution;
 					}
 					break;
@@ -383,6 +387,10 @@ public class BattleManager : MonoBehaviour {
 		} else {
 			Debug.Log("In cutscene.");
 		}
+	}
+
+	private void MoveToBattlePhase() {
+		BattlePhase = BattlePhase.Battle;
 	}
 	
 //	private static IEnumerator TransitionScreen() {
@@ -483,6 +491,7 @@ public class BattleManager : MonoBehaviour {
 		List<Player> partyMembers = PlayerManager.pm.GetParty();
 		foreach(Player member in partyMembers) {
 			Debug.LogFormat("member readiness: {0}".Remove(member.Readiness));
+			member.AddIncapacitatedListener(TargetDefeated);
 			units.Add(member.gameObject);
 		}
 	}
@@ -501,11 +510,13 @@ public class BattleManager : MonoBehaviour {
 		for(int i = 0; i < generatedEnemyCount; i++) {
 			GameObject enemyToInstantiate = BattleSceneDataManager.bsdm.GetEnemyPrefab("Enemy1 - Battle");
 			Vector3 pos = BattleScene.battleScene.GetEnemyPosition(i);
-			Debug.LogFormat("Pos for enemy {0}", pos);
-			GameObject enemy = Instantiate(enemyToInstantiate, BattleScene.battleScene.gameObject.transform);
-			enemy.transform.position = pos;
-			units.Add(enemy);
-			enemies.Add(enemy);
+//			Debug.LogFormat("Pos for enemy {0}", pos);
+			GameObject newEnemy = Instantiate(enemyToInstantiate, BattleScene.battleScene.gameObject.transform);
+			newEnemy.transform.position = pos;
+			units.Add(newEnemy);
+			enemies.Add(newEnemy);
+			Enemy enemy = newEnemy.GetComponent<Enemy>();
+			enemy.AddIncapacitatedListener(TargetDefeated);
 		}
 //		for(int i = 0; i < enemyCount; i++) {
 //			GameObject enemy = enemyPool.transform.GetChild(i).gameObject;
@@ -550,7 +561,7 @@ public class BattleManager : MonoBehaviour {
 		Debug.LogFormat("contains {0}: {1}", target, units.Contains(target));
 		// TODO: if party member, make incapacitated: can be revived
 		if(target.CompareTag("Enemy")) {
-			RemoveTargetFromQueue(unit);
+			RemoveTargetFromQueue(unit);	// Remove enemy from queue, does not perform any more actions
 			enemies.Remove(target);
 			target.SetActive(false);
 			expToGive += unit.expToGrant;
@@ -563,6 +574,8 @@ public class BattleManager : MonoBehaviour {
 //			PlayerStatBar statBar = UIManager.um.GetPlayerStatBar(player.slot);
 //			statBar.UpdateHpBar(0);
 //			PlayerManager.pm.IncapacitateUnit(unit.GetComponent<Player>());
+
+			// Allies do not get removed from queue in case their turn comes around when revived
 			if(PlayerManager.pm.AllAlliesIncapacitated()) {
 				EndBattle(WinStatus.Lose);
 			}
@@ -570,6 +583,36 @@ public class BattleManager : MonoBehaviour {
 		return true;
 	}
 
+	/// <summary>
+	/// Response method to the current target's incapacitated event.
+	/// </summary>
+	public void TargetDefeated() {	
+		Debug.Log(string.Format("\t{0} has been defeated.", currentUnit.name));
+		Character unit = currentTarget.GetComponent<Character>();
+		Debug.LogFormat("Units contains {0}: {1}", currentTarget, units.Contains(currentTarget));
+		// TODO: if party member, make incapacitated: can be revived
+		Affiliation targetAffiliation = unit.GetAffiliation();
+		switch (targetAffiliation) {
+			case Affiliation.Ally:
+				// Allies do not get removed from queue in case their turn comes around when revived
+				if(PlayerManager.pm.AllAlliesIncapacitated()) {
+					EndBattle(WinStatus.Lose);
+				}
+				break;
+			case Affiliation.Enemy:
+				RemoveTargetFromQueue(unit); // Remove enemy from queue, does not perform any more actions
+				enemies.Remove(currentTarget);
+				currentTarget.SetActive(false);
+				expToGive += unit.expToGrant;
+				if(enemies.Count == 0) {
+					EndBattle(WinStatus.Win);
+				}
+				break;
+			default:
+				throw new ArgumentOutOfRangeException();
+		}
+	}
+	
 	private void RemoveTargetFromQueue(Character target) {
 		List<Character> unitListFromQueue = turnQueue.ToList();
 		unitListFromQueue.RemoveAll(unit => unit == target);
@@ -587,7 +630,7 @@ public class BattleManager : MonoBehaviour {
 //		Debug.Log(string.Format("{0}'s attack element: {1}, {2} element: {3}", 
 //			source.name, source.GetAttackElement(), target.name, target.element));
 		// Calculate the current units rune bonuses
-		CalculateRuneStats(currentUnit);
+		CalculateRuneStats(src);
 		int damage = Mathf.RoundToInt(
 			// Standard atk-def calc
 			(Mathf.Pow(source.GetCurrentAtk(), 2) + source.GetRuneAtk()) /(target.GetCurrentDef() + target.GetRuneDef()) 								
@@ -598,6 +641,7 @@ public class BattleManager : MonoBehaviour {
 				target.element));  														
 		return damage;
 	}
+	
 	private void GrantExpToParty() {
 		foreach(Player ally in PlayerManager.pm.GetParty()) {
 			ally.GrantExp(expToGive);

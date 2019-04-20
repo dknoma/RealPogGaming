@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 
 public class Player : Character {
 
@@ -8,7 +9,7 @@ public class Player : Character {
     private CharacterEquipement equipement;
     private Weapon weapon;
     private bool inParty;
-
+    
 //    public PlayerSlot Slot {
 //        get {
 //            return slot;
@@ -48,5 +49,4 @@ public class Player : Character {
     public void SetPartySlot(int newSlot) {
         partySlot = newSlot;
     }
-
 }

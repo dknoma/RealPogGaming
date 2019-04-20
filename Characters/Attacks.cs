@@ -25,4 +25,16 @@ public class Attacks : MonoBehaviour {
 	public virtual void DoSupport() {
 		
 	}
+
+	protected virtual void SwordA() {
+		
+	}
+	
+	protected virtual void SwordB() {
+		
+	}
+
+	protected virtual void Support() {
+		
+	}
 }
