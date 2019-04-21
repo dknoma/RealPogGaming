@@ -15,13 +15,13 @@ namespace Characters {
 		
 		private Element attackElement;
 
-		private readonly UnityEvent hpValueChangeEvent = new UnityEvent(); // Event when player gains/loses current HP
-		private readonly UnityEvent hpModEvent = new UnityEvent();         // Event when player max HP changes
-		private readonly UnityEvent mpValueChangeEvent = new UnityEvent(); // Event when player gains/loses current HP
-		private readonly UnityEvent mpModEvent = new UnityEvent();         // Event when player max HP changes
-		private readonly UnityEvent atkModEvent = new UnityEvent();        // Event when player base atk changes
-		private readonly UnityEvent defModEvent = new UnityEvent();        // Event when player base def changes
-		private readonly UnityEvent spdModEvent = new UnityEvent();        // Event when player base spd changes
+//		private readonly UnityEvent hpValueChangeEvent = new UnityEvent(); // Event when player gains/loses current HP
+//		private readonly UnityEvent hpModEvent = new UnityEvent();         // Event when player max HP changes
+//		private readonly UnityEvent mpValueChangeEvent = new UnityEvent(); // Event when player gains/loses current HP
+//		private readonly UnityEvent mpModEvent = new UnityEvent();         // Event when player max HP changes
+//		private readonly UnityEvent atkModEvent = new UnityEvent();        // Event when player base atk changes
+//		private readonly UnityEvent defModEvent = new UnityEvent();        // Event when player base def changes
+//		private readonly UnityEvent spdModEvent = new UnityEvent();        // Event when player base spd changes
 
 		private void Awake() {
 			expUntilLevelUp = CalcNextLevel();
@@ -108,7 +108,8 @@ namespace Characters {
 
 		public void ModifyHp(bool up) {
 			maxHp += HpMod(baseHp, up);
-			hpModEvent.Invoke();
+			BattleEventManager.bem.InvokeHpModEvent(affiliation, slot);
+			//hpModEvent.Invoke();
 		}
 	
 		///
@@ -125,7 +126,8 @@ namespace Characters {
 				TryIncapacitate();
 			}
 			Debug.LogFormat("{0} hp %: {1}", name, currentHp / (float) maxHp);
-			hpValueChangeEvent.Invoke();
+			BattleEventManager.bem.InvokeHpValueChangeEvent(affiliation, slot);
+//			hpValueChangeEvent.Invoke();
 		}
 
 		// A % modifier for HP
@@ -134,7 +136,8 @@ namespace Characters {
 			if (currentHp <= 0) {
 				TryIncapacitate();
 			}
-			hpValueChangeEvent.Invoke();
+			BattleEventManager.bem.InvokeHpValueChangeEvent(affiliation, slot);
+//			hpValueChangeEvent.Invoke();
 		}
 		
 		public void ModifyCurrentHpByPercentageOfCurrent(float hpPercentage) { 
@@ -142,7 +145,8 @@ namespace Characters {
 			if (currentHp <= 0) {
 				TryIncapacitate();
 			}
-			hpValueChangeEvent.Invoke();
+			BattleEventManager.bem.InvokeHpValueChangeEvent(affiliation, slot);
+//			hpValueChangeEvent.Invoke();
 		}
 	
 		public int GetRuneHp() { return 0 + totalRuneHp; }
@@ -157,7 +161,8 @@ namespace Characters {
 
 		public void ModifyMp(bool up) {
 			maxMp += HpMod(baseMp, up);
-			mpModEvent.Invoke();
+			BattleEventManager.bem.InvokeMpModEvent(affiliation, slot);
+//			mpModEvent.Invoke();
 		}
 	
 		///
@@ -176,7 +181,8 @@ namespace Characters {
 				currentMp = maxMp;
 			}
 			Debug.LogFormat("{0} hp %: {1}", name, currentMp / (float) maxMp);
-			mpValueChangeEvent.Invoke();
+			BattleEventManager.bem.InvokeMpValueChangeEvent(affiliation, slot);
+//			mpValueChangeEvent.Invoke();
 		}
 	 
 		/// <summary>
@@ -190,7 +196,8 @@ namespace Characters {
 			} else if (currentMp > maxMp) {
 				currentMp = maxMp;
 			}
-			mpValueChangeEvent.Invoke();
+			BattleEventManager.bem.InvokeMpValueChangeEvent(affiliation, slot);
+//			mpValueChangeEvent.Invoke();
 		}
 
 		///
@@ -206,7 +213,8 @@ namespace Characters {
 		// Modify current attack w/ new value
 		public void ModifyAtk(bool up) {
 			currentAtk += AtkMod(baseAtk, up);
-			atkModEvent.Invoke();
+			BattleEventManager.bem.InvokeAtkModEvent(affiliation, slot);
+//			atkModEvent.Invoke();
 		}
 
 		public int GetRuneAtk() { return 0 + totalRuneAtk; }
@@ -223,7 +231,8 @@ namespace Characters {
 		// Modify current defense w/ new value
 		public void ModifyDef(bool up) {
 			currentDef += DefMod(baseDef, up);
-			defModEvent.Invoke();
+			BattleEventManager.bem.InvokeDefModEvent(affiliation, slot);
+//			defModEvent.Invoke();
 		}
 
 		public int GetRuneDef() { return 0 + totalRuneDef; }
@@ -240,7 +249,8 @@ namespace Characters {
 		// Modify current defense w/ new value
 		public void ModifySpd(bool up) {
 			currentSpd += DefMod(baseSpd, up);
-			spdModEvent.Invoke();
+			BattleEventManager.bem.InvokeSpdModEvent(affiliation, slot);
+//			spdModEvent.Invoke();
 		}
 
 		public int GetRuneSpd() { return 0 + totalRuneSpd; }
@@ -341,27 +351,32 @@ namespace Characters {
 				case StatChange.AtkUp:
 				case StatChange.AtkDown:
 					currentAtk = baseAtk;
-					atkModEvent.Invoke();
+					BattleEventManager.bem.InvokeAtkModEvent(affiliation, slot);
+//					atkModEvent.Invoke();
 					break;
 				case StatChange.DefUp:
 				case StatChange.DefDown:
 					currentDef = baseDef;
-					defModEvent.Invoke();
+					BattleEventManager.bem.InvokeDefModEvent(affiliation, slot);
+//					defModEvent.Invoke();
 					break;
 				case StatChange.SpdUp:
 				case StatChange.SpdDown:
 					currentSpd = baseSpd;
-					spdModEvent.Invoke();
+					BattleEventManager.bem.InvokeSpdModEvent(affiliation, slot);
+//					spdModEvent.Invoke();
 					break;
 				case StatChange.HpUp:
 				case StatChange.HpDestruct:
 					maxHp = baseHp;
-					hpModEvent.Invoke();
+					BattleEventManager.bem.InvokeHpModEvent(affiliation, slot);
+//					hpModEvent.Invoke();
 					break;
 				case StatChange.MpUp:
 				case StatChange.MpDown:
 					maxMp = baseMp;
-					mpModEvent.Invoke();
+					BattleEventManager.bem.InvokeMpModEvent(affiliation, slot);
+//					mpModEvent.Invoke();
 					break;
 				default:
 					throw new ArgumentOutOfRangeException("statChange", statChange, null);
@@ -917,54 +932,54 @@ namespace Characters {
 				* ElementalAffinity.CalcElementalDamage(attackElement, target.element));  														
 			return damage;
 		}		
-	
-		/// <summary>
-		/// Add listeners on when this character's health is changed
-		/// </summary>
-		/// <param name="call">Takes a float as a parameter for the listener.</param>
-		public void AddHpValueChangeListener(UnityAction<Character, float> call) {
-			hpValueChangeEvent.AddListener(() => call(this, currentHp / (float) maxHp));
-		}
-	
-		public void AddMpValueChangeListener(UnityAction<Character, float> call) {
-			mpValueChangeEvent.AddListener(() => call(this, currentMp / (float) maxMp));
-		}
-	
-		/// <summary>
-		/// Add listeners on when this character's base attack is changed
-		/// </summary>
-		/// <param name="call"></param>
-		public void AddHpModListener(UnityAction<bool, bool> call) {
-			hpModEvent.AddListener(() => call(AfflictedByStatChange(StatChange.HpUp), AfflictedByStatChange(StatChange.HpDestruct)));
-		}
-	
-		public void AddMpModListener(UnityAction<bool, bool> call) {
-			mpModEvent.AddListener(() => call(AfflictedByStatChange(StatChange.HpUp), AfflictedByStatChange(StatChange.HpDestruct)));
-		}
-	
-		/// <summary>
-		/// Add listeners on when this character's base attack is changed
-		/// </summary>
-		/// <param name="call"></param>
-		public void AddAtkModListener(UnityAction<bool, bool> call) {
-			atkModEvent.AddListener(() => call(AfflictedByStatChange(StatChange.AtkUp), AfflictedByStatChange(StatChange.AtkDown)));
-		}
-	
-		/// <summary>
-		/// Add listeners on when this character's base defense is changed
-		/// </summary>
-		/// <param name="call"></param>
-		public void AddDefModListener(UnityAction<bool, bool> call) {
-			defModEvent.AddListener(() => call(AfflictedByStatChange(StatChange.DefUp), AfflictedByStatChange(StatChange.DefDown)));
-		}
-	
-		/// <summary>
-		/// Add listeners on when this character's base speed is changed
-		/// </summary>
-		/// <param name="call"></param>
-		public void AddSpdModListener(UnityAction<bool, bool> call) {
-			spdModEvent.AddListener(() => call(AfflictedByStatChange(StatChange.SpdUp), AfflictedByStatChange(StatChange.SpdDown)));
-		}
+//	
+//		/// <summary>
+//		/// Add listeners on when this character's health is changed
+//		/// </summary>
+//		/// <param name="call">Takes a float as a parameter for the listener.</param>
+//		public void AddHpValueChangeListener(UnityAction<Character, float> call) {
+//			hpValueChangeEvent.AddListener(() => call(this, currentHp / (float) maxHp));
+//		}
+//	
+//		public void AddMpValueChangeListener(UnityAction<Character, float> call) {
+//			mpValueChangeEvent.AddListener(() => call(this, currentMp / (float) maxMp));
+//		}
+//	
+//		/// <summary>
+//		/// Add listeners on when this character's base attack is changed
+//		/// </summary>
+//		/// <param name="call"></param>
+//		public void AddHpModListener(UnityAction<bool, bool> call) {
+//			hpModEvent.AddListener(() => call(AfflictedByStatChange(StatChange.HpUp), AfflictedByStatChange(StatChange.HpDestruct)));
+//		}
+//	
+//		public void AddMpModListener(UnityAction<bool, bool> call) {
+//			mpModEvent.AddListener(() => call(AfflictedByStatChange(StatChange.HpUp), AfflictedByStatChange(StatChange.HpDestruct)));
+//		}
+//	
+//		/// <summary>
+//		/// Add listeners on when this character's base attack is changed
+//		/// </summary>
+//		/// <param name="call"></param>
+//		public void AddAtkModListener(UnityAction<bool, bool> call) {
+//			atkModEvent.AddListener(() => call(AfflictedByStatChange(StatChange.AtkUp), AfflictedByStatChange(StatChange.AtkDown)));
+//		}
+//	
+//		/// <summary>
+//		/// Add listeners on when this character's base defense is changed
+//		/// </summary>
+//		/// <param name="call"></param>
+//		public void AddDefModListener(UnityAction<bool, bool> call) {
+//			defModEvent.AddListener(() => call(AfflictedByStatChange(StatChange.DefUp), AfflictedByStatChange(StatChange.DefDown)));
+//		}
+//	
+//		/// <summary>
+//		/// Add listeners on when this character's base speed is changed
+//		/// </summary>
+//		/// <param name="call"></param>
+//		public void AddSpdModListener(UnityAction<bool, bool> call) {
+//			spdModEvent.AddListener(() => call(AfflictedByStatChange(StatChange.SpdUp), AfflictedByStatChange(StatChange.SpdDown)));
+//		}
 		
 		protected void CalculateRuneStats() {
 //		RuneSlots slots = currentUnit.GetComponent<RuneSlots>();

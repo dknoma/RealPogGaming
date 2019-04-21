@@ -21,28 +21,26 @@ namespace Managers {
 	
 //    private Dictionary<string, CharacterEquipement> characterEquipements = new Dictionary<string, CharacterEquipement>();
 //    private List<PartyMember> allyReserves = new List<PartyMember>();
-		private const int MAX_PARTY_MEMBERS = 3;
+		public const int MAX_PARTY_MEMBERS = 3;
 		private int incapacitatedCount;
-		public int MaxPartyMembers {
-			get {
-				return MAX_PARTY_MEMBERS;
-			}
-		}
 
 		public Player MainCharacter {
 			get { return mainCharacter.GetComponent<Player>(); }
 			set { mainCharacter = value.gameObject; }
 		}
 
-		private void OnEnable() {
+		private void Awake() {
 			if (pm == null) {
 				pm = this;
 			} else if (pm != this) {
 				Destroy(gameObject);
 			}
 			DontDestroyOnLoad(gameObject);
-			InitParty();
 //        CreateAllCharacterEquipmentObject();
+		}
+
+		private void Start() {
+			InitParty();
 		}
 
 		public void InitParty() {
@@ -90,6 +88,10 @@ namespace Managers {
 	
 		public Dictionary<CharacterSlot, Player> GetPartyMemberLocations() {
 			return partyMemberLocations;
+		}
+
+		public Player GetPartyMember(CharacterSlot slot) {
+			return partyMemberLocations[slot];
 		}
 
 		public int GetPartyCount() {

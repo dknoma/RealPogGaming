@@ -70,7 +70,7 @@ public class UIManager : MonoBehaviour {
 	private Vector3 pThreeLocation;
 	
 	
-	private void OnEnable() {
+	private void Awake() {
 		if (um == null) {
 			um = this;
 		} else if (um != this) {

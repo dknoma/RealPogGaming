@@ -181,6 +181,7 @@ public class BattleManager : MonoBehaviour {
 			case BattleState.End:
 				endBattle.Invoke();
 				BattleEventManager.bem.ClearIncapacitatedEvents();
+				BattleEventManager.bem.ClearEnemyStatEvents();
 				isLoading = false;
 				isLoadingBattle = false;
 				TurnState = TurnState.Nil;
@@ -425,6 +426,8 @@ public class BattleManager : MonoBehaviour {
 			// Add all units involved in the battle to the list
 			AddPartyToList();
 			AddEnemiesToList();
+			BattleEventManager.bem.InitAllPlayerEvents();
+			BattleEventManager.bem.InitAllEnemyEvents();
 			BattleBackgroundManager.bbm.SetArea(WorldArea.PaltryPlains); // testing
 			BattleBackgroundManager.bbm.LoadBackground();
 			UIManager.um.InitBattleUI();
