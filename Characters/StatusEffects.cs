@@ -78,11 +78,11 @@ namespace Characters {
 			return afflictedStatChanges;
 		}
 
-		protected bool AfflictedByStatus(Status status) {
+		public bool AfflictedByStatus(Status status) {
 			return afflictedStatuses.ContainsKey(status) && afflictedStatuses[status];
 		}
 
-		protected bool AfflictedByStatChange(StatChange statChange) {
+		public bool AfflictedByStatChange(StatChange statChange) {
 			return afflictedStatChanges.ContainsKey(statChange) && afflictedStatChanges[statChange];
 		}
 

@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using BattleUI;
+using Characters;
+using Managers;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Random = UnityEngine.Random;
@@ -38,7 +41,7 @@ public class UIManager : MonoBehaviour {
 	private static EventSystem eventSystem = EventSystem.current;
 	
 	private readonly Stack<GameObject> previousOptions = new Stack<GameObject>();
-	private readonly Dictionary<PlayerSlot, PlayerStatBar> playerStatBars = new Dictionary<PlayerSlot, PlayerStatBar>();
+	private readonly Dictionary<CharacterSlot, PlayerStatBar> playerStatBars = new Dictionary<CharacterSlot, PlayerStatBar>();
 
 
 	// Player stats
@@ -91,8 +94,8 @@ public class UIManager : MonoBehaviour {
 			_playerOneStatusBars = Instantiate(playerOneStatusBarsPrefab, battleUI.transform, false);
 			_playerOneStatusBars.transform.localPosition = pOneLocation;
 			PlayerStatBar statBar = _playerOneStatusBars.GetComponent<PlayerStatBar>();
-			statBar.ListenOnPlayerStats();	// Listen in on the player's stats whos slot matches the bars.
-			playerStatBars.Add(PlayerSlot.One, statBar);
+			BattleEventManager.bem.ListenOnPlayerStats(statBar);	// Listen in on the player's stats whos slot matches the bars.
+			playerStatBars.Add(CharacterSlot.One, statBar);
 		}
 		switch (partyCount) {
 			case 1:
@@ -102,8 +105,8 @@ public class UIManager : MonoBehaviour {
 					_playerTwoStatusBars = Instantiate(playerTwoStatusBarsPrefab, battleUI.transform, false);
 					_playerTwoStatusBars.transform.localPosition = pTwoLocation;
 					PlayerStatBar statBar = _playerTwoStatusBars.GetComponent<PlayerStatBar>();
-					statBar.ListenOnPlayerStats(); // Listen in on the player's stats whos slot matches the bars.
-					playerStatBars.Add(PlayerSlot.Two, statBar);
+					BattleEventManager.bem.ListenOnPlayerStats(statBar); // Listen in on the player's stats whos slot matches the bars.
+					playerStatBars.Add(CharacterSlot.Two, statBar);
 				}
 				break;
 			case 3:
@@ -111,15 +114,15 @@ public class UIManager : MonoBehaviour {
 					_playerTwoStatusBars = Instantiate(playerTwoStatusBarsPrefab, battleUI.transform, false);
 					_playerTwoStatusBars.transform.localPosition = pTwoLocation;
 					PlayerStatBar statBar = _playerTwoStatusBars.GetComponent<PlayerStatBar>();
-					statBar.ListenOnPlayerStats(); // Listen in on the player's stats whos slot matches the bars.
-					playerStatBars.Add(PlayerSlot.Two, statBar);
+					BattleEventManager.bem.ListenOnPlayerStats(statBar); // Listen in on the player's stats whos slot matches the bars.
+					playerStatBars.Add(CharacterSlot.Two, statBar);
 				}
 				if (_playerThreeStatusBars == null) {
 					_playerThreeStatusBars = Instantiate(playerThreeStatusBarsPrefab, battleUI.transform, false);
 					_playerThreeStatusBars.transform.localPosition = pThreeLocation;
 					PlayerStatBar statBar = _playerThreeStatusBars.GetComponent<PlayerStatBar>();
-					statBar.ListenOnPlayerStats(); // Listen in on the player's stats whos slot matches the bars.
-					playerStatBars.Add(PlayerSlot.Three, statBar);
+					BattleEventManager.bem.ListenOnPlayerStats(statBar); // Listen in on the player's stats whos slot matches the bars.
+					playerStatBars.Add(CharacterSlot.Three, statBar);
 				}
 				break;
 			default:
@@ -356,11 +359,11 @@ public class UIManager : MonoBehaviour {
 		return _mainActionMenu.transform.GetChild(0).gameObject;
 	}
 
-	public PlayerStatBar GetPlayerStatBar(PlayerSlot slot) {
+	public PlayerStatBar GetPlayerStatBar(CharacterSlot slot) {
 		return playerStatBars[slot];
 	}
 	
-	public Dictionary<PlayerSlot, PlayerStatBar> GetPlayerStatBars() {
+	public Dictionary<CharacterSlot, PlayerStatBar> GetPlayerStatBars() {
 		return playerStatBars;
 	}
 }

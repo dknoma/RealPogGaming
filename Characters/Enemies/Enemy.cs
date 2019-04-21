@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Characters;
 using UnityEngine;
 
 public class Enemy : Character {
@@ -7,6 +8,7 @@ public class Enemy : Character {
 	public WeaponType weaponType;
 
 	private Vector3 cursorSpot;
+	private int enemySlot;
 
 //	private void Awake() {
 //		

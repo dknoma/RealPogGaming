@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Characters;
+using Characters.Allies;
+using Managers;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -177,6 +180,7 @@ public class BattleManager : MonoBehaviour {
 				break;
 			case BattleState.End:
 				endBattle.Invoke();
+				BattleEventManager.bem.ClearIncapacitatedEvents();
 				isLoading = false;
 				isLoadingBattle = false;
 				TurnState = TurnState.Nil;
@@ -394,6 +398,7 @@ public class BattleManager : MonoBehaviour {
 		ScreenTransitionManager.screenTransitionManager.DoScreenTransition(Transition.Triangle);
 		// Initialize battle settings
 		_turnCount = 0;
+//		PlayerManager.pm.InitParty();
 		units = new List<GameObject>();
 		enemies = new List<GameObject>();
 		turnQueue = new Queue<Character>();
@@ -480,7 +485,11 @@ public class BattleManager : MonoBehaviour {
 		List<Player> partyMembers = PlayerManager.pm.GetParty();
 		foreach(Player member in partyMembers) {
 			Debug.LogFormat("member readiness: {0}".Remove(member.Readiness));
-			member.AddIncapacitatedListener(TargetDefeated);
+//			BattleEventManager.bem.AddIncapacitatedListener(member, TargetDefeated);
+//			Player player = member;
+//			player.AddIncapacitatedListener(TargetDefeated);
+//			BattleEventManager.bem.IncapacitatedEvent.AddListener(() => TargetDefeated(player.gameObject));
+			BattleEventManager.bem.AddAllyIncapacitatedListener(member.slot, member.gameObject, TargetDefeated);
 			units.Add(member.gameObject);
 		}
 	}
@@ -496,16 +505,20 @@ public class BattleManager : MonoBehaviour {
 		BattleScene.battleScene.InitBattleScene();
 		int generatedEnemyCount = GenerateRandomEnemyCount();
 		BattleScene.battleScene.UpdateEnemyPositions(generatedEnemyCount);
+		BattleEventManager.bem.InitEnemyIncapacitatedEvents(generatedEnemyCount);
 		for(int i = 0; i < generatedEnemyCount; i++) {
 			GameObject enemyToInstantiate = BattleSceneDataManager.bsdm.GetEnemyPrefab("Enemy1 - Battle");
 			Vector3 pos = BattleScene.battleScene.GetEnemyPosition(i);
 //			Debug.LogFormat("Pos for enemy {0}", pos);
 			GameObject newEnemy = Instantiate(enemyToInstantiate, BattleScene.battleScene.gameObject.transform);
+			Enemy enemy = newEnemy.GetComponent<Enemy>();
+			enemy.slot = (CharacterSlot) i;
 			newEnemy.transform.position = pos;
+			BattleEventManager.bem.AddEnemyIncapacitatedListener((CharacterSlot) i, newEnemy, TargetDefeated);	// Listen on enemy defeat
 			units.Add(newEnemy);
 			enemies.Add(newEnemy);
-			Enemy enemy = newEnemy.GetComponent<Enemy>();
-			enemy.AddIncapacitatedListener(TargetDefeated);
+//			enemy.AddIncapacitatedListener(TargetDefeated);
+//			BattleEventManager.bem.AddIncapacitatedListener(enemy, TargetDefeated);
 		}
 //		for(int i = 0; i < enemyCount; i++) {
 //			GameObject enemy = enemyPool.transform.GetChild(i).gameObject;
@@ -530,7 +543,7 @@ public class BattleManager : MonoBehaviour {
 //		// TODO: Check if target can be damaged.
 //		Debug.Log(string.Format("\t{0} dealt {1} damage to {2}", currentUnit.name, dmg, target.name));
 //		Character unit = target.GetComponent<Character>();
-//		unit.ModifyCurrentHp(-dmg);
+//		unit.ModifyCurrentHpByPercentageOfMax(-dmg);
 //		
 //		// If target is an ally, update their hp bars/numbers
 ////		if (target.GetComponent<Player>() != null) {
