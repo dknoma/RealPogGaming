@@ -14,24 +14,28 @@ namespace Managers {
 		// Action events
 		public UnityEvent ActionEvent { get; private set; }
 		
-		public readonly Dictionary<CharacterSlot, UnityEvent> allyIncapacitatedEvents = new Dictionary<CharacterSlot, UnityEvent>();
-		public readonly Dictionary<CharacterSlot, UnityEvent> enemyIncapacitatedEvents = new Dictionary<CharacterSlot, UnityEvent>();
-
-		public readonly Dictionary<CharacterSlot, UnityEvent> hpValueChangeEvents = new Dictionary<CharacterSlot, UnityEvent>();
-		public readonly Dictionary<CharacterSlot, UnityEvent> mpValueChangeEvents = new Dictionary<CharacterSlot, UnityEvent>();
-		public readonly Dictionary<CharacterSlot, UnityEvent> hpModEvents = new Dictionary<CharacterSlot, UnityEvent>();
-		public readonly Dictionary<CharacterSlot, UnityEvent> mpModEvents = new Dictionary<CharacterSlot, UnityEvent>();
-		public readonly Dictionary<CharacterSlot, UnityEvent> atkModEvents = new Dictionary<CharacterSlot, UnityEvent>();
-		public readonly Dictionary<CharacterSlot, UnityEvent> defModEvents = new Dictionary<CharacterSlot, UnityEvent>();
-		public readonly Dictionary<CharacterSlot, UnityEvent> spdModEvents = new Dictionary<CharacterSlot, UnityEvent>();
+		private readonly UnityEvent grantExpEvent = new UnityEvent();
+		private readonly UnityEvent endBattle = new UnityEvent();
+		private readonly Dictionary<CharacterSlot, UnityEvent> defeatedEnemyEvents = new Dictionary<CharacterSlot, UnityEvent>();
 		
-		public readonly Dictionary<CharacterSlot, UnityEvent> enemyHpValueChangeEvents = new Dictionary<CharacterSlot, UnityEvent>();
-		public readonly Dictionary<CharacterSlot, UnityEvent> enemyMpValueChangeEvents = new Dictionary<CharacterSlot, UnityEvent>();
-		public readonly Dictionary<CharacterSlot, UnityEvent> enemyHpModEvents = new Dictionary<CharacterSlot, UnityEvent>();
-		public readonly Dictionary<CharacterSlot, UnityEvent> enemyMpModEvents = new Dictionary<CharacterSlot, UnityEvent>();
-		public readonly Dictionary<CharacterSlot, UnityEvent> enemyAtkModEvents = new Dictionary<CharacterSlot, UnityEvent>();
-		public readonly Dictionary<CharacterSlot, UnityEvent> enemyDefModEvents = new Dictionary<CharacterSlot, UnityEvent>();
-		public readonly Dictionary<CharacterSlot, UnityEvent> enemySpdModEvents = new Dictionary<CharacterSlot, UnityEvent>();
+		private readonly Dictionary<CharacterSlot, UnityEvent> allyIncapacitatedEvents = new Dictionary<CharacterSlot, UnityEvent>();
+		private readonly Dictionary<CharacterSlot, UnityEvent> enemyIncapacitatedEvents = new Dictionary<CharacterSlot, UnityEvent>();
+
+		private readonly Dictionary<CharacterSlot, UnityEvent> hpValueChangeEvents = new Dictionary<CharacterSlot, UnityEvent>();
+		private readonly Dictionary<CharacterSlot, UnityEvent> mpValueChangeEvents = new Dictionary<CharacterSlot, UnityEvent>();
+		private readonly Dictionary<CharacterSlot, UnityEvent> hpModEvents = new Dictionary<CharacterSlot, UnityEvent>();
+		private readonly Dictionary<CharacterSlot, UnityEvent> mpModEvents = new Dictionary<CharacterSlot, UnityEvent>();
+		private readonly Dictionary<CharacterSlot, UnityEvent> atkModEvents = new Dictionary<CharacterSlot, UnityEvent>();
+		private readonly Dictionary<CharacterSlot, UnityEvent> defModEvents = new Dictionary<CharacterSlot, UnityEvent>();
+		private readonly Dictionary<CharacterSlot, UnityEvent> spdModEvents = new Dictionary<CharacterSlot, UnityEvent>();
+		
+		private readonly Dictionary<CharacterSlot, UnityEvent> enemyHpValueChangeEvents = new Dictionary<CharacterSlot, UnityEvent>();
+		private readonly Dictionary<CharacterSlot, UnityEvent> enemyMpValueChangeEvents = new Dictionary<CharacterSlot, UnityEvent>();
+		private readonly Dictionary<CharacterSlot, UnityEvent> enemyHpModEvents = new Dictionary<CharacterSlot, UnityEvent>();
+		private readonly Dictionary<CharacterSlot, UnityEvent> enemyMpModEvents = new Dictionary<CharacterSlot, UnityEvent>();
+		private readonly Dictionary<CharacterSlot, UnityEvent> enemyAtkModEvents = new Dictionary<CharacterSlot, UnityEvent>();
+		private readonly Dictionary<CharacterSlot, UnityEvent> enemyDefModEvents = new Dictionary<CharacterSlot, UnityEvent>();
+		private readonly Dictionary<CharacterSlot, UnityEvent> enemySpdModEvents = new Dictionary<CharacterSlot, UnityEvent>();
 		
 //		public UnityEvent HpValueChangeEvent { get; private set; }
 //
@@ -89,6 +93,7 @@ namespace Managers {
 			InitEnemyEvents(enemyAtkModEvents);
 			InitEnemyEvents(enemyDefModEvents);
 			InitEnemyEvents(enemySpdModEvents);
+			InitEnemyEvents(defeatedEnemyEvents);
 		}
 		
 		private void InitPlayerEvents(Dictionary<CharacterSlot, UnityEvent> events) {
@@ -113,6 +118,30 @@ namespace Managers {
 					events.Add(slot, statModEvent);
 				}
 			}
+		}
+
+		public void AddGrantExpListener(UnityAction call) {
+			grantExpEvent.AddListener(call);
+		}
+		
+		public void AddEndBattleListener(UnityAction call) {
+			endBattle.AddListener(call);
+		}
+
+		public void AddDefeatEnemyEvent(CharacterSlot slot, UnityAction call) {
+			defeatedEnemyEvents[slot].AddListener(call);
+		}
+
+		public void InvokeEndBattleEvent() {
+			endBattle.Invoke();
+		}
+		
+		public void InvokeGrantExpEvent() {
+			grantExpEvent.Invoke();
+		}
+		
+		public void InvokeDefeatedEnemyEvent(CharacterSlot slot) {
+			defeatedEnemyEvents[slot].Invoke();
 		}
 		
 		public void ListenOnPlayerStats(PlayerStatBar statBar) {
@@ -266,7 +295,17 @@ namespace Managers {
 			enemyMpModEvents.Clear();
 			enemyAtkModEvents.Clear();
 			enemyDefModEvents.Clear();
-			enemySpdModEvents.Clear();
+		}
+
+		public void ClearDefeatedEnemyEventListeners() {
+			foreach (var pair in defeatedEnemyEvents) {
+				UnityEvent defeatedEvent = pair.Value;
+				defeatedEvent.RemoveAllListeners();
+			}
+		}
+
+		public void ClearGrantExpEventListers() {
+			grantExpEvent.RemoveAllListeners();
 		}
 		
 		public void InvokeHpValueChangeEvent(Affiliation affiliation, CharacterSlot slot) {

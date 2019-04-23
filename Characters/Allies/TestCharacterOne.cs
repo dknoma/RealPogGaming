@@ -21,6 +21,7 @@ namespace Characters.Allies {
 		}
 	
 		public override void DoAttackB(GameObject target) {
+			ModifyCurrentMp(-10);
 			int damage = CalculateSingleHitDamage(target);
 			int modifiedDamage = Mathf.RoundToInt(damage * 1.25f);
 			TryDamage(modifiedDamage, target);

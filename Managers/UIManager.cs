@@ -258,33 +258,36 @@ public class UIManager : MonoBehaviour {
 	}
 	
 	public void AttackB() {
-		Debug.Log("Doing Attack B");
-		if (_targetContainer == null) {
-			_targetContainer =  Instantiate(targetContainerPrefab, BattleManager.battleCanvas.transform, false);
-		}
-		// Create buttons ONLY if container has no buttons
-		if (_targetContainer.transform.childCount == 0) {
-			List<GameObject> enemies = BattleManager.bm.GetEnemies();
-			// TODO: Add new buttons at the enemies position
-			foreach (var targetEnemy in enemies) {
-//				Debug.LogFormat("Found target {0}", targetEnemy.name);
-				GameObject newButton =
-					Instantiate(targetButtonPrefab, targetEnemy.transform.position, Quaternion.identity,
-					            _targetContainer.transform);
-				TargetButton targetButton = newButton.GetComponent<TargetButton>();
-				targetButton.target = targetEnemy;
-				Character currentUnit = BattleManager.bm.GetCurrentUnit();
-				targetButton.AddChooseTargetEventListener(currentUnit.DoAttackB);
-				currentUnit.AddActionListener(AttackTarget);
-//				Debug.LogFormat("newButton: {0}, {1}", newButton.name, newButton.transform.position);
+		Character currentUnit = BattleManager.bm.GetCurrentUnit();
+		if (currentUnit.GetCurrentMp() == 0) {
+			Debug.LogFormat("Not enough mana.");
+		} else {
+			Debug.Log("Doing Attack B");
+			if (_targetContainer == null) {
+				_targetContainer =  Instantiate(targetContainerPrefab, BattleManager.battleCanvas.transform, false);
 			}
-		}
-		previousOptions.Push(eventSystem.currentSelectedGameObject); // Add attack A option to previous options
-		SetButtonsInteractable(_attackMenu, false);
-		SetMenuActive(_attackMenu,false);
-		SetMenuActive(_targetContainer,true);
-		SetButtonsInteractable(_targetContainer, true);
-		eventSystem.SetSelectedGameObject(_targetContainer.transform.GetChild(0).gameObject);
+			// Create buttons ONLY if container has no buttons
+			if (_targetContainer.transform.childCount == 0) {
+				List<GameObject> enemies = BattleManager.bm.GetEnemies();
+				// TODO: Add new buttons at the enemies position
+				foreach (var targetEnemy in enemies) {
+//				Debug.LogFormat("Found target {0}", targetEnemy.name);
+					GameObject newButton =
+						Instantiate(targetButtonPrefab, targetEnemy.transform.position, Quaternion.identity,
+						            _targetContainer.transform);
+					TargetButton targetButton = newButton.GetComponent<TargetButton>();
+					targetButton.target = targetEnemy;
+					targetButton.AddChooseTargetEventListener(currentUnit.DoAttackB);
+					currentUnit.AddActionListener(AttackTarget);
+//				Debug.LogFormat("newButton: {0}, {1}", newButton.name, newButton.transform.position);
+				}
+			}
+			previousOptions.Push(eventSystem.currentSelectedGameObject); // Add attack A option to previous options
+			SetButtonsInteractable(_attackMenu, false);
+			SetMenuActive(_attackMenu,false);
+			SetMenuActive(_targetContainer,true);
+			SetButtonsInteractable(_targetContainer, true);
+			eventSystem.SetSelectedGameObject(_targetContainer.transform.GetChild(0).gameObject);
 		
 //		SetButtonsInteractable(_attackMenu, false);
 //		SetMenuActive(_attackMenu,false);
@@ -292,6 +295,7 @@ public class UIManager : MonoBehaviour {
 //		BattleManager.bm.SetBattlePhase(BattlePhase.Battle);
 //		SetButtonsInteractable(_mainActionMenu, false);
 //		previousOptions.Clear();
+		}
 	}
 
 	public void AttackTarget() {

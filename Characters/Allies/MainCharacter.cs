@@ -21,6 +21,7 @@ namespace Characters.Allies {
 		}
 	
 		public override void DoAttackB(GameObject target) {
+			ModifyCurrentMp(-7);
 			// 2-hit attack
 			int damage = CalculateDamage(target);
 			// Divide damage per hit so that damage isnt reduced during calculation

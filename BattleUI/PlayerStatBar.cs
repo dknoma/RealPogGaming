@@ -91,7 +91,7 @@ namespace BattleUI {
 		public void UpdateMpBar(Character player, float percent) {
 			// Update the bar's fill
 			if (percent <= 0) {
-				hpBar.localScale = Vector3.zero;
+				mpBar.localScale = Vector3.zero;
 			}
 			Vector3 scale = mpBar.localScale;
 			scale.x = percent; // % ratio of currentMP/maxMP
@@ -123,7 +123,6 @@ namespace BattleUI {
 							default:
 								Debug.Log("Value is higher than it should be.");
 								break;
-							
 						}
 					}
 					break;

@@ -45,22 +45,22 @@ namespace Characters {
 			if(bogResist) { AddStatusResist (Status.Bog); } 
 			if(burnResist) { AddStatusResist (Status.Bog); } 
 			if(poisonResist) { AddStatusResist (Status.Poison); } 
-			if(runeLockResist) { AddStatusResist (Status.RuneLock); } 
+			if(runeLockResist) { AddStatusResist (Status.RuneBind); } 
 			if(stunResist) { AddStatusResist (Status.Stun); } 
-			if(silenceResist) { AddStatusResist (Status.Silence); } 
+			if(silenceResist) { AddStatusResist (Status.SoulBind); } 
 			if(transform.GetComponentInChildren<RuneSlots>() != null) {
 				transform.GetComponentInChildren<RuneSlots>().GetStatCount();
 			}
 		}
 
 		private void Start () {
-		BattleManager.bm.AddEndBattleListener(ClearReadiness);   // Listen in on Battle Manager end battle event and clear readiness
-		BattleManager.bm.AddEndBattleListener(ClearStatChanges); // Listen in on Battle Manager end battle event and clear stat changes
-	}
+			BattleEventManager.bem.AddEndBattleListener(ClearReadiness);   // Listen in on Battle Manager end battle event and clear readiness
+			BattleEventManager.bem.AddEndBattleListener(ClearStatChanges); // Listen in on Battle Manager end battle event and clear stat changes
+		}
 
 		/**
-	 * Compare to method that helps sort units by speed.
-	 */ 
+		 * Compare to method that helps sort units by speed.
+		 */ 
 		int IComparable.CompareTo(object obj) {
 			if (obj == null) {
 				return 1;
@@ -94,11 +94,23 @@ namespace Characters {
 			}
 			return false;
 		}
+
+		//
+		// Stat Methods
+		//
 		
-		///
-		/// Stat Methods
-		///
-	
+		/// <summary>
+		/// Increase potential EXP when defeating enemies
+		/// </summary>
+		/// <param name="exp"></param>
+		public void IncreasePotentialExp(int exp) {
+			potentialExp += exp;
+		}
+		
+		public void ResetPotentialExp() {
+			potentialExp = 0;
+		}
+		
 		///
 		/// HP methods
 		///
@@ -174,12 +186,7 @@ namespace Characters {
 		/// Modify current MP w/ new value
 		/// 
 		public void ModifyCurrentMp(int mp) {
-			currentMp += mp;
-			if (currentMp <= 0) {
-				TryIncapacitate();
-			} else if (currentMp > maxMp) {
-				currentMp = maxMp;
-			}
+			currentMp = Mathf.Clamp(currentMp + mp, 0, maxMp);
 			Debug.LogFormat("{0} hp %: {1}", name, currentMp / (float) maxMp);
 			BattleEventManager.bem.InvokeMpValueChangeEvent(affiliation, slot);
 //			mpValueChangeEvent.Invoke();
@@ -190,12 +197,7 @@ namespace Characters {
 		/// </summary>
 		/// <param name="mpPercentage"></param>
 		public void ModifyCurrentMp(float mpPercentage) { 
-			currentMp += (int) Mathf.Round(maxMp * mpPercentage); 
-			if (currentMp <= 0) {
-				TryIncapacitate();
-			} else if (currentMp > maxMp) {
-				currentMp = maxMp;
-			}
+			currentMp = Mathf.Clamp(currentMp + (int) Mathf.Round(maxMp * mpPercentage), 0, maxMp);
 			BattleEventManager.bem.InvokeMpValueChangeEvent(affiliation, slot);
 //			mpValueChangeEvent.Invoke();
 		}
@@ -238,8 +240,8 @@ namespace Characters {
 		public int GetRuneDef() { return 0 + totalRuneDef; }
 
 		/*******
-	 * SPD *
-	 *******/
+		 * SPD *
+		 *******/
 		// Return a copy of this characters base defense
 		public int GetBaseSpd() { return 0 + baseSpd; }
 
@@ -255,9 +257,26 @@ namespace Characters {
 
 		public int GetRuneSpd() { return 0 + totalRuneSpd; }
 
+
+		public void IncreaseBaseHp(int inc) {
+			baseHp = Mathf.Clamp(baseHp + inc, 0, 999);
+		}
+		
+		public void IncreaseBaseAtk(int inc) {
+			baseAtk = Mathf.Clamp(baseAtk + inc, 0, 999);
+		}
+		
+		public void IncreaseBaseDef(int inc) {
+			baseDef = Mathf.Clamp(baseDef + inc, 0, 999);
+		}
+		
+		public void IncreaseBaseSpd(int inc) {
+			baseSpd = Mathf.Clamp(baseSpd + inc, 0, 999);
+		}
+		
 		/* 
-	 * Status effects
-	 */
+		 * Status effects
+		 */
 
 		public bool IsAfflictedBy(Status status) {
 			return afflictedStatuses[status];
@@ -438,14 +457,18 @@ namespace Characters {
 							Debug.Log("Already afflicted by magical attack down...");
 						}
 						break;
-					case Status.RuneLock:
-						disableRunes = true;
-						break;
 					case Status.Stun:
 						canAct = false;
 						break;
-					case Status.Silence:
+					case Status.HeartBind:
+						// Heart move down
+						break;
+					case Status.SoulBind:
+						// mp drain per turn
 						canCastSpells = false;
+						break;
+					case Status.RuneBind:
+						disableRunes = true;
 						break;
 					case Status.Incapacitated:
 						canAct = false;
@@ -465,7 +488,7 @@ namespace Characters {
 		public void RemoveAffliction(Status status) {
 			switch (status) {
 				case Status.Bog:
-					if(TryRemoveStatus(Status.Bog)) {
+					if(TryRemoveStatus(status)) {
 //					hasStatusAffliction = false;
 					}
 					if(TryRemoveStatChange (StatChange.SpdDown)) {
@@ -474,7 +497,7 @@ namespace Characters {
 					break;
 				case Status.Burn:
 					ModifyAtk (true); // Only need to happen once, not every turn
-					if(TryRemoveStatus(Status.Burn)){
+					if(TryRemoveStatus(status)){
 //					hasStatusAffliction = false;
 					}
 					// Tries to remove atk down ifnot afflicted with a stat change removal resist
@@ -483,33 +506,37 @@ namespace Characters {
 					}
 					break;
 				case Status.Poison:
-					if(TryRemoveStatus (Status.Poison)){
+					if(TryRemoveStatus (status)){
 //					hasStatusAffliction = false;
 					}
 					if(TryRemoveStatChange (StatChange.AtkDown)) {
 						ModifyAtk (true);
 					}
 					break;
-				case Status.RuneLock:
-					if(TryRemoveStatus(Status.RuneLock)) {
-//					hasStatusAffliction = false;
-						disableRunes = false;
-					}
-					break;
 				case Status.Stun:
-					if(TryRemoveStatus(Status.Stun)) {
+					if(TryRemoveStatus(status)) {
 //					hasStatusAffliction = false;
 						canAct = true;
 					}
 					break;
-				case Status.Silence:
-					if(TryRemoveStatus(Status.Silence)) {
+				case Status.HeartBind:
+					if(TryRemoveStatus(status)) {
+					}
+					break;
+				case Status.SoulBind:
+					if(TryRemoveStatus(status)) {
 //					hasStatusAffliction = false;
 						canCastSpells = true;
 					}
 					break;
+				case Status.RuneBind:
+					if(TryRemoveStatus(status)) {
+//					hasStatusAffliction = false;
+						disableRunes = false;
+					}
+					break;
 				case Status.Incapacitated:
-					if(TryRemoveStatus(Status.Incapacitated)) {
+					if(TryRemoveStatus(status)) {
 //					hasStatusAffliction = false;
 						canAct = true;
 					}
@@ -526,13 +553,13 @@ namespace Characters {
 						if(TryRemoveStatChange (StatChange.SpdDown)) {
 							ModifySpd (true); // Only need to happen once, not every turn
 						}
-						if(TryRemoveStatus(Status.Bog)) {
+						if(TryRemoveStatus(status)) {
 							hasStatusAffliction = false;
 						}
 						break;
 					case Status.Burn:
 						ModifyAtk (true); // Only need to happen once, not every turn
-						if(TryRemoveStatus(Status.Burn)) {
+						if(TryRemoveStatus(status)) {
 							hasStatusAffliction = false;
 						}
 						// Tries to remove atk down ifnot afflicted with a stat change removal resist
@@ -541,31 +568,40 @@ namespace Characters {
 						}
 						break;
 					case Status.Poison:
-						if(TryRemoveStatus(Status.Poison)) {
+						if(TryRemoveStatus(status)) {
 							hasStatusAffliction = false;
 						}
 						if(TryRemoveStatChange (StatChange.AtkDown)) {
 							ModifyAtk (true);
 						}
 						break;
-					case Status.RuneLock:
-						if(TryRemoveStatus(Status.RuneLock)) {
-							hasStatusAffliction = false;
-							disableRunes = false;
-						}
-						break;
 					case Status.Stun:
-						if(TryRemoveStatus(Status.Stun)) {
+						if(TryRemoveStatus(status)) {
 							hasStatusAffliction = false;
 						}
 						canAct = true;
 						break;
-					case Status.Silence:
-						if(TryRemoveStatus(Status.Silence)) {
+					case Status.HeartBind:
+						if(TryRemoveStatus(status)) {
+							hasStatusAffliction = false;
+						}
+						break;
+					case Status.SoulBind:
+						if(TryRemoveStatus(status)) {
 							hasStatusAffliction = false;
 						}
 						canCastSpells = true;
 						break;
+					case Status.RuneBind:
+						if(TryRemoveStatus(status)) {
+							hasStatusAffliction = false;
+							disableRunes = false;
+						}
+						break;
+					case Status.Incapacitated:
+						break;
+					default:
+						throw new ArgumentOutOfRangeException();
 				}
 			}
 		}
@@ -576,9 +612,10 @@ namespace Characters {
 	 */ 
 		public void CheckStatusAfflictions() {
 //		for(int i = 0; i < afflictedStatuses.Count; i++) {
-			foreach(KeyValuePair<Status, bool> status in afflictedStatuses) {
+			foreach(KeyValuePair<Status, bool> pair in afflictedStatuses) {
 				// Check status afflictions and do action depending on the affliction
-				switch (status.Key) {
+				Status status = pair.Key;
+				switch (status) {
 					case Status.Bog:
 						//Nothing planned atm for this status effect. Only SPDDown atm.
 						break;
@@ -594,26 +631,31 @@ namespace Characters {
 						//					modifyHP (-0.1f);
 						//				}
 						break;
-					case Status.RuneLock:
+					case Status.RuneBind:
 						// Can't use runes for x turns
-						if(afflictedStatuses[Status.RuneLock]) {
+						if(afflictedStatuses[status]) {
 							disableRunes = true;
 						}
 						break;
 					case Status.Stun:
 						// Can't act for x turns
-						if(afflictedStatuses[Status.Stun]) {
+						if(afflictedStatuses[status]) {
 							canAct = false;
 						}
 						break;
-					case Status.Silence:
+					case Status.SoulBind:
 						// Can't cast spells for x turns. Can still use skills
-						if(afflictedStatuses[Status.Silence]) {
+						if(afflictedStatuses[status]) {
 							canCastSpells = false;
 						}
 						break;
 					case Status.Incapacitated:
-						if(afflictedStatuses[Status.Incapacitated]) {
+						if(afflictedStatuses[status]) {
+							canAct = false;
+						}
+						break;
+					case Status.HeartBind:
+						if(afflictedStatuses[status]) {
 							canAct = false;
 						}
 						break;
@@ -630,62 +672,60 @@ namespace Characters {
 	 */ 
 		public void ResolveStatusAfflictions() {
 //		for(int i = 0; i < afflictedStatuses.Length; i++) {
-			foreach(KeyValuePair<Status, bool> status in afflictedStatuses) {
+			foreach(KeyValuePair<Status, bool> pair in afflictedStatuses) {
 				// Check status afflictions and do action depending on the affliction
-				switch (status.Key) {
+				Status status = pair.Key;
+				switch (status) {
 					case Status.Bog:
 						//Nothing planned atm for this status effect. Only SPDDown atm.
 						break;
 					case Status.Burn:
 						// 8% DoT & p atk down
-						Status s = Status.Burn;
-						if(statusTurnCounter [s] > 0) {
+						if(statusTurnCounter [status] > 0) {
 							ModifyCurrentHpByPercentageOfMax (-0.08f);
-							statusTurnCounter[s] -= 1;
-							if(statusTurnCounter[s] == 0) {
-								TryRemoveStatus (s);
+							statusTurnCounter[status] -= 1;
+							if(statusTurnCounter[status] == 0) {
+								TryRemoveStatus (status);
 							}
 						}
 						break;
 					case Status.Poison:
 						// 10% DoT & m atk 
-						s = Status.Poison;
-						if(statusTurnCounter [s] > 0) {
+						if(statusTurnCounter [status] > 0) {
 							ModifyCurrentHpByPercentageOfMax (-0.1f);
-							statusTurnCounter[s] -= 1;
-							if(statusTurnCounter[s] == 0) {
-								TryRemoveStatus (s);
+							statusTurnCounter[status] -= 1;
+							if(statusTurnCounter[status] == 0) {
+								TryRemoveStatus (status);
 							}
 						}
 						break;
-					case Status.RuneLock:
-						s = Status.RuneLock;
-						statusTurnCounter[s] -= 1;
-						if(statusTurnCounter[s] == 0) {
-							TryRemoveStatus(s);
+					case Status.RuneBind:
+						statusTurnCounter[status] -= 1;
+						if(statusTurnCounter[status] == 0) {
+							TryRemoveStatus(status);
 						}
 						break;
 					case Status.Stun:
 						// Can't act for x turns
-						s = Status.Stun;
-						if(statusTurnCounter[s] > 0) {
-							statusTurnCounter[s] -= 1;
-							if(statusTurnCounter[s] == 0) {
-								TryRemoveStatus (s);
+						if(statusTurnCounter[status] > 0) {
+							statusTurnCounter[status] -= 1;
+							if(statusTurnCounter[status] == 0) {
+								TryRemoveStatus (status);
 							}
 						}
 						break;
-					case Status.Silence:
-						s = Status.Silence;
+					case Status.SoulBind:
 						// Can't cast spells for x turns. Can still use skills
-						if(statusTurnCounter[s] > 0) {
-							statusTurnCounter[s] -= 1;
-							if(statusTurnCounter[s] == 0) {
-								TryRemoveStatus (s);
+						if(statusTurnCounter[status] > 0) {
+							statusTurnCounter[status] -= 1;
+							if(statusTurnCounter[status] == 0) {
+								TryRemoveStatus (status);
 							}
 						}
 						break;
 					case Status.Incapacitated:
+						break;
+					case Status.HeartBind:
 						break;
 					default:
 						Debug.Log ("Affliction not valid");
@@ -747,16 +787,16 @@ namespace Characters {
 		protected int CalcNextLevel() {
 			return (int) Mathf.Round(4+15*Mathf.Pow(currentLevel, 3)/14);
 		}
-		public void GrantExp(int exp) {
-			int totalExp = currentExp + exp;
+		public void GrantExp() {
+			int totalExp = currentExp + potentialExp;
 			int expToNextLevel = CalcNextLevel();
 			Debug.LogFormat("\tGained {0} exp, my total exp: {1}, remaining exp: {2}, total needed to go to next {3}",
-			                exp, totalExp, expToNextLevel - totalExp, expToNextLevel);
+			                potentialExp, totalExp, expToNextLevel - totalExp, expToNextLevel);
 			if(totalExp < expToNextLevel) {
 				currentExp = totalExp;
 				expUntilLevelUp = expToNextLevel - currentExp;
 				Debug.Log(string.Format("\t{0} has gained {1} exp! exp until next level: {2}",
-				                        name, exp, expUntilLevelUp));
+				                        name, potentialExp, expUntilLevelUp));
 			} else {
 				currentLevel += 1;
 				currentExp = totalExp - expToNextLevel;
@@ -764,43 +804,31 @@ namespace Characters {
 				Debug.Log(string.Format("\t{0} has leveled up: {1}, exp until next level: {2}", 
 				                        name, currentLevel, expUntilLevelUp));
 			}
-			//int remainingExp = exp - this.expUntilLevelUp;
-//		Debug.Log(string.Format("\tcurrent {0}, exp until next level: {1}", currentExp, expUntilLevelUp));
-//		int remainingExp = expUntilLevelUp - totalExp;
-//		Debug.LogFormat("\tGained {0} exp, my total exp: {1}, remaining exp: {2}, total needed to go to next {3}",
-//		                exp, totalExp, remainingExp, CalcNextLevel());
-//		if(remainingExp > 0) {
-//			currentExp = totalExp;
-//			expUntilLevelUp = remainingExp;
-//			Debug.Log(string.Format("\t{0} has gained {1} exp! exp until next level: {2}",
-//				name, exp, expUntilLevelUp));
-//		} else {
-//			currentLevel += 1;
-//			currentExp = Mathf.Abs(remainingExp);
-//			expUntilLevelUp = CalcNextLevel() - currentExp;
-//			Debug.Log(string.Format("\t{0} has leveled up: {1}, exp until next level: {2}", 
-//				name, currentLevel, expUntilLevelUp));
-//		}
+			ResetPotentialExp();
 		}
 
 		private int ModStat(StatChange statChange) {
 			switch (statChange) {
+				case StatChange.HpUp:
+					return Mathf.RoundToInt(baseHp * 0.15f);
+				case StatChange.HpDestruct:
+					return Mathf.RoundToInt(baseHp * -0.15f);
+				case StatChange.MpUp:
+					return Mathf.RoundToInt(baseHp * 0.15f);
+				case StatChange.MpDown:
+					return Mathf.RoundToInt(baseHp * -0.15f);
 				case StatChange.AtkUp:
 					return Mathf.RoundToInt(baseAtk * 0.25f);
 				case StatChange.DefUp:
 					return Mathf.RoundToInt(baseDef * 0.25f);
 				case StatChange.SpdUp:
 					return Mathf.RoundToInt(baseSpd * 0.2f);
-				case StatChange.HpUp:
-					return Mathf.RoundToInt(baseHp * 0.15f);
 				case StatChange.AtkDown:
 					return Mathf.RoundToInt(baseAtk * -0.25f);
 				case StatChange.DefDown:
 					return Mathf.RoundToInt(baseDef * -0.25f);
 				case StatChange.SpdDown:
 					return Mathf.RoundToInt(baseSpd * -0.2f);
-				case StatChange.HpDestruct:
-					return Mathf.RoundToInt(baseHp * -0.15f);
 				default:
 					throw new ArgumentOutOfRangeException("statChange", statChange, null);
 			}

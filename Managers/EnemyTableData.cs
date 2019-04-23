@@ -8,6 +8,9 @@ public class EnemyTableData {
 	public EnemyTableEntry[] enemyTableEntries;
 
 	public override string ToString() {
+		if (enemyTableEntries == null) {
+			return "";
+		}
 		StringBuilder sb = new StringBuilder();
 		sb.Append("{\"enemyTableEntries\":[");
 		int tableEntryCount = enemyTableEntries != null ? enemyTableEntries.Length : 0;

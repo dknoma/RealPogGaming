@@ -1,9 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using ScriptableObjects;
 using UnityEngine;
 using UnityEngine.Events;
 
 public class Attacks : MonoBehaviour {
+
+	public IntValue attackBManaCost;
+	public IntValue supportManaCost;
 
 	private UnityEvent attackAEvent;
 	private UnityEvent attackBEvent;

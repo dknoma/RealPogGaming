@@ -8,9 +8,10 @@ namespace Characters {
 		Bog, 
 		Burn, 
 		Poison, 
-		RuneLock, 
 		Stun, 
-		Silence, 
+		HeartBind,
+		SoulBind,
+		RuneBind, 
 		Incapacitated
 	}
 	public enum StatChange { 
@@ -43,14 +44,14 @@ namespace Characters {
 		protected readonly Dictionary<StatChange, bool> statChangeRemovalResists = new Dictionary<StatChange, bool>();
 
 		// Decides whether a character has a status affliction or not
-//	protected bool[] afflictedStatuses = new bool[(int) Status.Silence+1];
+//	protected bool[] afflictedStatuses = new bool[(int) Status.SoulBind+1];
 		//	private bool[] afflictedStatUpStatus = new bool[StatUps.HPUp+1];
 		//	private bool[] afflictedStatDownStatus = new bool[StatDowns.HPDestruct+1];
 //	protected bool[] afflictedStatChanges = new bool[(int) StatChange.HpDestruct+1];
 		// Decides whether a character is immune to a state or not
-//	protected bool[] statusResists = new bool[(int) Status.Silence+1];
+//	protected bool[] statusResists = new bool[(int) Status.SoulBind+1];
 //	protected bool[] statChangeResists = new bool[(int) StatChange.HpDestruct+1];
-//	protected bool[] statusRemovalResists = new bool[(int) Status.Silence+1];	
+//	protected bool[] statusRemovalResists = new bool[(int) Status.SoulBind+1];	
 //	protected bool[] statChangeRemovalResists = new bool[(int) StatChange.HpDestruct+1];
 
 		private void Awake() {

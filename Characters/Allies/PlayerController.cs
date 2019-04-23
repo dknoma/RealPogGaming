@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Managers;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Object = System.Object;
@@ -325,8 +326,9 @@ public class PlayerController : MonoBehaviour {
 			if (Vector2.Distance(coll.GetContact(0).point, shadow.transform.position) <= shadow.GetComponent<Collider2D>().bounds.size.x) {
 				Debug.Log(string.Format("\t\tcurrent enemy {0}, {1}", coll.gameObject.name, Vector2.Distance(coll.GetContact(0).point, shadow.transform.position)));
 				AreaEnemyManager.aem.EnemyToBattle(coll.gameObject);
+				Enemy enemy = coll.gameObject.GetComponent<Enemy>();
 				// For the enemy overworld sprite, add them to listen in on defeated events to do their animation
-				BattleManager.bm.AddDefeatEnemyEvent(coll.gameObject.GetComponent<Enemy>().DoDefeatEnemyAnimation);
+				BattleEventManager.bem.AddDefeatEnemyEvent(enemy.slot, enemy.DoDefeatEnemyAnimation);
 				BattleManager.bm.SetBattleState(BattleState.Init);
 			}
 		}

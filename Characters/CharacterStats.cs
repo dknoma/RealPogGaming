@@ -38,6 +38,7 @@ namespace Characters {
 
 		public int expUntilLevelUp;
 		public int currentExp;
+		protected int potentialExp;
 
 		[SerializeField]
 		protected int baseHp = 20;

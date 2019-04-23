@@ -59,6 +59,9 @@ public class BattleManager : MonoBehaviour {
 	public static BattleManager bm;
 	public static GameObject battleCanvas;
 	
+	
+	public GameObject testEnemyBasic1Prefab;
+	
 	private static int _turnCount;
 
 	private BattleState BattleState { get; set; }
@@ -86,7 +89,7 @@ public class BattleManager : MonoBehaviour {
 	private int allyCount;
 	private int enemyCount;
 	private int numUnits;
-	private int expToGive;
+//	private int expToGive;
 	private bool fastestFirst = true;
 //	private bool currentIsAlly = true;
 
@@ -118,8 +121,8 @@ public class BattleManager : MonoBehaviour {
 	private const int MAX_QUEUE_ICONS = MAX_QUEUE_SIZE / 2;
 	
 //	private Dictionary <string, UnityEvent> eventDictionary;
-	private readonly UnityEvent endBattle = new UnityEvent();
-	private readonly UnityEvent defeatedEnemyEvent = new UnityEvent();
+//	private readonly UnityEvent endBattle = new UnityEvent();
+//	private readonly UnityEvent defeatedEnemyEvent = new UnityEvent();
 	
 //	private readonly UnityEvent buffEvent = new UnityEvent();
 //	private bool axisDown;
@@ -146,14 +149,14 @@ public class BattleManager : MonoBehaviour {
 	private void Update() {
 		CheckBattleState();
 	}
-
-	public void AddEndBattleListener(UnityAction call) {
-		endBattle.AddListener(call);
-	}
-
-	public void AddDefeatEnemyEvent(UnityAction call) {
-		defeatedEnemyEvent.AddListener(call);
-	}
+//
+//	public void AddEndBattleListener(UnityAction call) {
+//		endBattle.AddListener(call);
+//	}
+//
+//	public void AddDefeatEnemyEvent(UnityAction call) {
+//		defeatedEnemyEvent.AddListener(call);
+//	}
 
 	private void CheckBattleState() {
 		switch(BattleState) {
@@ -179,9 +182,7 @@ public class BattleManager : MonoBehaviour {
 				CheckTurnState();
 				break;
 			case BattleState.End:
-				endBattle.Invoke();
-				BattleEventManager.bem.ClearIncapacitatedEvents();
-				BattleEventManager.bem.ClearEnemyStatEvents();
+//				endBattle.Invoke();
 				isLoading = false;
 				isLoadingBattle = false;
 				TurnState = TurnState.Nil;
@@ -194,7 +195,8 @@ public class BattleManager : MonoBehaviour {
 						// Default state.
 						break;
 					case WinStatus.Win:
-						GrantExpToParty();
+//						GrantExpToParty();
+						BattleEventManager.bem.InvokeGrantExpEvent();
 						break;
 					case WinStatus.Lose:
 						break;
@@ -204,7 +206,12 @@ public class BattleManager : MonoBehaviour {
 					default:
 						throw new ArgumentOutOfRangeException("WinStatus", WinStatus, null);
 				}
-				expToGive = 0;
+				BattleEventManager.bem.InvokeEndBattleEvent();
+				BattleEventManager.bem.ClearIncapacitatedEvents();
+				BattleEventManager.bem.ClearEnemyStatEvents();
+				BattleEventManager.bem.ClearGrantExpEventListers();
+				BattleEventManager.bem.ClearDefeatedEnemyEventListeners();
+//				expToGive = 0;
 				Debug.Log("Ending battle.");
 				BattleState = BattleState.Unloading;
 				break;
@@ -493,6 +500,7 @@ public class BattleManager : MonoBehaviour {
 //			player.AddIncapacitatedListener(TargetDefeated);
 //			BattleEventManager.bem.IncapacitatedEvent.AddListener(() => TargetDefeated(player.gameObject));
 			BattleEventManager.bem.AddAllyIncapacitatedListener(member.slot, member.gameObject, TargetDefeated);
+			BattleEventManager.bem.AddGrantExpListener(member.GrantExp);
 			units.Add(member.gameObject);
 		}
 	}
@@ -510,14 +518,18 @@ public class BattleManager : MonoBehaviour {
 		BattleScene.battleScene.UpdateEnemyPositions(generatedEnemyCount);
 		BattleEventManager.bem.InitEnemyIncapacitatedEvents(generatedEnemyCount);
 		for(int i = 0; i < generatedEnemyCount; i++) {
-			GameObject enemyToInstantiate = BattleSceneDataManager.bsdm.GetEnemyPrefab("Enemy1 - Battle");
+//			GameObject enemyToInstantiate = BattleSceneDataManager.bsdm.GetEnemyPrefab("Enemy1 - Battle");
 			Vector3 pos = BattleScene.battleScene.GetEnemyPosition(i);
 //			Debug.LogFormat("Pos for enemy {0}", pos);
-			GameObject newEnemy = Instantiate(enemyToInstantiate, BattleScene.battleScene.gameObject.transform);
+			GameObject newEnemy = Instantiate(testEnemyBasic1Prefab, BattleScene.battleScene.gameObject.transform);
 			Enemy enemy = newEnemy.GetComponent<Enemy>();
 			enemy.slot = (CharacterSlot) i;
 			newEnemy.transform.position = pos;
 			BattleEventManager.bem.AddEnemyIncapacitatedListener((CharacterSlot) i, newEnemy, TargetDefeated);	// Listen on enemy defeat
+			foreach (Player character in PlayerManager.pm.GetParty()) {
+				Player player = character;
+				BattleEventManager.bem.AddDefeatEnemyEvent(enemy.slot, () => player.IncreasePotentialExp(enemy.expToGrant));
+			}
 			units.Add(newEnemy);
 			enemies.Add(newEnemy);
 //			enemy.AddIncapacitatedListener(TargetDefeated);
@@ -608,7 +620,8 @@ public class BattleManager : MonoBehaviour {
 				RemoveTargetFromQueue(unit); // Remove enemy from queue, does not perform any more actions
 				enemies.Remove(defeatedUnit);
 				defeatedUnit.SetActive(false);
-				expToGive += unit.expToGrant;
+//				expToGive += unit.expToGrant;
+				BattleEventManager.bem.InvokeDefeatedEnemyEvent(defeatedUnit.GetComponent<Enemy>().slot);
 				if(enemies.Count == 0) {
 					EndBattle(WinStatus.Win);
 				}
@@ -647,11 +660,11 @@ public class BattleManager : MonoBehaviour {
 //		return damage;
 //	}
 	
-	private void GrantExpToParty() {
-		foreach(Player ally in PlayerManager.pm.GetParty()) {
-			ally.GrantExp(expToGive);
-		}
-	}
+//	private void GrantExpToParty() {
+//		foreach(Player ally in PlayerManager.pm.GetParty()) {
+//			ally.GrantExp(expToGive);
+//		}
+//	}
 
 	/*
 	 * Sort the characters by their speeds, then enqueue them into the action queue.
