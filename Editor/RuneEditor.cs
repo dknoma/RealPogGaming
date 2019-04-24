@@ -16,7 +16,7 @@ public class RuneEditor : Editor {
 
 	private bool showStats = false;
 
-	void OnEnable() {
+	private void OnEnable() {
 		runeType = serializedObject.FindProperty("runeType");
 		statType = serializedObject.FindProperty("statType");
 		whichStat = serializedObject.FindProperty("whichStat");
