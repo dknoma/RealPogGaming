@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Managers;
 using UnityEngine;
 
 public class BattleScene : MonoBehaviour {
@@ -20,10 +21,15 @@ public class BattleScene : MonoBehaviour {
 	[SerializeField] private GameObject enemyPositionFour;
 	
 	[SerializeField] private GameObject enemyPositionOneOfOne;
+	[SerializeField] private GameObject enemyPositionOneOfTwo;
+	[SerializeField] private GameObject enemyPositionTwoOfTwo;
 	[SerializeField] private GameObject enemyPositionThreeOfThree;
 
-	private Queue<Vector3> allyPositions = new Queue<Vector3>();
-	private Queue<Vector3> enemyPositions = new Queue<Vector3>();
+//	private Queue<Vector3> allyPositions = new Queue<Vector3>();
+//	private Queue<Vector3> enemyPositions = new Queue<Vector3>();
+
+	private List<Vector3> allyPositions = new List<Vector3>();
+	private List<Vector3> enemyPositions = new List<Vector3>();
 	
 	private Vector3 aPosOne;
 	private Vector3 aPosTwo;
@@ -34,6 +40,9 @@ public class BattleScene : MonoBehaviour {
 	private Vector3 ePosFour;
 	
 	private Vector3 aPosOneOfOne;
+	
+	private Vector3 ePosOneOfTwo;
+	private Vector3 ePosTwoOfTwo;
 	
 	private Vector3 ePosOneOfOne;
 	private Vector3 ePosThreeOfThree;
@@ -46,19 +55,21 @@ public class BattleScene : MonoBehaviour {
 		}
 		DontDestroyOnLoad(gameObject);
 		cam = Camera.main;
-		aPosOne = allyPositionOne.transform.position;
-		aPosTwo = allyPositionTwo.transform.position;
-		aPostThree = allyPositionThree.transform.position;
-
-		aPosOneOfOne = allyPositionOneOfOne.transform.position;
-		
-		ePosOne = enemyPositionOne.transform.position;
-		ePosTwo = enemyPositionTwo.transform.position;
-		ePosThree = enemyPositionThree.transform.position;
-		ePosFour = enemyPositionFour.transform.position;
-
-		ePosOneOfOne = enemyPositionOneOfOne.transform.position;
-		ePosThreeOfThree = enemyPositionThreeOfThree.transform.position;
+//		aPosOne = allyPositionOne.transform.position;
+//		aPosTwo = allyPositionTwo.transform.position;
+//		aPostThree = allyPositionThree.transform.position;
+//
+//		aPosOneOfOne = allyPositionOneOfOne.transform.position;
+//		
+//		ePosOne = enemyPositionOne.transform.position;
+//		ePosTwo = enemyPositionTwo.transform.position;
+//		ePosThree = enemyPositionThree.transform.position;
+//		ePosFour = enemyPositionFour.transform.position;
+//
+//		ePosOneOfOne = enemyPositionOneOfOne.transform.position;
+//		ePosOneOfTwo = enemyPositionOneOfTwo.transform.position;
+//		ePosTwoOfTwo = enemyPositionTwoOfTwo.transform.position;
+//		ePosThreeOfThree = enemyPositionThreeOfThree.transform.position;
 	}
 
 	// Update is called once per frame
@@ -71,6 +82,21 @@ public class BattleScene : MonoBehaviour {
 		Vector3 position = cam.transform.position;
 		Vector3 pos = new Vector3(position.x, position.y, -10);
 		transform.position = pos;
+		aPosOne = allyPositionOne.transform.position;
+		aPosTwo = allyPositionTwo.transform.position;
+		aPostThree = allyPositionThree.transform.position;
+
+		aPosOneOfOne = allyPositionOneOfOne.transform.position;
+		
+		ePosOne = enemyPositionOne.transform.position;
+		ePosTwo = enemyPositionTwo.transform.position;
+		ePosThree = enemyPositionThree.transform.position;
+		ePosFour = enemyPositionFour.transform.position;
+
+		ePosOneOfOne = enemyPositionOneOfOne.transform.position;
+		ePosOneOfTwo = enemyPositionOneOfTwo.transform.position;
+		ePosTwoOfTwo = enemyPositionTwoOfTwo.transform.position;
+		ePosThreeOfThree = enemyPositionThreeOfThree.transform.position;
 	}
 
 	public void UpdateAllyPositions() {
@@ -97,31 +123,31 @@ public class BattleScene : MonoBehaviour {
 		switch (enemyCount) {
 			case 1:
 //				enemyPositionOne.transform.position = ePosOneOfOne;
-				enemyPositions.Enqueue(ePosOneOfOne);
+				enemyPositions.Add(ePosOneOfOne);
 				break;
 			case 2:
 //				enemyPositionOne.transform.position = ePosOne;
 //				enemyPositionTwo.transform.position = ePosTwo;
-				enemyPositions.Enqueue(ePosOne);
-				enemyPositions.Enqueue(ePosTwo);
+				enemyPositions.Add(ePosOneOfTwo);
+				enemyPositions.Add(ePosTwoOfTwo);
 				break;
 			case 3:
 //				enemyPositionOne.transform.position = ePosOne;
 //				enemyPositionTwo.transform.position = ePosTwo;
 //				enemyPositionThree.transform.position = ePosThreeOfThree;
-				enemyPositions.Enqueue(ePosOne);
-				enemyPositions.Enqueue(ePosTwo);
-				enemyPositions.Enqueue(ePosThreeOfThree);
+				enemyPositions.Add(ePosOne);
+				enemyPositions.Add(ePosTwo);
+				enemyPositions.Add(ePosThreeOfThree);
 				break;
 			case 4:
 //				enemyPositionOne.transform.position = ePosOne;
 //				enemyPositionTwo.transform.position = ePosTwo;
 //				enemyPositionThree.transform.position = ePosThree;
 //				enemyPositionFour.transform.position = ePosFour;
-				enemyPositions.Enqueue(ePosOne);
-				enemyPositions.Enqueue(ePosTwo);
-				enemyPositions.Enqueue(ePosThree);
-				enemyPositions.Enqueue(ePosFour);
+				enemyPositions.Add(ePosOne);
+				enemyPositions.Add(ePosTwo);
+				enemyPositions.Add(ePosThree);
+				enemyPositions.Add(ePosFour);
 				break;
 			default:
 				Debug.Log("Invalid enemy count");
@@ -129,7 +155,11 @@ public class BattleScene : MonoBehaviour {
 		}
 	}
 
-	public Vector3 GetEnemyPosition() {
-		return enemyPositions.Dequeue();
+	public Vector3 GetEnemyPosition(int index) {
+		return enemyPositions[index];
+	}
+
+	public void ResetEnemyPositions() {
+		enemyPositions.Clear();
 	}
 }

@@ -15,14 +15,11 @@ public class MenuButton : Selectable, ISubmitHandler, ICancelHandler {
     /// <summary>
     ///   <para>UnityEvent that is triggered when the Button is pressed.</para>
     /// </summary>
-    public MenuButtonSubmitEvent onClick
-    {
-        get
-        {
+    public MenuButtonSubmitEvent onClick {
+        get {
             return m_OnClick;
         }
-        set
-        {
+        set {
             m_OnClick = value;
         }
     }

@@ -12,30 +12,35 @@ public enum WorldArea {
 	TestHub,
 	CelestialCanopy,
 	PaltryPlains,
-	MalaMeadows,
+	MalaMeadows
 }
 
 public class BattleSceneDataManager : MonoBehaviour {
 
 	public static BattleSceneDataManager bsdm;
-
-	private const string AREA_TABLE_FILE = "enemies/battle/areaTable.json";
-	private const string ENEMY_TABLE_FILE = "enemies/battle/enemyTable.json";
-	private const string AREA_TABLE_FILE_COPY = "enemies/battle/areaTable_Copy.json";
-	private const string ENEMY_TABLE_FILE_COPY = "enemies/battle/enemyTable_Copy.json";
-	private const int MAX_LEVELS = 100;
 	public Dictionary<string, EnemyTableEntry> enemyTable = new Dictionary<string, EnemyTableEntry>();
 	public Dictionary<WorldArea,EnemyAreaTableEntry> areaTable = new Dictionary<WorldArea, EnemyAreaTableEntry>();
 
-	private void OnEnable() {
+//	private const string AREA_TABLE_FILE = "enemies/battle/areaTable.json";
+//	private const string ENEMY_TABLE_FILE = "enemies/battle/enemyTable.json";
+	private const string AREA_TABLE_FILE = "areaTable.json";
+	private const string ENEMY_TABLE_FILE = "enemyTable.json";
+	private const string AREA_TABLE_FILE_COPY = "enemies/battle/areaTable_Copy.json";
+	private const string ENEMY_TABLE_FILE_COPY = "enemies/battle/enemyTable_Copy.json";
+	private const int MAX_LEVELS = 100;
+
+	private int areaCount;
+
+	private void Awake() {
 		if (bsdm == null) {
 			bsdm = this;
 		} else if (bsdm != this) {
 			Destroy(gameObject);
 		}
 		DontDestroyOnLoad(gameObject);
-		LoadEnemyTableFromFile(ENEMY_TABLE_FILE);
-		LoadAreaTableFromFile(AREA_TABLE_FILE);
+		areaCount = Enum.GetValues(typeof(WorldArea)).Length;
+//		LoadEnemyTableFromFile(ENEMY_TABLE_FILE);
+//		LoadAreaTableFromFile(AREA_TABLE_FILE);
 	}
 
 	private void Update() {
@@ -51,29 +56,41 @@ public class BattleSceneDataManager : MonoBehaviour {
 	public void SaveAreaTableToFile() {
 		string areaTableToJson = AreaDictionaryToJson(areaTable);
 		Debug.LogFormat("to json:\t{0}", areaTableToJson);
-		string filePath = Path.Combine (Application.streamingAssetsPath, AREA_TABLE_FILE);
-		File.WriteAllText(filePath, areaTableToJson);
+		string filePath = Path.Combine (Application.persistentDataPath, AREA_TABLE_FILE);
+		using (StreamWriter streamWriter = File.CreateText (filePath)) {
+			streamWriter.Write (areaTableToJson);
+		}
+//		File.WriteAllText(filePath, areaTableToJson);
 	}
 
 	public void SaveEnemyTableToFile() {
 		string enemyTableToJson = EnemyDictionaryToJson(enemyTable);
 		Debug.LogFormat("to json:\t{0}", enemyTableToJson);
-		string filePath = Path.Combine (Application.streamingAssetsPath, ENEMY_TABLE_FILE);
-		File.WriteAllText(filePath, enemyTableToJson);
+		string filePath = Path.Combine (Application.persistentDataPath, ENEMY_TABLE_FILE);
+		using (StreamWriter streamWriter = File.CreateText (filePath)) {
+			streamWriter.Write (enemyTableToJson);
+		}
+//		File.WriteAllText(filePath, enemyTableToJson);
 	}
 	
 	public void SaveAreaTableCopyToFile() {
 		string areaTableToJson = AreaDictionaryToJson(areaTable);
 		Debug.LogFormat("to json:\t{0}", areaTableToJson);
-		string filePath = Path.Combine (Application.streamingAssetsPath, AREA_TABLE_FILE_COPY);
-		File.WriteAllText(filePath, areaTableToJson);
+		string filePath = Path.Combine (Application.persistentDataPath, AREA_TABLE_FILE_COPY);
+		using (StreamWriter streamWriter = File.CreateText (filePath)) {
+			streamWriter.Write (areaTableToJson);
+		}
+//		File.WriteAllText(filePath, areaTableToJson);
 	}
 	
 	public void SaveEnemyTableCopyToFile() {
 		string enemyTableToJson = EnemyDictionaryToJson(enemyTable);
 		Debug.LogFormat("to json:\t{0}", enemyTableToJson);
-		string filePath = Path.Combine (Application.streamingAssetsPath, ENEMY_TABLE_FILE_COPY);
-		File.WriteAllText(filePath, enemyTableToJson);
+		string filePath = Path.Combine (Application.persistentDataPath, ENEMY_TABLE_FILE_COPY);
+		using (StreamWriter streamWriter = File.CreateText (filePath)) {
+			streamWriter.Write (enemyTableToJson);
+		}
+//		File.WriteAllText(filePath, enemyTableToJson);
 	}
 	
 
@@ -83,14 +100,30 @@ public class BattleSceneDataManager : MonoBehaviour {
 		AddEnemyToEnemyTable(WorldArea.CelestialCanopy, 1, "Ardf");
 		AddEnemyToEnemyTable(WorldArea.CelestialCanopy, 31, "HNGGG");
 		AddEnemyToEnemyTable(WorldArea.MalaMeadows, 1, "star");
-		AddEnemyToEnemyTable(WorldArea.MalaMeadows, 1, "bobby");
+		AddEnemyToEnemyTable(WorldArea.PaltryPlains, 1, "bobby");
 		AddEnemyToEnemyTable(WorldArea.MalaMeadows, 15, "Yorru");
 		AddEnemyToEnemyTable(WorldArea.MalaMeadows, 1, "nobu");
 		
+//		foreach (var thing in enemyTable) {
+//			EnemyTableEntry entry = thing.Value;
+//			Debug.LogFormat("e: {0}, {1}", thing.Key, entry.enemyPrefab);
+//			foreach (WorldArea area in entry.areas) {
+//				Debug.LogFormat("\tarea {0}", area);
+//			}
+//		}
+//		
 		AddEnemyToAreaTable(WorldArea.CelestialCanopy, 1, "star");
+		AddEnemyToAreaTable(WorldArea.PaltryPlains, 1, "bobby");
 		AddEnemyToAreaTable(WorldArea.CelestialCanopy, 31, "HNGGG");
 		AddEnemyToAreaTable(WorldArea.TestHub, 1, "Enemy1");
 		AddEnemyToAreaTable(WorldArea.MalaMeadows, 15, "Yorru");
+//		foreach (var thing in areaTable) {
+//			EnemyAreaTableEntry entry = thing.Value;
+//			Debug.LogFormat("a: {0}, {1}", thing.Key, entry.area);
+//			foreach (EnemyTierEntry en in entry.enemyTierListEntries) {
+//				Debug.LogFormat("\tenemy {0}", en);
+//			}
+//		}
 	}
 	
 	/// <summary>
@@ -216,47 +249,86 @@ public class BattleSceneDataManager : MonoBehaviour {
 	}
 	
 	public void LoadAreaTableFromFile(string fileName) {
-		string filePath = Path.Combine (Application.streamingAssetsPath, fileName);
+		string filePath = Path.Combine (Application.persistentDataPath, fileName);
 		if (File.Exists (filePath)) {
-			string jsonData = File.ReadAllText (filePath);
-			EnemyAreaTableData enemyAreaTableData = JsonToEnemyAreaTableData(jsonData);
-//			Debug.LogFormat("enemyAreaTableData: {0}", enemyAreaTableData);
-			// For each table entry, add the enemy to their designated area(s).
-			for (int i = 0; i < enemyAreaTableData.enemyAreaTableEntries.Length; i++) {
-				EnemyAreaTableEntry entry = enemyAreaTableData.enemyAreaTableEntries[i];
-				EnemyTierEntry[] tierEntries = entry.enemyTierListEntries;
-				for (int j = 0; j < tierEntries.Length; j++) {
-					if(tierEntries[j] == null) continue;
-					for (int k = 0; k < tierEntries[j].enemies.Count; k++) {
-						AddEnemyToAreaTable(entry.area, j, entry.enemyTierListEntries[j].enemies[k]);
+			using (StreamReader streamReader = File.OpenText (filePath)) {
+				string jsonData = streamReader.ReadToEnd ();
+				Debug.LogFormat("jsonData: {0}", jsonData);
+
+//			JsonUtility.FromJson<CharacterData> (jsonString);
+				EnemyAreaTableData enemyAreaTableData = JsonToEnemyAreaTableData(jsonData);
+			Debug.LogFormat("enemyAreaTableData: {0}", enemyAreaTableData);
+				// For each table entry, add the enemy to their designated area(s).
+				for (int i = 0; i < enemyAreaTableData.enemyAreaTableEntries.Length; i++) {
+					EnemyAreaTableEntry entry = enemyAreaTableData.enemyAreaTableEntries[i];
+					if (entry == null) {
+						continue;	// Area doesnt contain any data.
 					}
-				} 
+					EnemyTierEntry[] tierEntries = entry.enemyTierListEntries;
+					for (int j = 0; j < tierEntries.Length; j++) {
+						if(tierEntries[j] == null) continue;
+						for (int k = 0; k < tierEntries[j].enemies.Count; k++) {
+							AddEnemyToAreaTable(entry.area, j, entry.enemyTierListEntries[j].enemies[k]);
+						}
+					} 
+				}
+				Debug.LogFormat("loaded area table: {0}", AreaDictionaryToJson(areaTable));
 			}
-			Debug.LogFormat("loaded area table: {0}", AreaDictionaryToJson(areaTable));
+//			string jsonData = File.ReadAllText (filePath);
+//			EnemyAreaTableData enemyAreaTableData = JsonToEnemyAreaTableData(jsonData);
+////			Debug.LogFormat("enemyAreaTableData: {0}", enemyAreaTableData);
+//			// For each table entry, add the enemy to their designated area(s).
+//			for (int i = 0; i < enemyAreaTableData.enemyAreaTableEntries.Length; i++) {
+//				EnemyAreaTableEntry entry = enemyAreaTableData.enemyAreaTableEntries[i];
+//				EnemyTierEntry[] tierEntries = entry.enemyTierListEntries;
+//				for (int j = 0; j < tierEntries.Length; j++) {
+//					if(tierEntries[j] == null) continue;
+//					for (int k = 0; k < tierEntries[j].enemies.Count; k++) {
+//						AddEnemyToAreaTable(entry.area, j, entry.enemyTierListEntries[j].enemies[k]);
+//					}
+//				} 
+//			}
+//			Debug.LogFormat("loaded area table: {0}", AreaDictionaryToJson(areaTable));
 		} else {
 			Debug.LogFormat("File {0} was not found.", fileName);
 		}
 	}
 	
 	public void LoadEnemyTableFromFile(string fileName) {
-		string filePath = Path.Combine (Application.streamingAssetsPath, fileName);
+		string filePath = Path.Combine (Application.persistentDataPath, fileName);
 		if (File.Exists (filePath)) {
-			string jsonData = File.ReadAllText (filePath);
-			EnemyTableData enemyTableData = JsonUtility.FromJson<EnemyTableData>(jsonData);
+			using (StreamReader streamReader = File.OpenText(filePath)) {
+				string jsonData = streamReader.ReadToEnd();
+				EnemyTableData enemyTableData = JsonUtility.FromJson<EnemyTableData>(jsonData);
 //			Debug.LogFormat("EnemyTableData: {0}",enemyTableData);
-			// For each table entry, add the enemy to their designated area(s).
-			for (int i = 0; i < enemyTableData.enemyTableEntries.Length; i++) {
-				EnemyTableEntry entry = enemyTableData.enemyTableEntries[i];
-				enemyTable.Add(entry.enemyPrefab, entry);
+				// For each table entry, add the enemy to their designated area(s).
+				for (int i = 0; i < enemyTableData.enemyTableEntries.Length; i++) {
+					EnemyTableEntry entry = enemyTableData.enemyTableEntries[i];
+					if (entry == null) {
+						continue; // Area doesnt contain any data.
+					}
+					enemyTable.Add(entry.enemyPrefab, entry);
+				}
+				Debug.LogFormat("loaded enemy table: {0}", EnemyDictionaryToJson(enemyTable));
 			}
-			Debug.LogFormat("loaded enemy table: {0}", EnemyDictionaryToJson(enemyTable));
+
+//
+//			string jsonData = File.ReadAllText (filePath);
+//			EnemyTableData enemyTableData = JsonUtility.FromJson<EnemyTableData>(jsonData);
+////			Debug.LogFormat("EnemyTableData: {0}",enemyTableData);
+//			// For each table entry, add the enemy to their designated area(s).
+//			for (int i = 0; i < enemyTableData.enemyTableEntries.Length; i++) {
+//				EnemyTableEntry entry = enemyTableData.enemyTableEntries[i];
+//				enemyTable.Add(entry.enemyPrefab, entry);
+//			}
+//			Debug.LogFormat("loaded enemy table: {0}", EnemyDictionaryToJson(enemyTable));
 		} else {
 			Debug.LogFormat("File {0} was not found.", fileName);
 		}
 	}
 	
 	public void LoadEnemyAndAreaTableFromFile(string fileName) {
-		string filePath = Path.Combine (Application.streamingAssetsPath, fileName);
+		string filePath = Path.Combine (Application.persistentDataPath, fileName);
 		if (File.Exists (filePath)) {
 			string jsonData = File.ReadAllText (filePath);
 			EnemyTableData enemyTableData = JsonUtility.FromJson<EnemyTableData>(jsonData);
@@ -280,7 +352,8 @@ public class BattleSceneDataManager : MonoBehaviour {
 	private EnemyAreaTableData JsonToEnemyAreaTableData(string jsonData) {
 		JSONNode node = JSON.Parse(jsonData);
 		JSONArray areas = node["areaTableEntries"].AsArray;
-		EnemyAreaTableData result = new EnemyAreaTableData{enemyAreaTableEntries = new EnemyAreaTableEntry[areas.Count]};
+		Debug.LogFormat("areas.Count {0}", areas.Count);
+		EnemyAreaTableData result = new EnemyAreaTableData{enemyAreaTableEntries = new EnemyAreaTableEntry[areaCount]};
 		// For each area in the json file...
 		foreach (var area in areas) {
 			JSONNode areaInfo = area.Value; 						
@@ -298,6 +371,7 @@ public class BattleSceneDataManager : MonoBehaviour {
 					enemyAreaTableEntry.enemyTierListEntries[tier].enemies.Add(enemy.Value);	// Add enemies to the list
 				}
 			}
+			Debug.LogFormat("areaName {0}, {1}", areaName, result.enemyAreaTableEntries[(int) areaName]);
 			result.enemyAreaTableEntries[(int) areaName] = enemyAreaTableEntry;	// Add the table entry to the area
 		}
 		return result;
