@@ -542,25 +542,25 @@ public class BattleManager : MonoBehaviour {
 
 	private void CalculatePriority(bool fastestFirst) {
 		Sorting.DescendingMergeSort(units, new CompareCharactersBySpeed());
-		Queue<Character> temp = new Queue<Character>();
-		while (turnQueue.Count < 10) {			// Queue up to 100 actions
+//		Queue<Character> temp = new Queue<Character>();
+		while (turnQueue.Count < 20) {			// Queue up to 100 actions
 			foreach (GameObject unit in units) {
 				Character character = unit.GetComponent<Character>();
 				character.IncrementReadiness();
 				if (!character.Ready) continue; // If character is ready, add to queue and reset readiness
 				turnQueue.Enqueue(character);
 				turnQueueUi.Enqueue(character);
-				temp.Enqueue(character);
+//				temp.Enqueue(character);
 				character.ResetReadiness();
-				if (turnQueue.Count >= 10) break; // Break out if reach threshold
+				if (turnQueue.Count >= 20) break; // Break out if reach threshold
 			}
 		}
 		Debug.LogFormat("Queued up units:");
-		foreach (Character c in temp) {
+		foreach (Character c in turnQueueUi) {
 			// TODO: display all the icons of units in the queue
 			Debug.LogFormat("|---> {0}", c.name);
 		}
-		Debug.LogFormat("{0}",temp.Count);
+		Debug.LogFormat("{0}",turnQueueUi.Count);
 	}
 
 	private void CalculateRuneStats(Character currentUnit) {
