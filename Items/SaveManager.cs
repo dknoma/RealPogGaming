@@ -2,8 +2,10 @@
 using UnityEngine;
 
 namespace Items {
-	public class SaveManager : MonoBehaviour
-	{
+	/// <summary>
+	/// ~/Library/Application Support/DefaultCompany/<!--projectName-->
+	/// </summary>
+	public class SaveManager : MonoBehaviour {
 		public static void LoadOrInitializeInventory() {
 			// Saving and loading.
 			if (File.Exists(Path.Combine(Application.persistentDataPath, "inventory.json"))) {
