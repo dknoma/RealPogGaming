@@ -2,19 +2,14 @@
 
 namespace Items {
 	[System.Serializable]
-	public class InventoryTab {
+	public class InventorySubTab {
 		public string tabName;
-		public InventorySubTab[] subTabs;
 		public ItemInstance[] tabInventory;
 		// TODO - add functionality for stacking items
 		// 		- prevent stacking of certain kinds of items too
 		
 		public bool SlotEmpty(int index) {
 			return tabInventory[index] == null || tabInventory[index].item == null;
-		}
-
-		public bool SubTabsEmpty() {
-			return subTabs == null || subTabs.Length == 0;
 		}
 
 		// Get an item if it exists.
@@ -64,18 +59,11 @@ namespace Items {
 
 		public override string ToString() {
 			StringBuilder sb = new StringBuilder();
-			sb.AppendFormat("Tab: \"{0}\", items: [", tabName);
-			if(subTabs.Length > 0) {
-				for(int i = 0; i < subTabs.Length; i++) {
-					sb.AppendFormat("{{{0}}}, ",subTabs[i]);
-				}
-				sb.Remove(sb.Length-1, 1);
-			} else {
-				for(int i = 0; i < tabInventory.Length; i++) {
-					sb.AppendFormat("{0}, ",tabInventory[i]);
-				}
-				sb.Remove(sb.Length-1, 1);
+			sb.AppendFormat("Sub-tab: \"{0}\", items: [", tabName);
+			for(int i = 0; i < tabInventory.Length; i++) {
+				sb.AppendFormat("{0}, ",tabInventory[i]);
 			}
+			sb.Remove(sb.Length-1, 1);
 			sb.Append("]");
 			return sb.ToString();
 		}

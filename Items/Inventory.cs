@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Text;
+using UnityEngine;
 
 namespace Items {
 	[System.Serializable]
@@ -46,18 +47,31 @@ namespace Items {
 			System.IO.File.WriteAllText(path, JsonUtility.ToJson(this, true));
 		}
 
-		/* Inventory Start */
+		/// <summary>
+		/// Inventory Start
+		/// </summary>
 		public InventoryTab[] inventoryTabs;
 
-		// Get an item if it exists.
+		/// <summary>
+		/// Get an item if it exists.
+		/// </summary>
+		/// <param name="tabIndex">Index of the specific inventory tab.</param>
+		/// <param name="index">Desired index to get an ItemInstance.</param>
+		/// <param name="item">The desired item.</param>
+		/// <returns>Returns true if item was found and passes out the item that was found.</returns>
 		public bool GetItem(int tabIndex, int index, out ItemInstance item) {
 			// inventory[index] doesn't return null, so check item instead.
 			return inventoryTabs[tabIndex].GetItem(index, out item);
 		}
 
-		// Remove an item at an index if one exists at that index.
+		/// <summary>
+		/// Remove an item at an index if one exists at that index. Checks if the indicated tab is a super tab category.
+		/// </summary>
+		/// <param name="tabIndex">Index of the specified inventory tab.</param>
+		/// <param name="index">Desired index to remove an item from.</param>
+		/// <returns>Returns true if an item was successfully removed.</returns>
 		public bool RemoveItem(int tabIndex, int index) {
-			return inventoryTabs[tabIndex].RemoveItem(index);
+			return inventoryTabs[tabIndex].SubTabsEmpty() && inventoryTabs[tabIndex].RemoveItem(index);
 		}
 
 		// Insert an item, return the index where it was inserted.  -1 if error.
@@ -68,6 +82,14 @@ namespace Items {
 		// Simply save.
 		private void Save() {
 			SaveManager.SaveInventory();
+		}
+
+		public override string ToString() {
+			StringBuilder sb = new StringBuilder();
+			for(int i = 0; i < inventoryTabs.Length; i++) {
+				sb.AppendFormat("{{{0}}}, ", inventoryTabs[i]);
+			}
+			return string.Format("Inventory: [{0}]", sb);
 		}
 	}
 }
