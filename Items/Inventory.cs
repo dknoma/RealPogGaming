@@ -50,7 +50,10 @@ namespace Items {
 		/// <summary>
 		/// Inventory Start
 		/// </summary>
+		public static int MAXIMUM_GOLD_CAPACITY = 999999;
+		
 		public InventoryTab[] inventoryTabs;
+		public int goldCount;
 
 		/// <summary>
 		/// Get an item if it exists.

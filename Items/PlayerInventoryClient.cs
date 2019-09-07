@@ -76,5 +76,18 @@ namespace Items {
 				tabInventorySlots[j].RemoveItem();
 			}
 		}
+		
+		[System.Serializable]
+		public class InventoryTabObject {
+			public string name;
+			public List<InventorySubTabObject> subTabs = new List<InventorySubTabObject>();
+			public List<Slot> tabInventorySlots = new List<Slot>();
+		}
+		
+		[System.Serializable]
+		public class InventorySubTabObject {
+			public string name;
+			public List<Slot> tabInventorySlots = new List<Slot>();
+		}
 	}
 }
