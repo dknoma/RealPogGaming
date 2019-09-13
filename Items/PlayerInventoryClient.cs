@@ -20,6 +20,7 @@ namespace Items {
 		// 4
 		//    100
 
+		// TODO: make it so that we can display a basic inventory. SetActive()
 		public List<InventoryTabObject> inventorySlots;
 
 		private void Start() {
@@ -80,6 +81,7 @@ namespace Items {
 		[System.Serializable]
 		public class InventoryTabObject {
 			public string name;
+			public GameObject frontendInstance; // frontend
 			public List<InventorySubTabObject> subTabs = new List<InventorySubTabObject>();
 			public List<Slot> tabInventorySlots = new List<Slot>();
 		}
@@ -87,6 +89,7 @@ namespace Items {
 		[System.Serializable]
 		public class InventorySubTabObject {
 			public string name;
+			public GameObject frontendInstance; // frontend
 			public List<Slot> tabInventorySlots = new List<Slot>();
 		}
 	}

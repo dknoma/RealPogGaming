@@ -78,10 +78,10 @@ namespace Items {
 		}
 
 		// Insert an item, return the index where it was inserted.  -1 if error.
-		public int InsertItem(int tabIndex, ItemInstance item) {
-			return inventoryTabs[tabIndex].InsertItem(item);
+		public int InsertItem(int tabIndex, ItemInstance item, int quantity) {
+			return inventoryTabs[tabIndex].InsertItem(item, quantity);
 		}
-
+		
 		// Simply save.
 		private void Save() {
 			SaveManager.SaveInventory();
