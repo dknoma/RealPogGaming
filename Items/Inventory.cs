@@ -66,6 +66,16 @@ namespace Items {
 			// inventory[index] doesn't return null, so check item instead.
 			return inventoryTabs[tabIndex].GetItem(index, out item);
 		}
+		
+		/// <summary>
+		/// Get an item's information if it exists.
+		/// </summary>
+		/// <param name="tabIndex">Index of the specific inventory tab.</param>
+		/// <param name="index">Desired index to get an ItemInstance.</param>
+		/// <returns>Returns the information of an item if it exists.</returns>
+		public string GetItemInfo(int tabIndex, int index) {
+			return inventoryTabs[tabIndex].GetItemInfo(index);
+		}
 
 		/// <summary>
 		/// Remove an item at an index if one exists at that index. Checks if the indicated tab is a super tab category.
@@ -77,14 +87,66 @@ namespace Items {
 			return inventoryTabs[tabIndex].SubTabsEmpty() && inventoryTabs[tabIndex].RemoveItem(index);
 		}
 
+		/// <summary>
+		/// Decrement an item's quantity at an index if one exists at that index. Checks if the indicated tab is a super tab category.
+		/// </summary>
+		/// <param name="tabIndex">Index of the specified inventory tab.</param>
+		/// <param name="index">Desired index of the item to decrement.</param>
+		/// <returns>Returns true if an item was successfully decremented.</returns>
+		public bool DecrementItemQuantity(int tabIndex, int index) {
+			return inventoryTabs[tabIndex].SubTabsEmpty() && inventoryTabs[tabIndex].DecrementItemQuantity(index);
+		}
+
 		// Insert an item, return the index where it was inserted.  -1 if error.
 		public int InsertItem(int tabIndex, ItemInstance item, int quantity) {
-			return inventoryTabs[tabIndex].InsertItem(item, quantity);
+			return item != null ? inventoryTabs[tabIndex].InsertItem(item, quantity) : -1;
+		}
+
+		public int GetGoldCount() {
+			return this.goldCount;
+		}
+
+		public bool TryAddGold(int goldCount) {
+			bool canAddGold;
+			if (this.goldCount == MAXIMUM_GOLD_CAPACITY) {
+				canAddGold = false;
+			} else {
+				int total = this.goldCount + goldCount;
+				this.goldCount = total > MAXIMUM_GOLD_CAPACITY || this.goldCount > MAXIMUM_GOLD_CAPACITY ? 
+					MAXIMUM_GOLD_CAPACITY : total;
+				canAddGold = true;
+			}
+
+			return canAddGold;
+		}
+		
+		public bool TrySubtractGold(int goldCount) {
+			bool canSubtractGold;
+			if (this.goldCount == 0) {
+				canSubtractGold = false;
+			} else {
+				int total = this.goldCount - goldCount;
+				this.goldCount = total < 0 || this.goldCount < 0 ? 0 : total;
+				canSubtractGold = true;
+			}
+
+			return canSubtractGold;
 		}
 		
 		// Simply save.
 		private void Save() {
 			SaveManager.SaveInventory();
+		}
+
+		// FOR TESTING ONLY
+		public void ClearInventory() {
+			bool removed;
+			for (int i = 0; i < inventoryTabs.Length; i++) {
+				for (int j = 0; j < inventoryTabs[i].tabInventory.Length; j++) {
+					removed = RemoveItem(i, j);
+//					Debug.LogFormat("removed item at {0}: {1}", j, removed);
+				}
+			}
 		}
 
 		public override string ToString() {

@@ -4,21 +4,6 @@ using UnityEngine;
 namespace Items {
 	public class PlayerInventoryClient : MonoBehaviour {
 		// list of tabs, list of subtabs and their slots, then list of slots of rest of tabs
-		// 0
-		//     0    
-		//        100
-		//     1
-		//        100
-		//     2
-		//        100
-		// 1
-		//    100
-		// 2
-		//    100
-		// 3
-		//    100
-		// 4
-		//    100
 
 		// TODO: make it so that we can display a basic inventory. SetActive()
 		public List<InventoryTabObject> inventorySlots;
