@@ -34,13 +34,74 @@ namespace Items {
 			return true;
 		}
 
+		// Get an item if it exists.
+		public string GetItemInfo(int index) {
+			// inventory[index] doesn't return null, so check item instead.
+			string info = "N/A";
+			if (!SlotEmpty(index)) {
+				info = tabInventory[index].GetItemInfo();
+			}
+			return info;
+		}
+		
+		public bool DecrementItemQuantity(int index) {
+			if (SlotEmpty(index)) {
+				// Nothing existed at the specified slot.
+				return false;
+			}
+			bool removed;
+			int itemQuantity = tabInventory[index].quantity;
+			if (itemQuantity > 1) {
+				tabInventory[index].quantity--;
+				removed = true;
+				Debug.LogFormat("Decrementing {0}.", GetItemInfo(index));
+			} else if (itemQuantity == 1) {
+				ItemInstance item = tabInventory[index];
+				itemIndexByName.Remove(item.GetItemName());
+				item.quantity = 0;
+				tabInventory[index].quantity--;
+				tabInventory[index] = null;
+				removed = true;
+				Debug.LogFormat("Decrementing {0}.", GetItemInfo(index));
+			} else {
+				removed = false;
+			}
+			return removed;
+		}
+		
+		public bool DecrementItemQuantity(int index, int decrementCount) {
+			if (SlotEmpty(index)) {
+				// Nothing existed at the specified slot.
+				return false;
+			}
+			Debug.LogFormat("Removing {0}.", GetItemInfo(index));
+			bool decremented;
+			int decrementedItemQuantity = tabInventory[index].quantity - decrementCount;
+			if (decrementedItemQuantity > 0) {
+				tabInventory[index].quantity = decrementedItemQuantity;
+				decremented = true;
+			} else if (decrementedItemQuantity == 0) {
+				ItemInstance item = tabInventory[index];
+				itemIndexByName.Remove(item.GetItemName());
+				item.quantity = 0;
+				tabInventory[index] = null;
+				decremented = true;
+			} else {
+				decremented = false;
+			}
+			return decremented;
+		}
+
 		// Remove an item at an index if one exists at that index.
 		public bool RemoveItem(int index) {
 			if (SlotEmpty(index)) {
 				// Nothing existed at the specified slot.
 				return false;
 			}
-
+			Debug.LogFormat("Removing {0}.", GetItemInfo(index));
+			ItemInstance item = tabInventory[index];
+			itemIndexByName.Remove(item.GetItemName());
+			item.quantity = 0;
 			tabInventory[index] = null;
 			return true;
 		}
@@ -69,6 +130,7 @@ namespace Items {
 					tabInventory[i] = item;
 					index = i;
 					itemIndexByName.Add(itemName, i);
+					tabInventory[i].quantity++;
 					Debug.LogFormat("Inserted {0} at index {1} in tab {2}.", item.GetItemName(), index,
 					                this.tabName);
 					break;
