@@ -10,6 +10,8 @@ namespace Items {
 		// TODO: make it so that we can display a basic inventory. SetActive()
 		public List<InventoryTabObject> inventorySlots = new List<InventoryTabObject>();
 
+		private static readonly string EMPTY_STRING = "";
+		
 		private Inventory inventory;
 
 		private void Start() {
@@ -52,32 +54,59 @@ namespace Items {
 			}
 		}
 
+//		private bool GetItemIndexByName(int tabIndex, string name) {
+//			int index = this.inventory.GetItemIndexByName(tabIndex, name);
+//			ItemInstance fetchedItem;
+//			return this.inventory.GetItem(tabIndex, index, out fetchedItem);
+//		}
+
 		public void InsertItem(int tabIndex, ItemInstance item, int quantity) {
-			int insertedIndex = this.inventory.InsertItem(tabIndex, item, quantity);
+			bool itemExistsBeforeInsert;
+			int insertedIndex = this.inventory.InsertItem(tabIndex, item, quantity, out itemExistsBeforeInsert);
+
+			ItemInstance fetchedItem;
 			if (insertedIndex > -1) {
-				ItemInstance fetchedItem;
-				this.inventory.GetItem(tabIndex, insertedIndex, out fetchedItem);
-				Debug.LogFormat("fetched: {0}", fetchedItem);
 				Slot desiredSlot = this.inventorySlots[tabIndex].tabInventorySlots[insertedIndex];
-				int itemQuantity = desiredSlot.SetItemQuantity(fetchedItem);
+				if (!itemExistsBeforeInsert) {
+					desiredSlot.SetItemNameText(item.GetItemName());
+				}
+				
+				bool gotItem = this.inventory.GetItem(tabIndex, insertedIndex, out fetchedItem);
+				if (!gotItem) {
+					return;	// if item doesn't exist, then something must be wrong...
+				}
+				
+				int itemQuantity = desiredSlot.SetItemQuantity(fetchedItem.quantity);
+				Debug.LogFormat("fetched: {0}", fetchedItem);
 			}
 		}
 
 		public void DecrementItemQuantity(int tabIndex, int index, int quantity) {
-			if (this.inventory.DecrementItemQuantity(tabIndex, index, quantity)) {
-				ItemInstance item;
-				this.inventory.GetItem(tabIndex, index, out item);
+			bool itemExistsAfterDecrement;
+			if (this.inventory.DecrementItemQuantity(tabIndex, index, quantity, out itemExistsAfterDecrement)) {
 				Slot desiredSlot = this.inventorySlots[tabIndex].tabInventorySlots[index];
-				desiredSlot.SetItemQuantity(item);
+				int decrementedQuantity;
+				if (itemExistsAfterDecrement) {
+					ItemInstance item;
+					this.inventory.GetItem(tabIndex, index, out item);
+					decrementedQuantity = item.quantity;
+				} else {
+					desiredSlot.SetItemNameText(EMPTY_STRING);
+					decrementedQuantity = 0;
+				}
+				desiredSlot.SetItemQuantity(decrementedQuantity);
 			}
 		}
 
 		private void SetItemsInTabsSlots(int tabIndex, List<Slot> tabInventorySlots) {
 			for(int i = 0; i < tabInventorySlots.Count; i++) {
-				ItemInstance instance;
-				if(this.inventory.GetItem(tabIndex, i, out instance)) {
-					Debug.LogFormat("Instance: {0}", instance.GetItemName());
-					tabInventorySlots[i].SetItem(instance);
+				ItemInstance itemInstance;
+				if(this.inventory.GetItem(tabIndex, i, out itemInstance)) {
+					Debug.LogFormat("Instance: {0}", itemInstance.GetItemName());
+					Slot currentSlot = tabInventorySlots[i];
+					currentSlot.SetItem(itemInstance);
+					currentSlot.SetItemNameText(itemInstance.GetItemName());
+					currentSlot.SetItemQuantity(itemInstance.quantity);
 				}
 			}
 		}
@@ -115,27 +144,13 @@ namespace Items {
 				this.slot.SetItem(itemInstance);
 			}
 
-			public string SetItemNameText(ItemInstance itemInstance) {
-				string name;
-				if (itemInstance != null) {
-					name = itemInstance.GetItemName();
-					this.itemNameText.text = name;
-				} else {
-					this.itemNameText.text = EMPTY_STRING;
-					name = EMPTY_STRING;
-				}
+			public string SetItemNameText(string name) {
+				this.itemNameText.text = name;
 				return name;
 			}
 
-			public int SetItemQuantity(ItemInstance itemInstance) {
-				int quantity;
-				if (itemInstance != null) {
-					quantity = itemInstance.quantity;
-					this.itemQuantityText.text = quantity.ToString();
-				} else {
-					this.itemQuantityText.text = EMPTY_STRING;
-					quantity = 0;
-				}
+			public int SetItemQuantity(int quantity) {
+				this.itemQuantityText.text = quantity > 0 ? quantity.ToString() : EMPTY_STRING;
 				return quantity;
 			}
 

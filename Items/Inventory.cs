@@ -63,8 +63,15 @@ namespace Items {
 		/// <param name="item">The desired item.</param>
 		/// <returns>Returns true if item was found and passes out the item that was found.</returns>
 		public bool GetItem(int tabIndex, int index, out ItemInstance item) {
+			bool gotItem;
 			// inventory[index] doesn't return null, so check item instead.
-			return inventoryTabs[tabIndex].GetItem(index, out item);
+			if (index > -1) {
+				gotItem = inventoryTabs[tabIndex].GetItem(index, out item);
+			} else {
+				item = null;
+				gotItem = false;
+			}
+			return gotItem;
 		}
 		
 		/// <summary>
@@ -97,13 +104,34 @@ namespace Items {
 			return inventoryTabs[tabIndex].SubTabsEmpty() && inventoryTabs[tabIndex].DecrementItemQuantity(index);
 		}
 
-		public bool DecrementItemQuantity(int tabIndex, int index, int quantity) {
-			return inventoryTabs[tabIndex].SubTabsEmpty() && inventoryTabs[tabIndex].DecrementItemQuantity(index, quantity);
+		public bool DecrementItemQuantity(int tabIndex, int index, int quantity, out bool itemExists) {
+			bool tabHasNoSubtabs = inventoryTabs[tabIndex].SubTabsEmpty();
+			bool decrementedItemQuantity;
+			if (tabHasNoSubtabs) {
+				decrementedItemQuantity =
+					inventoryTabs[tabIndex].DecrementItemQuantity(index, quantity, out itemExists);
+			} else {
+				decrementedItemQuantity = false;
+				itemExists = false;
+			}
+			return decrementedItemQuantity;
 		}
 		
 		// Insert an item, return the index where it was inserted.  -1 if error.
-		public int InsertItem(int tabIndex, ItemInstance item, int quantity) {
-			return item != null ? inventoryTabs[tabIndex].InsertItem(item, quantity) : -1;
+		public int InsertItem(int tabIndex, ItemInstance item, int quantity, out bool itemExistsBeforeInsert) {
+			bool itemIsNotNull = item != null;
+			int index;
+			if (itemIsNotNull) {
+				index = inventoryTabs[tabIndex].InsertItem(item, quantity, out itemExistsBeforeInsert);
+			} else {
+				index = -1;
+				itemExistsBeforeInsert = false;
+			}
+			return index;
+		}
+
+		public int GetItemIndexByName(int tabIndex, string name) {
+			return this.inventoryTabs[tabIndex].GetItemIndexByName(name);
 		}
 
 		public int GetGoldCount() {

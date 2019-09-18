@@ -71,9 +71,10 @@ namespace Items {
 			return removed;
 		}
 		
-		public bool DecrementItemQuantity(int index, int decrementCount) {
+		public bool DecrementItemQuantity(int index, int decrementCount, out bool itemExists) {
 			if (SlotEmpty(index)) {
 				// Nothing existed at the specified slot.
+				itemExists = false;
 				return false;
 			}
 			Debug.LogFormat("Decrementing {0}.", GetItemInfo(index));
@@ -83,14 +84,17 @@ namespace Items {
 			if (decrementedItemQuantity > 0) {
 //				tabInventory[index].quantity = decrementedItemQuantity;
 				decremented = true;
+				itemExists = true;
 			} else if (decrementedItemQuantity == 0) {
 				RemoveItem(index);
 //				item.quantity = 0;
 //				tabInventory[index] = null;
 				decremented = true;
+				itemExists = false;
 			} else {
 				decrementedItemQuantity = 0;
 				decremented = false;
+				itemExists = false;
 			}
 			item.quantity = decrementedItemQuantity;
 			return decremented;
@@ -112,12 +116,13 @@ namespace Items {
 		}
 
 		// Insert an item, return the index where it was inserted.  -1 if error.
-		public int InsertItem(ItemInstance item, int quantity) {
+		public int InsertItem(ItemInstance item, int quantity, out bool itemExistsBeforeInsert) {
 			int index = -1;
 			string itemName = item.GetItemName();
 			int stackLimit = item.item.stackLimit;
+			itemExistsBeforeInsert = ItemExists(itemName);
 			// If an item is in the inventory and can stack it, increase its quantity
-			if (ItemExists(itemName) && CanStack(stackLimit)) {
+			if (itemExistsBeforeInsert && CanStack(stackLimit)) {
 				index = this.itemIndexByName[itemName];
 				ItemInstance desiredItem = tabInventory[index];
 				// If hasn't reached stack limit, increase stack quantity.
@@ -144,6 +149,10 @@ namespace Items {
 
 			// Couldn't find a free slot.
 			return index;
+		}
+
+		public int GetItemIndexByName(string name) {
+			return itemIndexByName.ContainsKey(name) ? itemIndexByName["name"] : -1;
 		}
 
 		/// <summary>
