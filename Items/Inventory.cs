@@ -97,6 +97,10 @@ namespace Items {
 			return inventoryTabs[tabIndex].SubTabsEmpty() && inventoryTabs[tabIndex].DecrementItemQuantity(index);
 		}
 
+		public bool DecrementItemQuantity(int tabIndex, int index, int quantity) {
+			return inventoryTabs[tabIndex].SubTabsEmpty() && inventoryTabs[tabIndex].DecrementItemQuantity(index, quantity);
+		}
+		
 		// Insert an item, return the index where it was inserted.  -1 if error.
 		public int InsertItem(int tabIndex, ItemInstance item, int quantity) {
 			return item != null ? inventoryTabs[tabIndex].InsertItem(item, quantity) : -1;

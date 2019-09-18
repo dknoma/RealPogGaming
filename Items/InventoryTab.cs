@@ -49,23 +49,25 @@ namespace Items {
 				// Nothing existed at the specified slot.
 				return false;
 			}
+			ItemInstance item = tabInventory[index];
+			int decrementedItemQuantity = tabInventory[index].quantity - 1;
 			bool removed;
 			int itemQuantity = tabInventory[index].quantity;
-			if (itemQuantity > 1) {
-				tabInventory[index].quantity--;
-				removed = true;
+			if (decrementedItemQuantity > 0) {
 				Debug.LogFormat("Decrementing {0}.", GetItemInfo(index));
-			} else if (itemQuantity == 1) {
-				ItemInstance item = tabInventory[index];
-				itemIndexByName.Remove(item.GetItemName());
-				item.quantity = 0;
-				tabInventory[index].quantity--;
-				tabInventory[index] = null;
+//				tabInventory[index].quantity--;
 				removed = true;
+			} else if (decrementedItemQuantity == 0) {
 				Debug.LogFormat("Decrementing {0}.", GetItemInfo(index));
+//				item.quantity = 0;
+//				tabInventory[index] = null;
+				RemoveItem(index);
+				removed = true;
 			} else {
+				decrementedItemQuantity = 0;
 				removed = false;
 			}
+			item.quantity = decrementedItemQuantity;
 			return removed;
 		}
 		
@@ -74,21 +76,23 @@ namespace Items {
 				// Nothing existed at the specified slot.
 				return false;
 			}
-			Debug.LogFormat("Removing {0}.", GetItemInfo(index));
-			bool decremented;
+			Debug.LogFormat("Decrementing {0}.", GetItemInfo(index));
+			ItemInstance item = tabInventory[index];
 			int decrementedItemQuantity = tabInventory[index].quantity - decrementCount;
+			bool decremented;
 			if (decrementedItemQuantity > 0) {
-				tabInventory[index].quantity = decrementedItemQuantity;
+//				tabInventory[index].quantity = decrementedItemQuantity;
 				decremented = true;
 			} else if (decrementedItemQuantity == 0) {
-				ItemInstance item = tabInventory[index];
-				itemIndexByName.Remove(item.GetItemName());
-				item.quantity = 0;
-				tabInventory[index] = null;
+				RemoveItem(index);
+//				item.quantity = 0;
+//				tabInventory[index] = null;
 				decremented = true;
 			} else {
+				decrementedItemQuantity = 0;
 				decremented = false;
 			}
+			item.quantity = decrementedItemQuantity;
 			return decremented;
 		}
 
@@ -99,9 +103,10 @@ namespace Items {
 				return false;
 			}
 			Debug.LogFormat("Removing {0}.", GetItemInfo(index));
+//			tabInventory[index].quantity = 0;
 			ItemInstance item = tabInventory[index];
-			itemIndexByName.Remove(item.GetItemName());
 			item.quantity = 0;
+			itemIndexByName.Remove(item.GetItemName());
 			tabInventory[index] = null;
 			return true;
 		}
@@ -113,12 +118,12 @@ namespace Items {
 			int stackLimit = item.item.stackLimit;
 			// If an item is in the inventory and can stack it, increase its quantity
 			if (ItemExists(itemName) && CanStack(stackLimit)) {
-				int existingItemIndex = this.itemIndexByName[itemName];
-				ItemInstance desiredItem = tabInventory[existingItemIndex];
+				index = this.itemIndexByName[itemName];
+				ItemInstance desiredItem = tabInventory[index];
 				// If hasn't reached stack limit, increase stack quantity.
 				if (!ReachedStackLimit(desiredItem.quantity, stackLimit)) {
 					desiredItem.quantity += quantity; // update stack quantity
-					Debug.LogFormat("Increased {0}'s quantity at index {1} in tab {2}.", item.GetItemName(), existingItemIndex,
+					Debug.LogFormat("Increased {0}'s quantity at index {1} in tab {2}.", item.GetItemName(), index,
 					                this.tabName);
 				} else {
 					Debug.LogFormat("Reached stack limit of {0}.", stackLimit);
@@ -130,8 +135,8 @@ namespace Items {
 					tabInventory[i] = item;
 					index = i;
 					itemIndexByName.Add(itemName, i);
-					tabInventory[i].quantity++;
-					Debug.LogFormat("Inserted {0} at index {1} in tab {2}.", item.GetItemName(), index,
+					tabInventory[i].quantity += quantity;
+					Debug.LogFormat("Not in inventory - Inserted {0} at index {1} in tab {2}.", item.GetItemName(), index,
 					                this.tabName);
 					break;
 				}

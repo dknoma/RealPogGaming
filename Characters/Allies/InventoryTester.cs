@@ -4,8 +4,9 @@ using UnityEngine;
 namespace Characters.Allies {
     public class InventoryTester : MonoBehaviour{
         
-        [SerializeField]
         private Inventory inventory;
+        [SerializeField] private PlayerInventoryClient inventoryClient;
+
 
         public GameObject sword;
         private ItemInstance swordInstance;
@@ -19,9 +20,9 @@ namespace Characters.Allies {
             if (Input.GetKeyDown(KeyCode.E)) {
                 SaveManager.SaveInventory();
             } else if (Input.GetKeyDown(KeyCode.R)) {
-                inventory.InsertItem(0, swordInstance, 1);
+                inventoryClient.InsertItem(0, swordInstance, 1);
             } else if (Input.GetKeyDown(KeyCode.F)) {
-                inventory.DecrementItemQuantity(0, 0);
+                inventoryClient.DecrementItemQuantity(0, 0, 1);
             } else if (Input.GetKeyDown(KeyCode.T)) {
                 string info = inventory.GetItemInfo(0,0);
                 Debug.Log(info);
