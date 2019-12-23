@@ -60,7 +60,9 @@ public class ScreenTransitionManager : MonoBehaviour {
 		implemented[(int) Transition.HorizontalDistortion] = true;
 		implemented[(int) Transition.Sawtooth] = true;
 		implemented[(int) Transition.Angular] = true;
-		debugText = debugTextbox.GetComponent<Text>();
+		if(debugTextbox != null) {
+		    debugText = debugTextbox.GetComponent<Text>();
+        }
 	}
 
 	private void Update() {
