@@ -52,6 +52,10 @@ namespace Tilemaps {
 
             Selection.activeObject = asset;
         }
+
+        public void CreateTilePrefabs() {
+            
+        }
         
         public void BuildTileset() {
             if (tiledInfo != null) {

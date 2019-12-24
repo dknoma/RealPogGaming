@@ -57,7 +57,8 @@ namespace Characters.Allies {
         /// <param name="other"></param>
         public override bool Equals(object other)
         {
-            return other is TDVector other1 && this.Equals(other1);
+//            return other is TDVector other1 && this.Equals(other1);
+            return true;
         }
         
         public bool Equals(TDVector other) {
