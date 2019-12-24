@@ -1,0 +1,4 @@
+repository "default@desktop-l0rtnpb:8087"
+  path "/"
+    br "/main"
+    co "/main"
