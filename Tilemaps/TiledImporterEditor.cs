@@ -11,6 +11,10 @@ namespace Tilemaps {
             if (GUILayout.Button("Process JSON")) {
                 importer.ProcessJSON();
             }
+            
+            if (GUILayout.Button("Build Tileset")) {
+                importer.BuildTileset();
+            }
         }
     }
 }
