@@ -195,6 +195,29 @@ public class TestPhysicsController : MonoBehaviour {
 		// diagonalBoundCorrection = Mathf.Sqrt(2 * (BOUND_CORRECTION*BOUND_CORRECTION));
 		// blockingCorrectionSpeed = overworldSpeed;
 	}
+	
+	private Vector3 pointTo3(Vector2 point, int height) {
+	    return new Vector3(point.x, height, point.y - height);
+	}
+	
+	// TODO: collider has multiple contact points, how to get contact point we want?
+	private void OnCollisionStay2D(Collision2D coll) {
+        if(coll.gameObject.CompareTag("Platform")) {
+            Platform plat = coll.gameObject.GetComponent<Platform>();
+            ContactPoint2D[] contacts = coll.contacts;
+            ContactPoint2D first = contacts[0];
+            
+            foreach(ContactPoint2D point in coll.contacts) {
+                Vector3 point3 = pointTo3(point.point, plat.Height);
+                
+                Debug.Log(string.Format("\t\ttouching {0}, {1}, {2}", plat.name, plat.Height, point3.ToString("F4")));
+            }
+            
+            // Vector3 point = pointTo3(first.point, plat.Height);
+            
+            // Debug.Log(string.Format("\t\ttouching {0}, {1}, {2}", plat.name, plat.Height, point.ToString("F4")));
+        }
+    }
 
 	// private void OnCollisionEnter2D(Collision2D coll) {
 	// 	if(coll.gameObject.CompareTag("Platform")) {
@@ -307,11 +330,9 @@ public class TestPhysicsController : MonoBehaviour {
 			StartDirection(OverworldMovementDirection.Left);
 			MoveInDirection(OverworldMovementDirection.Left, overworldSpeed);
 		} else if (Input.GetAxisRaw("Vertical") > 0 && Input.GetAxisRaw("Horizontal") > 0) {
-			// TODO: Facing up-right
 			StartDirection(OverworldMovementDirection.UpRight);
 			MoveInDirection(OverworldMovementDirection.UpRight, diagonalMovementSpeed);
 		} else if (Input.GetAxisRaw("Vertical") > 0 && Input.GetAxisRaw("Horizontal") < 0) {
-			// TODO: Facing up-left
 			StartDirection(OverworldMovementDirection.UpLeft);
 			MoveInDirection(OverworldMovementDirection.UpLeft, diagonalMovementSpeed);
 		} else if (Input.GetAxisRaw("Vertical") < 0 && Input.GetAxisRaw("Horizontal") < 0) {
