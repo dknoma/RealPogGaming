@@ -4,7 +4,6 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.U2D;
 
 namespace Tilemaps {
     public class TiledImporter : MonoBehaviour {
@@ -75,11 +74,8 @@ namespace Tilemaps {
         }
 
         private void ProcessSpritesFromSheet(string filename) {
-//            var objects = AssetDatabase.LoadAllAssetsAtPath(filename);
-//            var sprites = objects.Where(q => q is Sprite).Cast<Sprite>();
             var sprites = AssetDatabase.LoadAllAssetsAtPath(filename)
                 .OfType<Sprite>();
-//                .ToArray();
 
 //            Debug.LogFormat("sprites [{0}]", sprites.Length);
             
@@ -100,8 +96,6 @@ namespace Tilemaps {
             Debug.LogFormat("NEW SPRITE [{0}]", newTile);
             
 //            Object prefab = EditorUtility.CreateEmptyPrefab(string.Format("{0}/{1}.prefab", path, tilename));
-            
-            GameObject newAsset = PrefabUtility.SaveAsPrefabAsset(newTile, assetPath);
             
             PrefabUtility.SaveAsPrefabAssetAndConnect(newTile, assetPath, InteractionMode.UserAction);
         }
