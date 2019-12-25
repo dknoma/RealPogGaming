@@ -12,6 +12,10 @@ namespace Tilemaps {
                 importer.ProcessJSON();
             }
             
+            if (GUILayout.Button("Process Sprites From Spritesheets")) {
+                importer.ProcessSpritesFromSheet();
+            }
+            
             if (GUILayout.Button("Build Tileset")) {
                 importer.BuildTileset();
             }
