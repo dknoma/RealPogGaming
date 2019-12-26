@@ -14,7 +14,9 @@ namespace Tilemaps {
 
         private TiledInfo tiledInfo;
 
-        public List<TilesetData> tileSets;
+        [SerializeField] private List<TilesetData> tilesets = new List<TilesetData>();
+
+        public string Json => json.name;
 
         public void ProcessJSON() {
             Debug.LogFormat("I'm processing the thing!");
@@ -96,6 +98,8 @@ namespace Tilemaps {
             AssetDatabase.SaveAssets();
 
             EditorUtility.FocusProjectWindow();
+            
+            tilesets.Add(asset);
             return offset + newOffset;
         }
         
