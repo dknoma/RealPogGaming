@@ -29,7 +29,7 @@ namespace Tilemaps {
             this.path = Split(assetPath, "/(\\w)+\\.json")[0];
             
             string[] parts = Split(path, "/");
-            this.parentPath = string.Format("{0}/{1}", parts[0], parts[1]);
+            this.parentPath = $"{parts[0]}/{parts[1]}";
             this.thisPath = parts[2];
         }
 
@@ -52,10 +52,15 @@ namespace Tilemaps {
 
         private void ParseTsxFiles() {
             var tilesetsInfo = tiledInfo.tilesets;
+            int offset = 0;
             
+            // Create assets for each tileset
             foreach (TiledInfo.Tileset tileset in tilesetsInfo) {
                 XmlDocument xml = new XmlDocument();
-                string file = FromAbsolutePath(tileset.source);
+                string tilesetSource = tileset.source;
+                string tilesetName = tilesetSource.Split('.')[0];
+                string file = FromAbsolutePath(tilesetSource);
+                
                 Debug.LogFormat("file [{0}]", file);
                 xml.Load(file);
                 
@@ -65,39 +70,51 @@ namespace Tilemaps {
 
                 Debug.LogFormat("sheetPath [{0}]", sheetPath);
 
-                ProcessSpritesFromSheet(sheetPath);
+                offset = ProcessSpritesFromSheet(tilesetName, sheetPath, offset);
             }
         }
 
         private string FromAbsolutePath(string file) {
-            return string.Format("{0}/{1}", this.path, file);
+            return $"{this.path}/{file}";
         }
 
-        private void ProcessSpritesFromSheet(string filename) {
+        private int ProcessSpritesFromSheet(string tilesetName, string filename, int offset) {
             var sprites = AssetDatabase.LoadAllAssetsAtPath(filename)
-                .OfType<Sprite>();
-
-//            Debug.LogFormat("sprites [{0}]", sprites.Length);
+                                       .OfType<Sprite>()
+                                       .ToArray();
+            int newOffset = sprites.Length;
+            
+            TilesetData asset = ScriptableObject.CreateInstance<TilesetData>();
+            asset.offset = offset;
             
             foreach (Sprite sprite in sprites) {
                 Debug.LogFormat("sprite [{0}]", sprite);
-                CreateTilesetPrefabs(sprite);
+                CreateTilesetPrefabs(asset, sprite);
             }
+            
+            AssetDatabase.CreateAsset(asset, $"{parentPath}/{tilesetName}.asset");
+            AssetDatabase.SaveAssets();
+
+            EditorUtility.FocusProjectWindow();
+            return offset + newOffset;
         }
         
-        private void CreateTilesetPrefabs(Sprite sprite) {
+        private void CreateTilesetPrefabs(TilesetData asset, Sprite sprite) {
             string tilename = sprite.name;
-            
-            TilesetData asset = ScriptableObject.CreateInstance<TilesetData>();
 
-            string assetPath = string.Format("{0}/{1}.prefab", path, tilename);
+            string assetPath = $"{path}/{tilename}.prefab";
 
             GameObject newTile = CreateTileObjects(sprite);
             Debug.LogFormat("NEW SPRITE [{0}]", newTile);
             
 //            Object prefab = EditorUtility.CreateEmptyPrefab(string.Format("{0}/{1}.prefab", path, tilename));
             
-            PrefabUtility.SaveAsPrefabAssetAndConnect(newTile, assetPath, InteractionMode.UserAction);
+            GameObject prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(newTile, assetPath, InteractionMode.UserAction);
+            
+            asset.tilePrefabs.Add(prefab);
+            
+//            DestroyImmediate(prefab);
+            // TODO - add each tile to the correct tileset
         }
 
         private static GameObject CreateTileObjects(Sprite sprite) {
@@ -110,7 +127,7 @@ namespace Tilemaps {
         private void CreateTilemapAsset(string filename) {
             TilesetData asset = ScriptableObject.CreateInstance<TilesetData>();
 
-            AssetDatabase.CreateAsset(asset, string.Format("{0}/{1}.asset", parentPath, filename));
+            AssetDatabase.CreateAsset(asset, $"{parentPath}/{filename}.asset");
             AssetDatabase.SaveAssets();
 
             EditorUtility.FocusProjectWindow();
@@ -122,10 +139,10 @@ namespace Tilemaps {
             if (tiledInfo != null) {
                 Debug.LogFormat("I'm building the thing!");
 
-                var tilesetsInfo = tiledInfo.tilesets;
-                foreach (TiledInfo.Tileset tileset in tilesetsInfo) {
-                    CreateTilemapAsset(tileset.source);
-                }
+//                var tilesetsInfo = tiledInfo.tilesets;
+//                foreach (TiledInfo.Tileset tileset in tilesetsInfo) {
+//                    CreateTilemapAsset(tileset.source);
+//                }
             } else {
                 Debug.Log("Tiled info does not seem to be processed. Please make sure to process the JSON file.");
             }
