@@ -4,6 +4,13 @@ using UnityEngine;
 namespace Tilemaps {
     [CustomEditor(typeof(TiledImporter))]
     public class TiledImporterEditor : Editor {
+        
+        SerializedProperty overwiteTilesetAssets;
+ 
+        void OnEnable()
+        {
+            overwiteTilesetAssets = serializedObject.FindProperty("overwiteTilesetAssets");
+        }
         public override void OnInspectorGUI() {
             // Allows for default fields to be drawn
             DrawDefaultInspector();
@@ -23,8 +30,10 @@ namespace Tilemaps {
             
             DrawLineAndHeader("<b>Prefab and Asset Creation</b>", style);
             
+            EditorGUILayout.PropertyField(overwiteTilesetAssets, new GUIContent("Overwrite"));
+            
             if (GUILayout.Button("Process Sprites From Spritesheets")) {
-                importer.ProcessSpritesFromSheet();
+                importer.ProcessSpritesFromSheetIfNecessary();
             }
         }
 
