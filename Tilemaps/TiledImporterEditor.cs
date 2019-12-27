@@ -6,10 +6,12 @@ namespace Tilemaps {
     public class TiledImporterEditor : Editor {
         
         SerializedProperty overwriteTilesetAssets;
+        SerializedProperty overwriteLevelGrid;
  
         void OnEnable()
         {
             overwriteTilesetAssets = serializedObject.FindProperty("overwriteTilesetAssets");
+            overwriteLevelGrid = serializedObject.FindProperty("overwriteLevelGrid");
         }
         public override void OnInspectorGUI() {
             // Allows for default fields to be drawn
@@ -23,6 +25,8 @@ namespace Tilemaps {
             if (GUILayout.Button("Process JSON")) {
                 importer.ProcessJSON();
             }
+            
+            EditorGUILayout.PropertyField(overwriteLevelGrid, new GUIContent("Overwrite Grid"));
             
             if (GUILayout.Button("Build Tileset")) {
                 importer.BuildTileset();

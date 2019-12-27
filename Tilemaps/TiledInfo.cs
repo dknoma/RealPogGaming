@@ -54,7 +54,7 @@ namespace Tilemaps {
                     IEnumerable values = value as IEnumerable;
                     if (values != null) {
                         foreach (object v in values) {
-                            sb.Append(string.Format("{0}, ", v.ToString()));
+                            sb.Append(string.Format("{0}, ", v));
                         }
                     }
 
@@ -77,7 +77,7 @@ namespace Tilemaps {
         /// <summary>
         /// Subclasses
         /// </summary>
-        [System.Serializable]
+        [Serializable]
         public class EditorSettings {
             public Export export;
         
@@ -85,7 +85,7 @@ namespace Tilemaps {
                 return string.Format("EditorSettings [{0}]", GetString(this));
             }
             
-            [System.Serializable]
+            [Serializable]
             public class Export {
                 public string format;
                 public string target;
@@ -96,7 +96,7 @@ namespace Tilemaps {
             }
         }
 
-        [System.Serializable]
+        [Serializable]
         public class Layer {
             public Chunk[] chunks;
             public int height;
@@ -115,7 +115,7 @@ namespace Tilemaps {
                 return string.Format("Layer [{0}]", GetString(this));
             }
             
-            [System.Serializable]
+            [Serializable]
             public class Chunk {
                 public int[] data;
                 public int height;
@@ -129,7 +129,7 @@ namespace Tilemaps {
             }
         }
 
-        [System.Serializable]
+        [Serializable]
         public class Tileset {
             public int firstgid;
             public string source;

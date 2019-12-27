@@ -11,11 +11,11 @@ namespace Tilemaps {
 
 		private static readonly IDictionary<string, RenderOrder> ORDERS = new Dictionary<string, RenderOrder>();
 
-		private TiledRenderOrder() {
+		static TiledRenderOrder() {
 			ORDERS.Add("right-down", RenderOrder.RIGHT_DOWN);
 			ORDERS.Add("right-up", RenderOrder.RIGHT_UP);
 			ORDERS.Add("left-down", RenderOrder.LEFT_DOWN);
-			ORDERS.Add("right-up", RenderOrder.LEFT_UP);
+			ORDERS.Add("left-up", RenderOrder.LEFT_UP);
 		}
 
 		public static RenderOrder GetRenderOrder(string order) {

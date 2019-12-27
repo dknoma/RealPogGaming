@@ -4,6 +4,7 @@ using UnityEngine;
 namespace Tilemaps {
     public class TilesetData : ScriptableObject {
         public List<GameObject> tilePrefabs;
+        public string tilemapName;
 
         public TilesetData() {
             tilePrefabs = new List<GameObject>();
