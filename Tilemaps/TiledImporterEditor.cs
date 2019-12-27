@@ -5,11 +5,11 @@ namespace Tilemaps {
     [CustomEditor(typeof(TiledImporter))]
     public class TiledImporterEditor : Editor {
         
-        SerializedProperty overwiteTilesetAssets;
+        SerializedProperty overwriteTilesetAssets;
  
         void OnEnable()
         {
-            overwiteTilesetAssets = serializedObject.FindProperty("overwiteTilesetAssets");
+            overwriteTilesetAssets = serializedObject.FindProperty("overwriteTilesetAssets");
         }
         public override void OnInspectorGUI() {
             // Allows for default fields to be drawn
@@ -30,11 +30,13 @@ namespace Tilemaps {
             
             DrawLineAndHeader("<b>Prefab and Asset Creation</b>", style);
             
-            EditorGUILayout.PropertyField(overwiteTilesetAssets, new GUIContent("Overwrite"));
+            EditorGUILayout.PropertyField(overwriteTilesetAssets, new GUIContent("Overwrite"));
             
             if (GUILayout.Button("Process Sprites From Spritesheets")) {
                 importer.ProcessSpritesFromSheetIfNecessary();
             }
+            
+            serializedObject.ApplyModifiedProperties();
         }
 
         private static void DrawLineAndHeader(string header, GUIStyle style) {

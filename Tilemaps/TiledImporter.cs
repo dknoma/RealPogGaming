@@ -6,6 +6,8 @@ using System.Xml;
 using UnityEditor;
 using UnityEngine;
 
+using static Tilemaps.TiledRenderOrder;
+
 namespace Tilemaps {
     public class TiledImporter : MonoBehaviour {
         [SerializeField] 
@@ -21,16 +23,19 @@ namespace Tilemaps {
         private string thisPath;
 
         private TiledInfo tiledInfo;
+        
+        [SerializeField] [DisableInspectorEdit] 
+        private RenderOrder renderOrder;
 
         [SerializeField] 
         private List<TilesetData> tilesets = new List<TilesetData>();
         [SerializeField] [DisableInspectorEdit]
         private int[] tilesetOffsets;
         [SerializeField] [DisableInspectorEdit]
-        private Dictionary<string, int> tilesetSourceOffsets = new Dictionary<string, int>();
+        private IDictionary<string, int> tilesetSourceOffsets = new Dictionary<string, int>();
 
         [HideInInspector]
-        public bool overwiteTilesetAssets = false;
+        public bool overwriteTilesetAssets;
         
         public string Json => json.name;
 
@@ -56,6 +61,7 @@ namespace Tilemaps {
         
         private void LoadFromJson() {
             JsonUtility.FromJsonOverwrite(json.text, tiledInfo);
+            this.renderOrder = GetRenderOrder(tiledInfo.renderorder);
             
             Debug.Log(tiledInfo);
         }
@@ -87,19 +93,22 @@ namespace Tilemaps {
                 Debug.LogFormat($"{tilesetAssetFilePath} exists = {tilesetAssetExists}");
                 
                 // Add existing assets if they don't exist and don't need to be overwritten
-                if(tilesetAssetExists && !overwiteTilesetAssets) {
+                if(tilesetAssetExists && !overwriteTilesetAssets) {
                     AddExistingTilesetDataAsset(tilesetAssetFilePath);
                 } else {
                     string tilesetSourceFilePath = FromAbsolutePath(tilesetSource);
-
+#if DEBUG
                     Debug.LogFormat("file [{0}]", tilesetSourceFilePath);
+#endif
                     xml.Load(tilesetSourceFilePath);
 
                     // tag hierarchy: <tileset><image ...>; Attributes of the tag, get value by name.
                     XmlNode imageNode = xml.SelectSingleNode("tileset/image");
                     string sheetPath = FromAbsolutePath(imageNode.Attributes["source"].Value);
 
+#if DEBUG
                     Debug.LogFormat("sheetPath [{0}]", sheetPath);
+#endif
 
                     ProcessSpritesFromSheet(tilesetName, sheetPath);
                 }
@@ -119,7 +128,6 @@ namespace Tilemaps {
             tilesets.Add(tilesetAsset);
         }
 
-
         private static string GetAssetPath(string path, string sourcename) {
             return $"{path}/{sourcename}.asset";
         }
@@ -136,7 +144,9 @@ namespace Tilemaps {
             TilesetData asset = ScriptableObject.CreateInstance<TilesetData>();
             
             foreach (Sprite sprite in sprites) {
+#if DEBUG
                 Debug.LogFormat("sprite [{0}]", sprite);
+#endif
                 CreateTilesetPrefabs(asset, sprite);
             }
             
@@ -154,12 +164,16 @@ namespace Tilemaps {
             string assetPath = $"{path}/{tilename}.prefab";
 
             GameObject newTile = CreateTileObjects(sprite);
+            
+#if DEBUG
             Debug.LogFormat("NEW SPRITE [{0}]", newTile);
+#endif
             
             GameObject prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(newTile, assetPath, InteractionMode.UserAction);
             
             asset.tilePrefabs.Add(prefab);
             
+            DestroyImmediate(newTile);
             // TODO - add each tile to the correct tileset
         }
 
