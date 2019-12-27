@@ -30,7 +30,7 @@ namespace Tilemaps {
 
         private static void DrawLineAndHeader(string header, GUIStyle style) {
             DrawUILine(Color.grey);
-            EditorGUILayout.LabelField($"header", style);
+            EditorGUILayout.LabelField(header, style);
         }
         
         private static void DrawUILine(Color color, int thickness = 2, int padding = 10)
