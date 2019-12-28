@@ -4,8 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.Xml.Linq;
+using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -180,12 +183,13 @@ namespace Tilemaps {
             tilemap.RefreshAllTiles();
         }
 
-        private Tilemap NewTilemap(GameObject grid, string layerName, int x, int y) {
+        private static Tilemap NewTilemap(GameObject grid, string layerName, int x, int y) {
             GameObject layer = new GameObject(layerName);
-            Tilemap tilemap = layer.AddComponent<Tilemap>();
-            layer.AddComponent<TilemapRenderer>();
             layer.transform.position = new Vector3(x, y, 0);
             layer.transform.parent = grid.transform;
+            Tilemap tilemap = layer.AddComponent<Tilemap>();
+            TilemapRenderer renderer = layer.AddComponent<TilemapRenderer>();
+            renderer.sortOrder = TilemapRenderer.SortOrder.TopRight;
 
             return tilemap;
         }
@@ -238,6 +242,28 @@ namespace Tilemaps {
             ParseTsxFiles();
         }
 
+        private static void ParseXml(string tilesetSourcePath) {
+            Debug.Log(tilesetSourcePath);
+            
+            XmlDocument doc = new XmlDocument();
+            doc.Load(tilesetSourcePath);
+//            string jsonText = JsonConvert.SerializeXmlNode(doc);
+            
+            var xDocument = XDocument.Parse(doc.OuterXml);
+            var builder = new StringBuilder();
+            JsonSerializer.Create().Serialize(new CustomXmlJsonWriter(new StringWriter(builder)), xDocument);
+            var serialized = builder.ToString();
+            Debug.Log($"serialized={serialized}");
+            
+//            var builder = new StringBuilder();
+//            JsonSerializer.Create().Serialize(new CustomXmlJsonWriter(new StringWriter(builder)), xDocument);
+//            var serialized = builder.ToString();
+            TsxInfo tsxInfo = JsonConvert.DeserializeObject<TsxInfo>(serialized);
+//            TsxInfo tsxInfo = JsonUtility.FromJson<TsxInfo>(jsonText);
+                
+            Debug.Log(tsxInfo);
+        }
+
         /// <summary>
         /// Parse Tiled .tsx files to get the correct values from the fields and attributes.
         /// </summary>
@@ -256,6 +282,8 @@ namespace Tilemaps {
                 string tilesetAssetFilePath = GetAssetPath(TILESETS_PATH, tilesetName);
                 string layerName = tiledInfo.layers[i].name;
                 int firstgid = tileset.firstgid;
+
+                ParseXml(FromAbsolutePath(tilesetSource));
                 
                 bool tilesetAssetExists = TilesetDataExists(tilesetAssetFilePath);
 #if DEBUG

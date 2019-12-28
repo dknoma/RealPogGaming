@@ -50,11 +50,10 @@ namespace Tilemaps {
                 string valueString;
                 if (value.GetType().IsArray) {
                     StringBuilder sb = new StringBuilder();
-                    
-                    IEnumerable values = value as IEnumerable;
-                    if (values != null) {
+
+                    if (value is IEnumerable values) {
                         foreach (object v in values) {
-                            sb.Append(string.Format("{0}, ", v));
+                            sb.Append($"{v}, ");
                         }
                     }
 
@@ -63,7 +62,7 @@ namespace Tilemaps {
                 } else {
                     valueString = value.ToString();
                 }
-                builder.Append(string.Format("{0}={1} ", name, valueString));
+                builder.Append($"{name}={valueString} ");
             }
             builder.Remove(builder.Length - 1, 1);
 
@@ -71,7 +70,7 @@ namespace Tilemaps {
         }
 
         public override string ToString() {
-            return string.Format("INFO [{0}]", GetString(this));
+            return $"INFO [{GetString(this)}]";
         }
         
         /// <summary>
@@ -82,7 +81,7 @@ namespace Tilemaps {
             public Export export;
         
             public override string ToString() {
-                return string.Format("EditorSettings [{0}]", GetString(this));
+                return $"EditorSettings [{GetString(this)}]";
             }
             
             [Serializable]
@@ -91,7 +90,7 @@ namespace Tilemaps {
                 public string target;
                 
                 public override string ToString() {
-                    return string.Format("Export [{0}]", GetString(this));
+                    return $"Export [{GetString(this)}]";
                 }
             }
         }
@@ -112,7 +111,7 @@ namespace Tilemaps {
             public int y;
         
             public override string ToString() {
-                return string.Format("Layer [{0}]", GetString(this));
+                return $"Layer [{GetString(this)}]";
             }
             
             [Serializable]
@@ -124,7 +123,7 @@ namespace Tilemaps {
                 public int y;
         
                 public override string ToString() {
-                    return string.Format("Chunk [{0}]", GetString(this));
+                    return $"Chunk [{GetString(this)}]";
                 }
             }
         }
@@ -135,7 +134,7 @@ namespace Tilemaps {
             public string source;
             
             public override string ToString() {
-                return string.Format("Tileset [{0}]", GetString(this));
+                return $"Tileset [{GetString(this)}]";
             }
         }
     }
