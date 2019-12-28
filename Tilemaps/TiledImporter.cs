@@ -1,4 +1,6 @@
-﻿using System;
+﻿#undef DEBUG
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -35,8 +37,6 @@ namespace Tilemaps {
         private List<TilesetData> tilesets = new List<TilesetData>();
         
         // Importer
-        [SerializeField] [DisableInspectorEdit]
-        private int[] tilesetOffsets;
         [SerializeField] [DisableInspectorEdit]
         private IDictionary<string, int> tilesetSourceOffsets = new Dictionary<string, int>();
 
@@ -117,8 +117,8 @@ namespace Tilemaps {
             
             // Get 
             TilesetData tilesetData = tilesets[id - 1];
-            //      - data[index] = index of tile in data.tilePrefabs 
             var chunks = layer.chunks;
+            
             foreach(Chunk chunk in chunks) {
                 int[] data = chunk.data;
                 int chunkStartX = chunk.x;
@@ -139,25 +139,27 @@ namespace Tilemaps {
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
+#if DEBUG
                 Debug.Log($"CHUNK START [({x}, {y})]");
-
+#endif
                 foreach(int tileIndex in data) {
                     if(Mathf.Abs(x) - chunkStartX > width) {
                         Debug.LogError($"x={x} is larger than the expected width {width}");
-//                        DestroyImmediate(grid);
-//                        return;
+                        DestroyImmediate(grid);
+                        return;
                     }
                     if(Mathf.Abs(y) - chunkStartY > height) {
                         Debug.LogError($"y={y} is larger than the expected height {height}");
-//                        DestroyImmediate(grid);
-//                        return;
+                        DestroyImmediate(grid);
+                        return;
                     }
                     
                     if(tileIndex > 0) {
                         int offset = tilesetSourceOffsets[layer.name];
                         int index = tileIndex - offset;
+#if DEBUG
                         Debug.Log($"CHUNK [{tileIndex}, {index}, {offset}, ({x}, {y})]");
-                            
+#endif
                         Tile tile = ScriptableObject.CreateInstance<Tile>();
                         tile.sprite = tilesetData.tilePrefabs[index].GetComponent<SpriteRenderer>().sprite;
 
@@ -187,15 +189,12 @@ namespace Tilemaps {
             
             switch(renderOrder) {
                 case RenderOrder.RIGHT_DOWN:
-//                    Debug.Log($"before x={x}");
                     x++;
                     int check = x - chunkStartX;
-//                    Debug.Log($"check={check}");
                     if(check >= width) {
                         x = chunkStartX;
                         y--;
                     }
-//                    Debug.Log($"after  x={x}");
                     break;
                 case RenderOrder.RIGHT_UP:
                     x++;
@@ -236,7 +235,6 @@ namespace Tilemaps {
             var tilesetsInfo = tiledInfo.tilesets;
             
             this.tilesets = new List<TilesetData>();
-            this.tilesetOffsets = new int[tilesetsInfo.Length];
             this.tilesetSourceOffsets = new Dictionary<string, int>();
             
             // Create assets for each tileset
@@ -274,7 +272,6 @@ namespace Tilemaps {
                     asset.name = layerName;
                     ProcessSpritesFromSheet(tilesetName, sheetPath, asset);
                 }
-                this.tilesetOffsets[i] = firstgid;
                 this.tilesetSourceOffsets.Add(layerName, firstgid);
                 i++;
             }
