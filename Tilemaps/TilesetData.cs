@@ -1,16 +1,17 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 namespace Tilemaps {
     public class TilesetData : ScriptableObject {
-        public List<GameObject> tilePrefabs;
+        public List<Tile> tilePrefabs;
         public string tilemapName;
 
         public TilesetData() {
-            tilePrefabs = new List<GameObject>();
+            tilePrefabs = new List<Tile>();
         }
 
-        public GameObject GetTile(int index) {
+        public Tile GetTile(int index) {
             return tilePrefabs[index];
         }
     }

@@ -13,6 +13,7 @@ using static Tilemaps.TiledInfo;
 using static Tilemaps.TiledInfo.Layer;
 using static Tilemaps.TilemapConstants;
 using static Tilemaps.TiledRenderOrder;
+using Object = UnityEngine.Object;
 
 namespace Tilemaps {
     public class TiledImporter : MonoBehaviour {
@@ -103,6 +104,12 @@ namespace Tilemaps {
             }
         }
 
+        /// <summary>
+        /// Process a Layer from the whole tilemap
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <param name="layer"></param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         private void ProcessLayer(GameObject grid, Layer layer) {
             string layerName = layer.name;
             int id = layer.id;
@@ -127,6 +134,7 @@ namespace Tilemaps {
                 int width = chunk.width;
                 int x = chunkStartX;
                 int y;
+                
                 switch(renderOrder) {
                     case RenderOrder.RIGHT_DOWN:
                     case RenderOrder.LEFT_DOWN:
@@ -160,8 +168,7 @@ namespace Tilemaps {
 #if DEBUG
                         Debug.Log($"CHUNK [{tileIndex}, {index}, {offset}, ({x}, {y})]");
 #endif
-                        Tile tile = ScriptableObject.CreateInstance<Tile>();
-                        tile.sprite = tilesetData.tilePrefabs[index].GetComponent<SpriteRenderer>().sprite;
+                        Tile tile = tilesetData.tilePrefabs[index];
 
                         Vector3Int pos = new Vector3Int(startX + x, startY + y, 0);
                         tilemap.SetTile(pos, tile);
@@ -231,6 +238,9 @@ namespace Tilemaps {
             ParseTsxFiles();
         }
 
+        /// <summary>
+        /// Parse Tiled .tsx files to get the correct values from the fields and attributes.
+        /// </summary>
         private void ParseTsxFiles() {
             var tilesetsInfo = tiledInfo.tilesets;
             
@@ -248,7 +258,9 @@ namespace Tilemaps {
                 int firstgid = tileset.firstgid;
                 
                 bool tilesetAssetExists = TilesetDataExists(tilesetAssetFilePath);
+#if DEBUG
                 Debug.LogFormat($"{tilesetAssetFilePath} exists = {tilesetAssetExists}");
+#endif
                 
                 // Add existing assets if they don't exist and don't need to be overwritten
                 if(tilesetAssetExists && !overwriteTilesetAssets) {
@@ -295,43 +307,57 @@ namespace Tilemaps {
             return $"{this.path}/{file}";
         }
 
+        /// <summary>
+        /// Process sprites from a .png spritesheet. Spritesheet isn't automatically split and must be done
+        /// manually beforehand.
+        /// </summary>
+        /// <param name="tilesetName"></param>
+        /// <param name="filename"></param>
+        /// <param name="asset"></param>
         private void ProcessSpritesFromSheet(string tilesetName, string filename, TilesetData asset) {
             var sprites = AssetDatabase.LoadAllAssetsAtPath(filename)
-                                       .OfType<Sprite>()
-                                       .ToArray();
+                                       .OfType<Sprite>();
             
             foreach (Sprite sprite in sprites) {
 #if DEBUG
                 Debug.LogFormat("sprite [{0}]", sprite);
 #endif
-                CreateTilesetPrefabs(asset, sprite);
+                CreateTilesetAssets(asset, sprite);
             }
-            
-            AssetDatabase.CreateAsset(asset, $"{TILESETS_PATH}/{tilesetName}.asset");
-            AssetDatabase.SaveAssets();
 
-            EditorUtility.FocusProjectWindow();
+            SaveAssetToDatabase(asset, TILESETS_PATH, tilesetName);
             
             tilesets.Add(asset);
         }
+
+        private static void SaveAssetToDatabase(Object asset, string path, string filename) {
+            AssetDatabase.CreateAsset(asset, GetAssetPath(path, filename));
+            AssetDatabase.SaveAssets();
+
+            EditorUtility.FocusProjectWindow();
+        }
         
-        private void CreateTilesetPrefabs(TilesetData asset, Sprite sprite) {
+        /// <summary>
+        /// Create Tile assets for a given tileset
+        /// </summary>
+        /// <param name="asset"></param>
+        /// <param name="sprite"></param>
+        private void CreateTilesetAssets(TilesetData asset, Sprite sprite) {
             string tilename = sprite.name;
-
-            string assetPath = $"{path}/{tilename}.prefab";
-
-            GameObject newTile = CreateTileObjects(sprite);
             
+            Tile tile = CreateTileAssets(sprite);
+            SaveAssetToDatabase(tile, path, tilename);
 #if DEBUG
             Debug.LogFormat("NEW SPRITE [{0}]", newTile);
 #endif
-            
-            GameObject prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(newTile, assetPath, InteractionMode.UserAction);
-            
-            asset.tilePrefabs.Add(prefab);
-            
-            DestroyImmediate(newTile);
-            // TODO - add each tile to the correct tileset
+            asset.tilePrefabs.Add(tile);
+        }
+        
+        private static Tile CreateTileAssets(Sprite sprite) {
+            Tile tile = ScriptableObject.CreateInstance<Tile>();
+            tile.sprite = sprite;
+
+            return tile;
         }
 
         private static GameObject CreateTileObjects(Sprite sprite) {
