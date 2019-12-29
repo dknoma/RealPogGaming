@@ -29,7 +29,7 @@ namespace Tilemaps {
         private string path;
 
         [SerializeField] [DisableInspectorEdit] 
-        private string thisPath;
+        private string tilesetFolder;
 
         // Tiled
         private TiledInfo tiledInfo;
@@ -52,9 +52,19 @@ namespace Tilemaps {
         
         public string Json => json.name;
 
+        /// <summary>
+        /// Processes the tiled .json file, creates tiles from a spritesheet if necessary, then builds the tilemap.
+        /// </summary>
+        public void ProcessJsonThenBuild() {
+            ProcessJSON();
+            ProcessSpritesFromSheetIfNecessary();
+            BuildTileset();
+        }
+        
+        /// <summary>
+        /// Individual processing methods
+        /// </summary>
         public void ProcessJSON() {
-            Debug.LogFormat("I'm processing the thing!");
-            
             GetAssetPath();
             LoadFromJson();
         }
@@ -65,7 +75,7 @@ namespace Tilemaps {
             this.path = Split(assetPath, "/(\\w)+\\.json")[0];
             
             string[] parts = Split(path, "/");
-            this.thisPath = parts[2];
+            this.tilesetFolder = parts[2];
         }
 
         private static string[] Split(string input, string regex) {
@@ -73,10 +83,14 @@ namespace Tilemaps {
         }
         
         private void LoadFromJson() {
-            JsonUtility.FromJsonOverwrite(json.text, tiledInfo);
-            this.renderOrder = GetRenderOrder(tiledInfo.renderorder);
-            
-            Debug.Log(tiledInfo);
+            if(json != null) {
+                JsonUtility.FromJsonOverwrite(json.text, tiledInfo);
+                this.renderOrder = GetRenderOrder(tiledInfo.renderorder);
+
+                Debug.Log(tiledInfo);
+            } else {
+                Debug.LogError("Something went wrong. JSON file may be invalid");
+            }
         }
         
         /// <summary>
@@ -172,7 +186,6 @@ namespace Tilemaps {
                         Debug.Log($"CHUNK [{tileIndex}, {index}, {offset}, ({x}, {y})]");
 #endif
                         Tile tile = tilesetData.tilePrefabs[index];
-
                         Vector3Int pos = new Vector3Int(startX + x, startY + y, 0);
                         tilemap.SetTile(pos, tile);
                     }
@@ -180,7 +193,6 @@ namespace Tilemaps {
                     (x, y) = AdvanceOffsets(x, y, width, chunkStartX);
                 }
             }
-            tilemap.RefreshAllTiles();
         }
 
         private static Tilemap NewTilemap(GameObject grid, string layerName, int x, int y) {
@@ -266,47 +278,36 @@ namespace Tilemaps {
         /// Parse Tiled .tsx files to get the correct values from the fields and attributes.
         /// </summary>
         private void ParseTsxFiles() {
-            var tilesetsInfo = tiledInfo.tilesets;
-            
             this.tilesets = new List<TilesetData>();
             this.tilesetSourceOffsets = new Dictionary<string, int>();
+            var tilesetsInfo = tiledInfo.tilesets;
             
             // Create assets for each tileset
             int i = 0;
             foreach (Tileset tileset in tilesetsInfo) {
-                XmlDocument xml = new XmlDocument();
                 string tilesetSource = tileset.source;
-                string tilesetName = tilesetSource.Split('.')[0];
+                TsxInfo tsxInfo = ParseXml(FromAbsolutePath(tilesetSource));
+                string tilesetName = tsxInfo.tileset.name;
                 string tilesetAssetFilePath = GetAssetPath(TILESETS_PATH, tilesetName);
                 string layerName = tiledInfo.layers[i].name;
-                int firstgid = tileset.firstgid;
                 
                 bool tilesetAssetExists = TilesetDataExists(tilesetAssetFilePath);
 #if DEBUG
                 Debug.LogFormat($"{tilesetAssetFilePath} exists = {tilesetAssetExists}");
-#endif
-                
+#endif       
                 // Add existing assets if they don't exist and don't need to be overwritten
                 if(tilesetAssetExists && !overwriteTilesetAssets) {
                     AddExistingTilesetDataAsset(tilesetAssetFilePath);
                 } else {
-                    string tilesetSourceFilePath = FromAbsolutePath(tilesetSource);
-#if DEBUG
-                    Debug.LogFormat("file [{0}]", tilesetSourceFilePath);
-#endif
-                    TsxInfo tsxInfo = ParseXml(FromAbsolutePath(tilesetSource));
-                    
                     string sheetPath = FromAbsolutePath(tsxInfo.tileset.image.source);
-
 #if DEBUG
                     Debug.LogFormat("sheetPath [{0}]", sheetPath);
 #endif
-
                     TilesetData asset = ScriptableObject.CreateInstance<TilesetData>();
                     asset.name = layerName;
                     ProcessSpritesFromSheet(tilesetName, sheetPath, asset);
                 }
-                this.tilesetSourceOffsets.Add(layerName, firstgid);
+                this.tilesetSourceOffsets.Add(layerName, tileset.firstgid);
                 i++;
             }
         }
@@ -331,7 +332,7 @@ namespace Tilemaps {
 
         /// <summary>
         /// Process sprites from a .png spritesheet. Spritesheet isn't automatically split and must be done
-        /// manually beforehand.
+        /// manually beforehand. 
         /// </summary>
         /// <param name="tilesetName"></param>
         /// <param name="filename"></param>
@@ -380,13 +381,6 @@ namespace Tilemaps {
             tile.sprite = sprite;
 
             return tile;
-        }
-
-        private static GameObject CreateTileObjects(Sprite sprite) {
-            GameObject newTile = new GameObject(sprite.name);
-            newTile.AddComponent<SpriteRenderer>().sprite = sprite;
-
-            return newTile;
         }
     }
 }

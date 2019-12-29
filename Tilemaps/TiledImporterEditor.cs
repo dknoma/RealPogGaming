@@ -19,8 +19,19 @@ namespace Tilemaps {
             
             TiledImporter importer = (TiledImporter) target;
             GUIStyle style = new GUIStyle {richText = true};
-
+            
             DrawLineAndHeader($"<b>Tiled Tilemap JSON Processing - {importer.Json}.json</b>", style);
+            
+            EditorGUILayout.PropertyField(overwriteLevelGrid, new GUIContent("Overwrite Grid"));
+            EditorGUILayout.PropertyField(overwriteTilesetAssets, new GUIContent("Overwrite Tiles"));
+            
+            if (GUILayout.Button("Process JSON")) {
+                importer.ProcessJsonThenBuild();
+            }
+            
+            DrawLineAndHeader("<b>Individual Imports</b>", 
+                              $"<b>Tiled Tilemap JSON Processing - {importer.Json}.json</b>", 
+                              style);
             
             if (GUILayout.Button("Process JSON")) {
                 importer.ProcessJSON();
@@ -46,6 +57,12 @@ namespace Tilemaps {
         private static void DrawLineAndHeader(string header, GUIStyle style) {
             DrawUILine(Color.grey);
             EditorGUILayout.LabelField(header, style);
+        }
+        
+        private static void DrawLineAndHeader(string header1, string header2, GUIStyle style) {
+            DrawUILine(Color.grey);
+            EditorGUILayout.LabelField(header1, style);
+            EditorGUILayout.LabelField(header2, style);
         }
         
         private static void DrawUILine(Color color, int thickness = 2, int padding = 10)
