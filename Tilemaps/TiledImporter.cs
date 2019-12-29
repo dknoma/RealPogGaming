@@ -242,26 +242,24 @@ namespace Tilemaps {
             ParseTsxFiles();
         }
 
-        private static void ParseXml(string tilesetSourcePath) {
+        private static TsxInfo ParseXml(string tilesetSourcePath) {
+#if DEBUG
             Debug.Log(tilesetSourcePath);
-            
+#endif
             XmlDocument doc = new XmlDocument();
+            
             doc.Load(tilesetSourcePath);
-//            string jsonText = JsonConvert.SerializeXmlNode(doc);
             
-            var xDocument = XDocument.Parse(doc.OuterXml);
-            var builder = new StringBuilder();
+            XDocument xDocument = XDocument.Parse(doc.OuterXml);
+            StringBuilder builder = new StringBuilder();
             JsonSerializer.Create().Serialize(new CustomXmlJsonWriter(new StringWriter(builder)), xDocument);
-            var serialized = builder.ToString();
-            Debug.Log($"serialized={serialized}");
-            
-//            var builder = new StringBuilder();
-//            JsonSerializer.Create().Serialize(new CustomXmlJsonWriter(new StringWriter(builder)), xDocument);
-//            var serialized = builder.ToString();
-            TsxInfo tsxInfo = JsonConvert.DeserializeObject<TsxInfo>(serialized);
-//            TsxInfo tsxInfo = JsonUtility.FromJson<TsxInfo>(jsonText);
+            string jsonText = builder.ToString();
+            TsxInfo tsxInfo = JsonUtility.FromJson<TsxInfo>(jsonText);
                 
+#if DEBUG
             Debug.Log(tsxInfo);
+#endif
+            return tsxInfo;
         }
 
         /// <summary>
@@ -282,8 +280,6 @@ namespace Tilemaps {
                 string tilesetAssetFilePath = GetAssetPath(TILESETS_PATH, tilesetName);
                 string layerName = tiledInfo.layers[i].name;
                 int firstgid = tileset.firstgid;
-
-                ParseXml(FromAbsolutePath(tilesetSource));
                 
                 bool tilesetAssetExists = TilesetDataExists(tilesetAssetFilePath);
 #if DEBUG
@@ -298,11 +294,9 @@ namespace Tilemaps {
 #if DEBUG
                     Debug.LogFormat("file [{0}]", tilesetSourceFilePath);
 #endif
-                    xml.Load(tilesetSourceFilePath);
-
-                    // tag hierarchy: <tileset><image ...>; Attributes of the tag, get value by name.
-                    XmlNode imageNode = xml.SelectSingleNode("tileset/image");
-                    string sheetPath = FromAbsolutePath(imageNode.Attributes["source"].Value);
+                    TsxInfo tsxInfo = ParseXml(FromAbsolutePath(tilesetSource));
+                    
+                    string sheetPath = FromAbsolutePath(tsxInfo.tileset.image.source);
 
 #if DEBUG
                     Debug.LogFormat("sheetPath [{0}]", sheetPath);

@@ -32,41 +32,53 @@ namespace Tilemaps {
         /// <param name="obj"></param>
         /// <returns></returns>
         private static string GetString(object obj) {
-            var fieldValues = obj.GetType()
-                .GetFields()
-                .Select(field => field.GetValue(obj))
-                .ToList();
-            
-            var fieldNames = obj.GetType().GetFields()
-                .Select(field => field.Name)
-                .ToList();
-            
-            StringBuilder builder = new StringBuilder();
-            
-            for(int i = 0; i < fieldValues.Count; i++) {
-                object value = fieldValues[i];
-                string name = fieldNames[i];
+            string result;
+            if(obj == null) {
+                result = "N/A";
+            } else {
+                var fieldValues = obj.GetType()
+                                     .GetFields()
+                                     .Select(field => field.GetValue(obj))
+                                     .ToList();
 
-                string valueString;
-                if (value.GetType().IsArray) {
-                    StringBuilder sb = new StringBuilder();
+                var fieldNames = obj.GetType().GetFields()
+                                    .Select(field => field.Name)
+                                    .ToList();
 
-                    if (value is IEnumerable values) {
-                        foreach (object v in values) {
-                            sb.Append($"{v}, ");
+                StringBuilder builder = new StringBuilder();
+
+                for(int i = 0; i < fieldValues.Count; i++) {
+                    object value = fieldValues[i];
+                    string name = fieldNames[i];
+
+                    string valueString;
+                    if(value == null) {
+                        valueString = "N/A";
+                    } else {
+                        if(value.GetType().IsArray) {
+                            StringBuilder sb = new StringBuilder();
+	
+                            if(value is IEnumerable values) {
+                                foreach(object v in values) {
+                                    sb.Append($"{v}, ");
+                                }
+                            }
+	
+                            sb.Remove(sb.Length - 2, 2);
+                            valueString = sb.ToString();
+                        } else {
+                            valueString = value.ToString();
                         }
                     }
 
-                    sb.Remove(sb.Length - 2, 2);
-                    valueString = sb.ToString();
-                } else {
-                    valueString = value.ToString();
+                    builder.Append($"{name}={valueString} ");
                 }
-                builder.Append($"{name}={valueString} ");
-            }
-            builder.Remove(builder.Length - 1, 1);
 
-            return builder.ToString();
+                builder.Remove(builder.Length - 1, 1);
+                result = builder.ToString();
+            }
+
+            return result;
         }
 
         public override string ToString() {
