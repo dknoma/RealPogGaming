@@ -111,7 +111,6 @@ namespace Tilemaps {
                     grid = Instantiate(levelGrid);
                 }
                 
-                Debug.LogFormat("I'm building the thing!");
                 var layers = tiledInfo.layers;
                 foreach(Layer layer in layers) {
                     ProcessLayer(grid, layer);

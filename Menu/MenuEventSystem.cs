@@ -18,7 +18,7 @@ public class MenuEventSystem : MonoBehaviour {
 	
 	public GameObject firstSelectedGameObject;
 	private GameObject currentSelectedGameObject;
-	private List<Selectable> buttons;
+	private Selectable[] buttons;
 
 	public static MenuEventSystem eventSystem;
 	
@@ -49,7 +49,7 @@ public class MenuEventSystem : MonoBehaviour {
 	}
 
 	private void Start() {
-		buttons = Selectable.allSelectables;
+		buttons = Selectable.allSelectablesArray;
 //		Debug.LogFormat("buttons: {0}", buttons.Count);
 //		foreach (Selectable button in buttons) {
 //			Debug.LogFormat("Button: {0}", button.name);
