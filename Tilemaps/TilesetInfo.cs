@@ -5,8 +5,22 @@ using System.Text;
 
 namespace Tilemaps {
 	[Serializable]
-	public class TsxInfo {
-		public Tileset tileset;
+	public class TilesetInfo {
+		public int columns;
+		public string image;
+		public int imageheight;
+		public int imagewidth;
+		public int margin;
+		public string name;
+		public int spacing;
+		public int tilecount;
+		public string tiledversion;
+		public int tileheight;
+		public int tilewidth;
+		public string version;
+		public string type;
+		public EditorSettings editorsettings;
+		public Tile[] tiles;
         
 		/// <summary>
 		/// Utility method to get the right String  representation of these objects.
@@ -66,86 +80,59 @@ namespace Tilemaps {
 		public override string ToString() {
 			return $"[{GetString(this)}]";
 		}
-
+		
 		[Serializable]
-		public class Tileset {
-			public string version;
-			public string tiledversion;
-			public string name;
-			public int tilewidth;
-			public int tileheight;
-			public int tilecount;
-			public int columns;
-			public EditorSettings editorsettings;
-			public Image image;
-			public Tile[] tile;
-
+		public class EditorSettings {
+			public Export export;
+    
 			public override string ToString() {
-				return $"[{GetString(this)}]";
+				return $"EditorSettings [{GetString(this)}]";
 			}
+        
+			[Serializable]
+			public class Export {
+				public string format;
+				public string target;
+            
+				public override string ToString() {
+					return $"Export [{GetString(this)}]";
+				}
+			}
+		}
+		
+		[Serializable]
+		public class Tile {
+			public int id;
+			public ObjectGroup objectgroup;
+    
+			public override string ToString() {
+				return $"EditorSettings [{GetString(this)}]";
+			}
+			
+        
+			[Serializable]
+			public class ObjectGroup {
+				public string draworder;
+				public string name;
+				public Object[] objects;
+            
+				public override string ToString() {
+					return $"Export [{GetString(this)}]";
+				}
 
-			[Serializable]
-			public class Image {
-				public string source;
-				public string trans;
-				public int width;
-				public int height;
-				
-				public override string ToString() {
-					return $"[{GetString(this)}]";
-				}
-			}
-			
-			[Serializable]
-			public class EditorSettings {
-				public Export export;
-        
-				public override string ToString() {
-					return $"EditorSettings [{GetString(this)}]";
-				}
-            
 				[Serializable]
-				public class Export {
-					public string format;
-					public string target;
-                
-					public override string ToString() {
-						return $"Export [{GetString(this)}]";
-					}
-				}
-			}
-			
-			[Serializable]
-			public class Tile {
-				public int id;
-				public ObjectGroup objectgroup;
-        
-				public override string ToString() {
-					return $"EditorSettings [{GetString(this)}]";
-				}
-				
-            
-				[Serializable]
-				public class ObjectGroup {
-					public string draworder;
+				public class Object {
 					public int id;
-					public Object @object;
-                
+					public int x;
+					public int y;
+					public int width;
+					public int height;
+					public int roation;
+					public string type;
+					public bool visible;
+					
 					public override string ToString() {
 						return $"Export [{GetString(this)}]";
-					}
-
-					[Serializable]
-					public class Object {
-						public int id;
-						public int x;
-						public int y;
-						public int width;
-						public int height;
-						
-						public override string ToString() {
-							return $"Export [{GetString(this)}]";
-						}
 					}
 				}
 			}

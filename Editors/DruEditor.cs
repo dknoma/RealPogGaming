@@ -21,42 +21,41 @@ namespace Editors {
 			if(len == 1) {
 				EditorGUILayout.BeginHorizontal();
 				
-				if (GUILayout.Button(headerActionTuples[0].Item1, EditorStyles.miniButton)) {
-					headerActionTuples[0].Item2();
-				}
+				(string title, Action action) = headerActionTuples[0];
+				MiniButton(title, action);
 				
 				EditorGUILayout.EndHorizontal();
 			} else if(len > 1) {
 				EditorGUILayout.BeginHorizontal();
 				
-				(string, Action) firstTup = headerActionTuples[0];
-				if (GUILayout.Button(firstTup.Item1, EditorStyles.miniButtonLeft)) {
-					firstTup.Item2();
-				}
+				(string title, Action action) = headerActionTuples[0];
+				LeftButton(title, action);
 
 				for(int i = 1; i < len - 1; i++) {
-					(string, Action) tup = headerActionTuples[i];
-					if (GUILayout.Button(tup.Item1, EditorStyles.miniButtonMid)) {
-						tup.Item2();
-					}
+					(string titleV, Action actionV) = headerActionTuples[i];
+					MidButton(titleV, actionV);
 				}
 				
-				(string, Action) lastTup = headerActionTuples[len-1];
-				if (GUILayout.Button(lastTup.Item1, EditorStyles.miniButtonRight)) {
-					lastTup.Item2();
-				}
+				(string titleL, Action actionL) = headerActionTuples[len-1];
+				RightButton(titleL, actionL);
 				
 				EditorGUILayout.EndHorizontal();
 			}
 		}
 
+		protected static void MiniButton(string text, Action action) {
+			if (GUILayout.Button(text, EditorStyles.miniButton)) {
+				action();
+			}
+		}
+		
 		protected static void LeftButton(string text, Action action) {
 			if (GUILayout.Button(text, EditorStyles.miniButtonLeft)) {
 				action();
 			}
 		}
 
-		protected static void InnerButton(string text, Action action) {
+		protected static void MidButton(string text, Action action) {
 			if (GUILayout.Button(text, EditorStyles.miniButtonMid)) {
 				action();
 			}

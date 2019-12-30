@@ -16,6 +16,8 @@ using static Tilemaps.TiledInfo;
 using static Tilemaps.TiledInfo.Layer;
 using static Tilemaps.TilemapConstants;
 using static Tilemaps.TiledRenderOrder;
+using static Tilemaps.TilesetFileType;
+using static Tilemaps.TilesetFileType.Type;
 using Object = UnityEngine.Object;
 
 namespace Tilemaps {
@@ -41,15 +43,17 @@ namespace Tilemaps {
         private List<TilesetData> tilesets = new List<TilesetData>();
         
         // Importer
-        [SerializeField] [DisableInspectorEdit]
-        private IDictionary<string, int> tilesetSourceOffsets = new Dictionary<string, int>();
+//        [SerializeField] [DisableInspectorEdit]
+//        private IDictionary<string, int> tilesetSourceOffsets = new Dictionary<string, int>();
 
         // Overwriting settings
         [HideInInspector]
         public bool overwriteTilesetAssets;
         [HideInInspector]
         public bool overwriteLevelGrid = true;
-        
+
+        private GameObject grid;
+
         public string Json => json.name;
 
         /// <summary>
@@ -98,7 +102,7 @@ namespace Tilemaps {
         /// </summary>
         public void BuildTileset() {
             if (tiledInfo != null && levelGrid != null) {
-                GameObject grid = GameObject.FindWithTag(ENVIRONMENT_GRID_TAG);
+                this.grid = GameObject.FindWithTag(ENVIRONMENT_GRID_TAG);
                 if(grid != null && overwriteLevelGrid) {
 #if DEBUG
                     Debug.Log("Grid exists, need to destroy before instantiating new one.");
@@ -113,7 +117,7 @@ namespace Tilemaps {
                 
                 var layers = tiledInfo.layers;
                 foreach(Layer layer in layers) {
-                    ProcessLayer(grid, layer);
+                    ProcessLayer(layer);
                 }
             } else {
                 Debug.Log("Tiled info does not seem to be processed. Please make sure to process the JSON file.");
@@ -126,7 +130,7 @@ namespace Tilemaps {
         /// <param name="grid"></param>
         /// <param name="layer"></param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        private void ProcessLayer(GameObject grid, Layer layer) {
+        private void ProcessLayer(Layer layer) {
             string layerName = layer.name;
             int id = layer.id;
             int totalHeight = layer.height;
@@ -136,10 +140,10 @@ namespace Tilemaps {
             int layerX = layer.x;
             int layerY = layer.y;
 
-            Tilemap tilemap = NewTilemap(grid, layerName, layerX, layerY);
+            Tilemap tilemap = NewTilemap(layerName, layerX, layerY);
             
             // Get 
-            TilesetData tilesetData = tilesets[id - 1];
+//            TilesetData tilesetData = tilesets[id - 1];
             var chunks = layer.chunks;
             
             foreach(Chunk chunk in chunks) {
@@ -167,34 +171,45 @@ namespace Tilemaps {
                 Debug.Log($"CHUNK START [({x}, {y})]");
 #endif
                 foreach(int tileIndex in data) {
-                    if(Mathf.Abs(x) - chunkStartX > width) {
-                        Debug.LogError($"x={x} is larger than the expected width {width}");
-                        DestroyImmediate(grid);
-                        return;
-                    }
-                    if(Mathf.Abs(y) - chunkStartY > height) {
-                        Debug.LogError($"y={y} is larger than the expected height {height}");
-                        DestroyImmediate(grid);
-                        return;
-                    }
-                    
                     if(tileIndex > 0) {
-                        int offset = tilesetSourceOffsets[layer.name];
+                        TilesetData tilesetData = GetTilesetDataFromIndex(tileIndex);
+                        int offset = tilesetData.firstGid;
                         int index = tileIndex - offset;
 #if DEBUG
                         Debug.Log($"CHUNK [{tileIndex}, {index}, {offset}, ({x}, {y})]");
 #endif
                         Tile tile = tilesetData.tilePrefabs[index];
-                        Vector3Int pos = new Vector3Int(startX + x, startY + y, 0);
+                        Vector3Int pos = new Vector3Int(x, y, 0);
                         tilemap.SetTile(pos, tile);
                     }
 
-                    (x, y) = AdvanceOffsets(x, y, width, chunkStartX);
+                    bool validCoordinates;
+                    (x, y, validCoordinates) = AdvanceOffsets(x, y, width, chunkStartX);
+                    
+                    if(!validCoordinates) {
+                        break;
+                    }
                 }
             }
         }
+        
+        private TilesetData GetTilesetDataFromIndex(int tileIndex) {
+            TilesetData res = null;
 
-        private static Tilemap NewTilemap(GameObject grid, string layerName, int x, int y) {
+            foreach(TilesetData tileset in tilesets) {
+                int first = tileset.firstGid;
+                int last = tileset.lastGid;
+                
+                if(first <= tileIndex && tileIndex <= last) {
+                    res = tileset;
+                    break;
+                }
+            }
+            
+            return res;
+        }
+
+        private Tilemap NewTilemap(string layerName, int x, int y) {
             GameObject layer = new GameObject(layerName);
             layer.transform.position = new Vector3(x, y, 0);
             layer.transform.parent = grid.transform;
@@ -205,7 +220,7 @@ namespace Tilemaps {
             return tilemap;
         }
 
-        private (int, int) AdvanceOffsets(int initialX, int initialY, int width, int chunkStartX) {
+        private (int, int, bool) AdvanceOffsets(int initialX, int initialY, int width, int chunkStartX) {
             int x = initialX;
             int y = initialY;
             
@@ -213,28 +228,28 @@ namespace Tilemaps {
                 case RenderOrder.RIGHT_DOWN:
                     x++;
                     int check = x - chunkStartX;
-                    if(check >= width) {
+                    if(check == width) {
                         x = chunkStartX;
                         y--;
                     }
                     break;
                 case RenderOrder.RIGHT_UP:
                     x++;
-                    if(x - chunkStartX >= width) {
+                    if(x - chunkStartX == width) {
                         x = chunkStartX;
                         y++;
                     }
                     break;
                 case RenderOrder.LEFT_DOWN:
                     x--;
-                    if(chunkStartX - x >= width) {
+                    if(chunkStartX - x == width) {
                         x = chunkStartX;
                         y--;
                     }
                     break;
                 case RenderOrder.LEFT_UP:
                     x--;
-                    if(chunkStartX - x >= width) {
+                    if(chunkStartX - x == width) {
                         x = chunkStartX;
                         y++;
                     }
@@ -242,51 +257,59 @@ namespace Tilemaps {
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+            bool validCoordinates = ValidateCoordinates(chunkStartX, x, width);
+            return (x, y, validCoordinates);
+        }
 
-            return (x, y);
+        private bool ValidateCoordinates(int chunkStartX, int x, int width) {
+            bool valid = true;
+            switch(renderOrder) {
+                case RenderOrder.RIGHT_DOWN:
+                case RenderOrder.RIGHT_UP:
+                    if(x - chunkStartX > width) {
+                        Debug.LogError($"Total width between x={x}, chunkStartX={chunkStartX} is larger than the expected width {width}");
+                        DestroyImmediate(this.grid);
+                        valid = false;
+                    }
+                    break;
+                case RenderOrder.LEFT_DOWN:
+                case RenderOrder.LEFT_UP:
+                    if(chunkStartX - x > width) {
+                        Debug.LogError($"Total width between x={x}, chunkStartX={chunkStartX} is larger than the expected width {width}");
+                        DestroyImmediate(this.grid);
+                        valid = false;
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            return valid;
         }
 
         /// <summary>
         /// Process spritesheets from their png files to create tile prefabs for future use.
         /// </summary>
         public void ProcessSpritesFromSheetIfNecessary() {
-            ParseTsxFiles();
-        }
-
-        private static TsxInfo ParseXml(string tilesetSourcePath) {
-#if DEBUG
-            Debug.Log(tilesetSourcePath);
-#endif
-            XmlDocument doc = new XmlDocument();
-            
-            doc.Load(tilesetSourcePath);
-            
-            XDocument xDocument = XDocument.Parse(doc.OuterXml);
-            StringBuilder builder = new StringBuilder();
-            JsonSerializer.Create().Serialize(new CustomXmlJsonWriter(new StringWriter(builder)), xDocument);
-            string jsonText = builder.ToString();
-            TsxInfo tsxInfo = JsonUtility.FromJson<TsxInfo>(jsonText);
-                
-#if DEBUG
-            Debug.Log(tsxInfo);
-#endif
-            return tsxInfo;
+            this.ParseTilesetFiles();
         }
 
         /// <summary>
         /// Parse Tiled .tsx files to get the correct values from the fields and attributes.
         /// </summary>
-        private void ParseTsxFiles() {
+        private void ParseTilesetFiles() {
             this.tilesets = new List<TilesetData>();
-            this.tilesetSourceOffsets = new Dictionary<string, int>();
+//            this.tilesetSourceOffsets = new Dictionary<string, int>();
             var tilesetsInfo = tiledInfo.tilesets;
+            int tilesetCount = tilesetsInfo.Length;
             
             // Create assets for each tileset
             int i = 0;
             foreach (Tileset tileset in tilesetsInfo) {
                 string tilesetSource = tileset.source;
-                TsxInfo tsxInfo = ParseXml(FromAbsolutePath(tilesetSource));
-                string tilesetName = tsxInfo.tileset.name;
+                TilesetInfo tilesetInfo = ParseFile(FromAbsolutePath(tilesetSource));
+                
+                string tilesetName = tilesetInfo.name;
                 string tilesetAssetFilePath = GetAssetPath(TILESETS_PATH, tilesetName);
                 string layerName = tiledInfo.layers[i].name;
                 
@@ -298,17 +321,73 @@ namespace Tilemaps {
                 if(tilesetAssetExists && !overwriteTilesetAssets) {
                     AddExistingTilesetDataAsset(tilesetAssetFilePath);
                 } else {
-                    string sheetPath = FromAbsolutePath(tsxInfo.tileset.image.source);
+                    string sheetPath = FromAbsolutePath(tilesetInfo.image);
 #if DEBUG
                     Debug.LogFormat("sheetPath [{0}]", sheetPath);
 #endif
                     TilesetData asset = ScriptableObject.CreateInstance<TilesetData>();
+                    
                     asset.name = layerName;
+                    asset.firstGid = tileset.firstgid;
+
+                    if(tilesetCount > i + 1) {
+                        asset.lastGid = tilesetsInfo[i + 1].firstgid - 1;
+                    }
+                    
                     ProcessSpritesFromSheet(tilesetName, sheetPath, asset);
+                    tilesets.Add(asset);
                 }
-                this.tilesetSourceOffsets.Add(layerName, tileset.firstgid);
+//                this.tilesetSourceOffsets.Add(layerName, tileset.firstgid);
                 i++;
             }
+        }
+        
+        private static TilesetInfo ParseFile(string tilesetSourcePath) {
+#if DEBUG
+            Debug.Log(tilesetSourcePath);
+#endif
+            TilesetFileType.Type type = GetTypeFromSourcePath(tilesetSourcePath);
+            
+            TilesetInfo tilesetInfo;
+            switch(type) {
+                case JSON:
+                    Debug.Log($"type={type}");
+                    tilesetInfo = ParseJson(tilesetSourcePath);
+                    break;
+                case TSX:
+                    Debug.Log($"type={type}");
+//                    tilesetInfo = ParseTsx(tilesetSourcePath);
+                    tilesetInfo = new TilesetInfo();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }    
+#if DEBUG
+            Debug.Log(tsxInfo);
+#endif
+            return tilesetInfo;
+        }
+
+        private static TilesetInfo ParseJson(string sourcePath) {
+            string json;
+            using(TextReader reader = new StreamReader(sourcePath)) {
+                json = reader.ReadToEnd();
+            }
+            
+            return JsonUtility.FromJson<TilesetInfo>(json);
+        }
+
+        private static TilesetInfo ParseTsx(string sourcePath) {
+            XmlDocument doc = new XmlDocument();
+            
+            doc.Load(sourcePath);
+            
+            XDocument xDocument = XDocument.Parse(doc.OuterXml);
+            StringBuilder builder = new StringBuilder();
+            JsonSerializer.Create().Serialize(new CustomXmlJsonWriter(new StringWriter(builder)), xDocument);
+            string jsonText = builder.ToString();
+            
+            return JsonUtility.FromJson<TilesetInfo>(jsonText);
         }
         
         private static bool TilesetDataExists(string tilesetAssetFilePath) {
@@ -348,8 +427,6 @@ namespace Tilemaps {
             }
 
             SaveAssetToDatabase(asset, TILESETS_PATH, tilesetName);
-            
-            tilesets.Add(asset);
         }
 
         private static void SaveAssetToDatabase(Object asset, string path, string filename) {
