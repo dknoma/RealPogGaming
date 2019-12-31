@@ -4,11 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Xml;
-using System.Xml.Linq;
-using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -22,10 +18,17 @@ using Object = UnityEngine.Object;
 
 namespace Tilemaps {
     public class TiledImporter : MonoBehaviour {
+        private const string GRID_NAME = "Level Grid";
+        
         [SerializeField] 
         private TextAsset json;
-        [SerializeField] 
-        private GameObject levelGrid;
+
+        [SerializeField] [HideInInspector]
+        private int gridX = 1;
+        [SerializeField] [HideInInspector]
+        private int gridY = 1;
+        [SerializeField] [HideInInspector]
+        private int gridZ = 0;
         
         [SerializeField] [DisableInspectorEdit] 
         private string path;
@@ -42,10 +45,6 @@ namespace Tilemaps {
         [SerializeField] 
         private List<TilesetData> tilesets = new List<TilesetData>();
         
-        // Importer
-//        [SerializeField] [DisableInspectorEdit]
-//        private IDictionary<string, int> tilesetSourceOffsets = new Dictionary<string, int>();
-
         // Overwriting settings
         [HideInInspector]
         public bool overwriteTilesetAssets;
@@ -87,6 +86,7 @@ namespace Tilemaps {
         }
         
         private void LoadFromJson() {
+            this.tiledInfo = new TiledInfo();
             if(json != null) {
                 JsonUtility.FromJsonOverwrite(json.text, tiledInfo);
                 this.renderOrder = GetRenderOrder(tiledInfo.renderorder);
@@ -101,18 +101,18 @@ namespace Tilemaps {
         /// Build tileset
         /// </summary>
         public void BuildTileset() {
-            if (tiledInfo != null && levelGrid != null) {
+            if (tiledInfo != null) {
                 this.grid = GameObject.FindWithTag(ENVIRONMENT_GRID_TAG);
                 if(grid != null && overwriteLevelGrid) {
 #if DEBUG
                     Debug.Log("Grid exists, need to destroy before instantiating new one.");
 #endif
                     DestroyImmediate(grid);
-                    grid = Instantiate(levelGrid);
+                    grid = InstantiateNewGrid();
                 } else if(grid != null && !overwriteLevelGrid) {
                     Debug.Log("Grid exists, do not overwrite grid.");
                 } else if(grid == null) {
-                    grid = Instantiate(levelGrid);
+                    grid = InstantiateNewGrid();
                 }
                 
                 var layers = tiledInfo.layers;
@@ -124,10 +124,18 @@ namespace Tilemaps {
             }
         }
 
+        private GameObject InstantiateNewGrid() {
+            GameObject levelGrid = new GameObject(GRID_NAME);
+            Grid grid = levelGrid.AddComponent<Grid>();
+            grid.cellSize = new Vector3(gridX, gridY, gridZ);
+            grid.tag = ENVIRONMENT_GRID_TAG;
+
+            return levelGrid;
+        }
+
         /// <summary>
         /// Process a Layer from the whole tilemap
         /// </summary>
-        /// <param name="grid"></param>
         /// <param name="layer"></param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         private void ProcessLayer(Layer layer) {
@@ -214,8 +222,9 @@ namespace Tilemaps {
             layer.transform.position = new Vector3(x, y, 0);
             layer.transform.parent = grid.transform;
             Tilemap tilemap = layer.AddComponent<Tilemap>();
-            TilemapRenderer renderer = layer.AddComponent<TilemapRenderer>();
-            renderer.sortOrder = TilemapRenderer.SortOrder.TopRight;
+            TilemapRenderer tilemapRenderer = layer.AddComponent<TilemapRenderer>();
+            TilemapCollider2D coll = layer.AddComponent<TilemapCollider2D>();
+            tilemapRenderer.sortOrder = TilemapRenderer.SortOrder.TopRight;
 
             return tilemap;
         }
@@ -299,7 +308,6 @@ namespace Tilemaps {
         /// </summary>
         private void ParseTilesetFiles() {
             this.tilesets = new List<TilesetData>();
-//            this.tilesetSourceOffsets = new Dictionary<string, int>();
             var tilesetsInfo = tiledInfo.tilesets;
             int tilesetCount = tilesetsInfo.Length;
             
@@ -314,9 +322,8 @@ namespace Tilemaps {
                 string layerName = tiledInfo.layers[i].name;
                 
                 bool tilesetAssetExists = TilesetDataExists(tilesetAssetFilePath);
-#if DEBUG
                 Debug.LogFormat($"{tilesetAssetFilePath} exists = {tilesetAssetExists}");
-#endif       
+                
                 // Add existing assets if they don't exist and don't need to be overwritten
                 if(tilesetAssetExists && !overwriteTilesetAssets) {
                     AddExistingTilesetDataAsset(tilesetAssetFilePath);
@@ -335,9 +342,7 @@ namespace Tilemaps {
                     }
                     
                     ProcessSpritesFromSheet(tilesetName, sheetPath, asset);
-                    tilesets.Add(asset);
                 }
-//                this.tilesetSourceOffsets.Add(layerName, tileset.firstgid);
                 i++;
             }
         }
@@ -355,10 +360,7 @@ namespace Tilemaps {
                     tilesetInfo = ParseJson(tilesetSourcePath);
                     break;
                 case TSX:
-                    Debug.Log($"type={type}");
-//                    tilesetInfo = ParseTsx(tilesetSourcePath);
-                    tilesetInfo = new TilesetInfo();
-                    break;
+                    throw new FormatException($"type {type} not supported.");
                 default:
                     throw new ArgumentOutOfRangeException();
             }    
@@ -375,19 +377,6 @@ namespace Tilemaps {
             }
             
             return JsonUtility.FromJson<TilesetInfo>(json);
-        }
-
-        private static TilesetInfo ParseTsx(string sourcePath) {
-            XmlDocument doc = new XmlDocument();
-            
-            doc.Load(sourcePath);
-            
-            XDocument xDocument = XDocument.Parse(doc.OuterXml);
-            StringBuilder builder = new StringBuilder();
-            JsonSerializer.Create().Serialize(new CustomXmlJsonWriter(new StringWriter(builder)), xDocument);
-            string jsonText = builder.ToString();
-            
-            return JsonUtility.FromJson<TilesetInfo>(jsonText);
         }
         
         private static bool TilesetDataExists(string tilesetAssetFilePath) {
@@ -417,7 +406,18 @@ namespace Tilemaps {
         /// <param name="asset"></param>
         private void ProcessSpritesFromSheet(string tilesetName, string filename, TilesetData asset) {
             var sprites = AssetDatabase.LoadAllAssetsAtPath(filename)
-                                       .OfType<Sprite>();
+                                       .OfType<Sprite>()
+                                       .ToArray();
+            
+            // Sort the order of sprites as they may be out of order
+            Array.Sort(sprites, (o1, o2) => {
+                                    var s1 = o1.name.Split('_');
+                                    var s2 = o2.name.Split('_');
+                                    string n1 = s1[s1.Length - 1];
+                                    string n2 = s2[s2.Length - 1];
+
+                                    return int.Parse(n1) - int.Parse(n2);
+                                });
             
             foreach (Sprite sprite in sprites) {
 #if DEBUG
@@ -426,6 +426,7 @@ namespace Tilemaps {
                 CreateTilesetAssets(asset, sprite);
             }
 
+            tilesets.Add(asset);
             SaveAssetToDatabase(asset, TILESETS_PATH, tilesetName);
         }
 

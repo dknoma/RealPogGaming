@@ -1,6 +1,9 @@
 ﻿using System;
 using UnityEditor;
 using UnityEngine;
+using static UnityEditor.EditorGUILayout;
+using static UnityEditor.EditorStyles;
+using static UnityEngine.GUILayout;
 
 namespace Editors {
 	public class DruEditor : Editor {
@@ -44,25 +47,25 @@ namespace Editors {
 		}
 
 		protected static void MiniButton(string text, Action action) {
-			if (GUILayout.Button(text, EditorStyles.miniButton)) {
+			if (Button(text, miniButton)) {
 				action();
 			}
 		}
 		
 		protected static void LeftButton(string text, Action action) {
-			if (GUILayout.Button(text, EditorStyles.miniButtonLeft)) {
+			if (Button(text, miniButtonLeft)) {
 				action();
 			}
 		}
 
 		protected static void MidButton(string text, Action action) {
-			if (GUILayout.Button(text, EditorStyles.miniButtonMid)) {
+			if (Button(text, miniButtonMid)) {
 				action();
 			}
 		}
 
 		protected static void RightButton(string text, Action action) {
-			if(GUILayout.Button(text, EditorStyles.miniButtonRight)) {
+			if(Button(text, miniButtonRight)) {
 				action();
 			}
 		}
@@ -75,7 +78,7 @@ namespace Editors {
 		protected static void DrawLineAndHeader(GUIStyle style, params string[] headers) {
 			DrawUILine(Color.grey);
 			foreach(string header in headers) {
-				EditorGUILayout.LabelField(header, style);
+				LabelField(header, style);
 			}
 		}
 		
@@ -89,7 +92,7 @@ namespace Editors {
 		}
 
 		protected static void DrawUILine(Color color, int thickness = 2, int padding = 10){
-			Rect r = EditorGUILayout.GetControlRect(GUILayout.Height(padding+thickness));
+			Rect r = GetControlRect(Height(padding+thickness));
 			r.height = thickness;
 			// ReSharper disable once PossibleLossOfFraction
 			r.y += padding / 2;
